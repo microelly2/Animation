@@ -37,7 +37,7 @@ def say(s):
 		FreeCAD.Console.PrintMessage(str(s)+"\n")
 
 
-##import FreeCAD,Draft,ArchComponent, DraftVecUtils
+import FreeCAD,Draft,ArchComponent, DraftVecUtils
 from FreeCAD import Vector
 import math
 import Draft, Part, FreeCAD, math, PartGui, FreeCADGui, PyQt4
@@ -163,8 +163,6 @@ class _Mover(_Actor):
 
 
 	def step(self,now):
-		say("step")
-		say(self)
 		if self.obj.obj2:
 			if now<self.obj.start or now>self.obj.end:
 				pass
@@ -180,24 +178,14 @@ class _Mover(_Actor):
 
 	def execute(self,obj):
 		say("execute  _Mover")
-		say(self)
-		say(obj)
-		
-		say("execute ..")
-		if hasattr(self,'obj2'):
-			self.initPlace=	self.obj2.Placements
-
-	def __getstate__(self):
-		return None
-
-	def __setstate__(self,state):
-		return None
+		if self.obj.obj2:
+			self.obj.initPlace=	self.obj.obj2.Placements
 
 
 
 
 
-class _ViewProviderMover(object):
+class _ViewProviderMover(ArchComponent.ViewProviderComponent):
 	"A View Provider for the Mover object"
 
  
@@ -268,7 +256,7 @@ class _Rotator:
 
 
 
-class _ViewProviderRotator(object):
+class _ViewProviderRotator(ArchComponent.ViewProviderComponent):
 	"A View Provider for the Mover object"
 
 	def getIcon(self):
@@ -343,7 +331,7 @@ class _Plugger:
 
 
 
-class _ViewProviderPlugger(object):
+class _ViewProviderPlugger(ArchComponent.ViewProviderComponent):
 	"A View Provider for the Mover object"
 
 	def getIcon(self):
@@ -415,7 +403,7 @@ class _Tranquillizer:
 
 
 
-class _ViewProviderTranquillizer(object):
+class _ViewProviderTranquillizer(ArchComponent.ViewProviderComponent):
 	"A View Provider for the Mover object"
 
 	def getIcon(self):
@@ -487,7 +475,7 @@ class _Adjuster:
 
 
 
-class _ViewProviderAdjuster(object):
+class _ViewProviderAdjuster(ArchComponent.ViewProviderComponent):
 	"A View Provider for the Mover object"
 
  
@@ -563,7 +551,7 @@ class _Photographer:
 
 
 
-class _ViewProviderPhotographer(object):
+class _ViewProviderPhotographer(ArchComponent.ViewProviderComponent):
 	"A View Provider for the Mover object"
 
 	
@@ -610,13 +598,18 @@ if FreeCAD.GuiUp:
 
 def createManager(name='My_Manager'):
 	obj = FreeCAD.ActiveDocument.addObject("App::DocumentObjectGroupPython",name)
+#	obj.addProperty("App::PropertyPlacement","Placement","Arch",translate("Arch","The placement of this group"))
 	obj.addProperty("App::PropertyInteger","intervall","params",
 						"intervall")
 
 	obj.addProperty("App::PropertyPythonObject","run","zzz",						"run")
 	obj.addProperty("App::PropertyLinkList","targets","zzz",						"targets")
 	obj.addProperty("App::PropertyString","text","params",						"text")
+	#obj.run=
+
+
 	_Manager(obj)
+
 	_ViewProviderManager(obj.ViewObject)
 	return obj
 
@@ -646,54 +639,50 @@ class _Manager:
 
 	def __init__(self,obj):
 		obj.Proxy = self
-		self.Type = "_Manager"
+		self.Type = "Manager"
 		obj.targets=[]
 #		obj.targets=[FreeCAD.ActiveDocument.Box]
 #		obj.fn=''
 		obj.text='ausgabe erfolgt hier'
 		obj.intervall=20
 		obj.run=self.run
-		self.obj2=obj
+		self.obj=obj
 
 
 
 	def execute(self,obj):
 		say("execute _Manager")
-		obj.run=self.run
-		
 
 
 	def register(self,obj):
-		self.obj2.targets.append(obj)
+		self.obj.targets.append(obj)
 
 	
 	def run(self,intervall):
-		say("run " +str(intervall))
+		say("run #171")
+		say(intervall)
+		say(self.obj.Label)
+		say(self.obj.Name)
 		for nw in range(intervall):	
-			say("loop---");
-			say(self)
-		#	say(self.Name)
-			if hasattr(self,'obj2'):
-					t=FreeCAD.ActiveDocument.getObject(self.obj2.Name)
-			
-			
 			say(nw)
-			for ob in t.OutList:
-					say(ob.Label)
-					try:
-						say("step")
-						ob.step(nw)
-					except:
-						say("fehler step")
-			try:
-				pass
-				#Draft.move(helper,sk,copy=False)
-				FreeCADGui.Selection.clearSelection()
-				FreeCADGui.updateGui() 
-	#			self.genOutput(nw)
-	###			self.showTime(nw)
-			except:
-				say ("schiefgegangen")
+			say(self.Outlist)
+			say("self")
+			say(self)
+			for ob in self.OutList:
+				say("ob ..")
+				say(ob.Label)
+				say(ob.obj2.Label)
+				try:
+					say("step")
+					# ob.step(nw)
+				except:
+					say("fehler step")
+			#Draft.move(helper,sk,copy=False)
+#+#			FreeCADGui.Selection.clearSelection()
+#+#			FreeCADGui.updateGui() 
+#			self.genOutput(nw)
+###			self.showTime(nw)
+
 
 	def setShowTime(self,texter):
 		self.obj.text=texter
@@ -718,7 +707,7 @@ class _Manager:
 
 
 
-class _ViewProviderManager(object):
+class _ViewProviderManager(ArchComponent.ViewProviderComponent):
 	"A View Provider for the Mover object"
 
 	
@@ -751,57 +740,6 @@ if FreeCAD.GuiUp:
 
 
 
-
-class _Starter:
-	
-	def GetResources(self): 
-		return {'Pixmap' : '/home/microelly2/animation_wb/icons/icon1.svg', 'MenuText': 'Starte', 'ToolTip': 'Manager Dialog'} 
-
-	def IsActive(self):
-		if FreeCADGui.ActiveDocument:
-			return True
-		else:
-			return False
-
-	def Activated(self):
-		for ob in FreeCAD.ActiveDocument.Objects:
-			if hasattr(ob,'Proxy'):
-				ob.Proxy.__init__(ob)
-				print("init " +ob.Name)
-
-
-if FreeCAD.GuiUp:
-	FreeCADGui.addCommand('A_Starter',_Starter())
-
-	
-
-class _Runner:
-	
-	def GetResources(self): 
-		return {'Pixmap' : '/home/microelly2/animation_wb/icons/icon2.svg', 'MenuText': 'Run Ma nager', 'ToolTip': 'Manager Dialog'} 
-
-	def IsActive(self):
-		if FreeCADGui.ActiveDocument:
-			return True
-		else:
-			return False
-
-	def Activated(self):
-		try:
-			pass
-			# FreeCAD.getDocument("z7").getObject("My_Manager").Proxy.run(100)
-		except:
-			pass
-		M = FreeCADGui.Selection.getSelectionEx()
-		t=M[0].Object
-		t.Proxy.run(100)
-
-
-
-if FreeCAD.GuiUp:
-	FreeCADGui.addCommand('A_Runner',_Runner())
-
-	
 
 
 
