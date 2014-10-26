@@ -79,10 +79,10 @@ class _Actor(object):
 		say("71a!")
 		#self.obj.obj=self.obj.getObject(obj)
 		say("got")
-		self.obj.start=start
-		self.obj.end=end
-		if self.obj.obj2:
-			self.obj.initPlace=	self.obj.obj2.Placement
+		#self.obj.start=start
+		#self.obj.end=end
+		#if self.obj.obj2:
+		#	self.obj.initPlace=	self.obj.obj2.Placement
 
 
 	def initPlacement(self,tp):
@@ -124,7 +124,7 @@ def createMover(count=6,size_bottom = 4, height=10,name='My_Mover'):
 	obj.addProperty("App::PropertyInteger","end","intervall","end").end=40
 
 	obj.addProperty("App::PropertyPlacement","initPlace","3D Param","initPlace")
-	obj.addProperty("App::PropertyVector","motionVector","3D Param","motionVector")
+	obj.addProperty("App::PropertyVector","motionVector","3D Param","motionVector").motionVector=FreeCAD.Vector(100,0,0)
 	obj.addProperty("App::PropertyLink","obj2","3D Param","moving object ")
 	obj.addProperty("App::PropertyString","obj2ro","3D Param","moving obj").obj2ro="undefined"
 	obj.setEditorMode("obj2ro", 1)
@@ -166,12 +166,11 @@ class _Mover(_Actor):
 		
 	def __init__(self,obj,motion=FreeCAD.Vector(100,0,0) ,start=10,end=20):
 		self.obj=obj
-		super(type(self), self).__init__(self.obj,start,end)
 		obj.Proxy = self
 		self.Type = "_Mover"
 #		obj.step=self.step
 #		obj.reverse=self.reverse
-		self.obj.motionVector=motion
+#		self.obj.motionVector=motion
 
 
 	def step(self,now):
@@ -203,7 +202,7 @@ class _Mover(_Actor):
 		if hasattr(self,'obj2'):
 			self.initPlace=	self.obj2.Placements
 		# anzeigewert neu berechnen
-		obj.obj2ro=obj.obj2rw
+		# obj.obj2ro=obj.obj2rw
 		if hasattr(obj,'obj2'):
 			say(obj.obj2)
 		try:
@@ -257,6 +256,18 @@ if FreeCAD.GuiUp:
 
 def createRotator(name='My_Rotator'):
 	obj = FreeCAD.ActiveDocument.addObject("App::DocumentObjectGroupPython",name)
+	obj.addProperty("App::PropertyInteger","start","intervall","start").start=10
+	obj.addProperty("App::PropertyInteger","end","intervall","end").end=40
+
+	obj.addProperty("App::PropertyPlacement","initPlace","3D Param","initPlace")
+	obj.addProperty("App::PropertyVector","rotationCentre","3D Param","Rotationszentrum")
+	obj.addProperty("App::PropertyVector","rotationAxis","3D Param","Rotationsachse")
+	obj.addProperty("App::PropertyFloat","angle","intervall","Dreh Winkel").angle=270
+	obj.addProperty("App::PropertyLink","obj2","3D Param","rotating object ")
+	obj.addProperty("App::PropertyString","obj2ro","3D Param","moving obj").obj2ro="undefined"
+	obj.setEditorMode("obj2ro", 1)
+
+	_Rotator(obj)
 	_ViewProviderRotator(obj.ViewObject)
 	return obj
 
@@ -286,10 +297,97 @@ class _Rotator:
 
 	def __init__(self,obj):
 		obj.Proxy = self
-		self.Type = "Rotator"
-
+		self.Type = "_Rotator"
+		self.obj2=obj
+		
 	def execute(self,obj):
 		say("execute _Rotator")
+		if hasattr(obj,'obj2'):
+			say(obj.obj2)
+		try:
+			obj.obj2ro=obj.obj2.Label
+		except:
+			say("kein obj2")
+			
+
+		#self.positionVector=position
+		#self.axisVector=axis
+		#self.angle=angle
+
+
+
+	def stepx(self,now):
+		say("difgfdgd2rn")
+		say(now)
+		say("-----ffffff----------")
+		say(self.obj2.start)
+		say(self.end)
+		say("ende")
+
+
+	def step(self,now):
+		say("di2rn")
+		say(now)
+		say(self.obj2.start)
+
+		say("---------------")
+		if now<self.obj2.start or now>self.obj2.end:
+			say("ausserhalb")
+			pass
+		else:
+			say(self.obj2.end-self.obj2.start)
+			relativ=1.00/(self.obj2.end-self.obj2.start)
+			say(relativ)
+			angle2=self.obj2.angle*relativ
+			say(angle2)
+			say(self.obj2.rotationAxis)
+			try:
+				pass
+				Draft.rotate([self.obj2.obj2],angle2,self.obj2.rotationCentre,axis=self.obj2.rotationAxis,copy=False)
+			except:
+				say("Fehler warum ...")
+			finally:
+				say("fertig")
+		say("ende")
+
+	def  setRot(self,dwireName):
+		import math
+		obj=self.getObject(dwireName)
+#		t=App.ActiveDocument.DWire002
+		t=obj
+		a=t.Shape.Vertexes[0]
+		b=t.Shape.Vertexes[1]
+		c=t.Shape.Vertexes[2]
+		v1=FreeCAD.Vector(a.X,a.Y,a.Z).sub(FreeCAD.Vector(b.X,b.Y,b.Z))
+		
+		v2=FreeCAD.Vector(c.X,c.Y,c.Z).sub(FreeCAD.Vector(b.X,b.Y,b.Z))
+		
+		print v1
+		axis=v1.cross(v2)
+		print axis
+		
+		
+		print v1
+		
+		dot=v1.dot(v2)
+		print dot
+		
+		cosAngle=dot/(v1.Length *v2.Length)
+		
+		print cosAngle
+		angle=math.acos(cosAngle)/math.pi *180
+		
+		print angle
+		self.axisVector=axis
+		self.angle=angle
+		self.positionVector=FreeCAD.Vector(b.X,b.Y,b.Z)
+	def reverse(self):
+		self.angle =- self.angle
+	def reverse2(self):
+		self.angle =  self.angle - 180
+	def reverse3(self):
+		self.angle =   self.angle -180
+
 
 
 
@@ -375,24 +473,34 @@ class _Plugger(_Actor):
 		#super(type(self), self).__init__(obname,start,end)
 #		obj.pin=FreeCAD.ActiveDocument.Box
 #		obj.obj=FreeCAD.ActiveDocument.Cylinder
-		obj.detail="Placement.Base"
+#		obj.detail="Placement.Base"
 
 	def step(self,now):
-		
+		say("step--------------------")
 		if not self.obj2.obj:
 			errorDialog("kein ziel zugeordnet")
 			raise Exception(' self.obj2.obj nicht definiert')
 		if not self.obj2.pin:
 			errorDialog("kein pin zugeordnet")
 			raise Exception(' self.obj2.pin nicht definiert')
-
+		say(self.obj2.ix)
+		say(self.obj2.detail)
 
 		if self.obj2.detail=="Placement.Base":
+			say("Base")
 			self.obj2.obj.Placement.Base=self.obj2.pin.Placement.Base
-		elif self.detail=="Vertex.Point":
-			self.obj2.obj.Placement.Base=self.obj2.pin.Shape.Vertexes[0].Point
+		elif self.obj2.detail=="Vertex.Point":
+			say("tuwas")
+			say(self.obj2.ix)
+			say(self.obj2.pin.Shape.Vertexes[self.obj2.ix].Point)
+			self.obj2.obj.Placement.Base=self.obj2.pin.Shape.Vertexes[self.obj2.ix].Point
 		else:
-			raise Exception("unknown detail")
+			say("schl,echt")
+			# raise Exception("unknown detail")
+		#say("tuwas")
+		#say(self.obj2.ix)
+		#say(self.obj2.pin.Shape.Vertexes[self.obj2.ix].Point)
+		#self.obj2.obj.Placement.Base=self.obj2.pin.Shape.Vertexes[self.obj2.ix].Point
 
 	def setDetail(self,detailname,param1):
 			self.obj2.detail=detailname
@@ -561,14 +669,9 @@ class _CommandAdjuster:
 class _Adjuster(_Actor):
 	
 	def __init__(self,obj):
-		# super(type(self), self).__init__(obname,start,end)
-		#self.nr=nr
-		#self.unit=unit
 		obj.Proxy = self
 		self.Type = "Adjuster"
 		self.obj2 = obj 
-#		obj.obj=FreeCAD.ActiveDocument.Sketch
-
 
 		
 	def step(self,now):
@@ -692,6 +795,8 @@ class _Photographer(_Actor):
 		else:
 			FreeCADGui.Selection.clearSelection()
 			FreeCADGui.updateGui() 
+			say("view")
+			FreeCADGui.activeDocument().activeView().viewAxometric()
 			kf= "%04.f"%now
 			fn=self.obj2.fn+kf+'.png'
 			fn=self.obj2.fn+kf+'.'+self.obj2.format 
@@ -776,19 +881,19 @@ class _Manager:
 	def __init__(self,obj):
 		obj.Proxy = self
 		self.Type = "_Manager"
-		obj.targets=[]
+#		obj.targets=[]
 #		obj.targets=[FreeCAD.ActiveDocument.Box]
 #		obj.fn=''
-		obj.text='ausgabe erfolgt hier'
-		obj.intervall=20
-		obj.run=self.run
+#		obj.text='ausgabe erfolgt hier'
+#		obj.intervall=20
+#		obj.run=self.run
 		self.obj2=obj
 
 
 
 	def execute(self,obj):
 		say("execute _Manager")
-		obj.run=self.run
+		#obj.run=self.run
 		
 
 
@@ -838,7 +943,10 @@ class _Manager:
 			for ob in t.OutList:
 					say(ob.Label)
 					try:
-						say("step")
+						say("step xx")
+						say(ob)
+						say(ob.Proxy)
+						say(ob.Proxy.step)
 						ob.Proxy.step(nw)
 					except:
 						say("fehler step 2")
@@ -926,6 +1034,7 @@ class _Starter:
 		for ob in FreeCAD.ActiveDocument.Objects:
 			if hasattr(ob,'Proxy'):
 				ob.Proxy.__init__(ob)
+				# ob.Proxy.obj2=ob
 				print("init " +ob.Name)
 
 
@@ -953,12 +1062,14 @@ class _Runner:
 			pass
 		M = FreeCADGui.Selection.getSelectionEx()
 		say(M)
-		if len(M)>0:
-			tt=M[0].Object
+		if len(M)==0:
+			errorDialog("Manager auswahlen")
+		elif M[0].Object.Proxy.Type <> '_Manager':
+			errorDialog("Manager auswahlen")
 		else:
-			tt=FreeCAD.ActiveDocument.My_Manager
-		say(tt)
-		tt.Proxy.run(100)
+			tt=M[0].Object
+			say(tt)
+			tt.Proxy.run(100)
 
 
 
