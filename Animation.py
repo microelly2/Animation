@@ -30,11 +30,20 @@ if FreeCAD.GuiUp:
 	import FreeCADGui
 	FreeCADGui.updateLocale()
 
-# Einzelbeispiel 
 
 
 def say(s):
 		FreeCAD.Console.PrintMessage(str(s)+"\n")
+
+
+import Draft,PyQt4
+from PyQt4 import QtGui,QtCore
+
+
+def errorDialog(msg):
+    diag = QtGui.QMessageBox(QtGui.QMessageBox.Critical,u"Error Message",msg )
+    diag.setWindowFlags(PyQt4.QtCore.Qt.WindowStaysOnTopHint)
+    diag.exec_()
 
 
 ##import FreeCAD,Draft,ArchComponent, DraftVecUtils
@@ -51,10 +60,6 @@ if FreeCAD.GuiUp:
 else:
 	def translate(ctxt,txt):
 		return txt
-
-__title__="FreeCAD Prism"
-__author__ = "thomas gundermann"
-__url__ = "http://www.freecadbuch.de"
 
 #---------------------
 def say(s):
@@ -110,15 +115,22 @@ def createMover(count=6,size_bottom = 4, height=10,name='My_Mover'):
 	= Prism).'''
 	obj = FreeCAD.ActiveDocument.addObject("App::DocumentObjectGroupPython",name)
 	
-	obj.addProperty("App::PropertyPythonObject","step","zzz","step")
-	obj.addProperty("App::PropertyPythonObject","reverse","zzz","reverse")
+#	obj.addProperty("App::PropertyPythonObject","step","zzz","step")
+#	obj.addProperty("App::PropertyPythonObject","reverse","zzz","reverse")
+#	obj.setEditorMode("reverse", 2)
+#	obj.setEditorMode("step", 2)
 	
-	obj.addProperty("App::PropertyInteger","start","intervall","start")
-	obj.addProperty("App::PropertyInteger","end","intervall","end")
+	obj.addProperty("App::PropertyInteger","start","intervall","start").start=10
+	obj.addProperty("App::PropertyInteger","end","intervall","end").end=40
 
 	obj.addProperty("App::PropertyPlacement","initPlace","3D Param","initPlace")
 	obj.addProperty("App::PropertyVector","motionVector","3D Param","motionVector")
-	obj.addProperty("App::PropertyLink","obj2","3D Param","Tooltipp bew. Ob")
+	obj.addProperty("App::PropertyLink","obj2","3D Param","moving object ")
+	obj.addProperty("App::PropertyString","obj2ro","3D Param","moving obj").obj2ro="undefined"
+	obj.setEditorMode("obj2ro", 1)
+#	obj.addProperty("App::PropertyString","obj2rw","3D Param","Tooltipp bew. Ob").obj2rw="HUGO rw"
+#	obj.setEditorMode("obj2rw", 0)
+	
 	# hack ...
 	# obj.obj2=FreeCAD.ActiveDocument.Box
 	_Mover(obj)
@@ -157,14 +169,18 @@ class _Mover(_Actor):
 		super(type(self), self).__init__(self.obj,start,end)
 		obj.Proxy = self
 		self.Type = "_Mover"
-		obj.step=self.step
-		obj.reverse=self.reverse
+#		obj.step=self.step
+#		obj.reverse=self.reverse
 		self.obj.motionVector=motion
 
 
 	def step(self,now):
-		say("step")
+		say("step XX")
 		say(self)
+		if not self.obj.obj2:
+			errorDialog("kein mover objekt zugeordnet")
+			raise Exception(' self.obj2 nicht definiert')
+
 		if self.obj.obj2:
 			if now<self.obj.start or now>self.obj.end:
 				pass
@@ -183,9 +199,18 @@ class _Mover(_Actor):
 		say(self)
 		say(obj)
 		
-		say("execute ..")
+		say("execute ..2 ")
 		if hasattr(self,'obj2'):
 			self.initPlace=	self.obj2.Placements
+		# anzeigewert neu berechnen
+		obj.obj2ro=obj.obj2rw
+		if hasattr(obj,'obj2'):
+			say(obj.obj2)
+		try:
+			obj.obj2ro=obj.obj2.Label
+		except:
+			say("kein obj2")
+			
 
 	def __getstate__(self):
 		return None
@@ -306,7 +331,14 @@ if FreeCAD.GuiUp:
 
 def createPlugger(name='My_Plugger'):
 	obj = FreeCAD.ActiveDocument.addObject("App::DocumentObjectGroupPython",name)
-	_Mover(obj)
+	obj.addProperty("App::PropertyLink","pin","3D Param","pin")
+	obj.addProperty("App::PropertyLink","obj","3D Param","objekt")
+	obj.addProperty("App::PropertyInteger","ix","nummer","index 1").ix=3
+	obj.addProperty("App::PropertyEnumeration","detail","format","art").detail=["Placement.Base","Vertex.Point","unklarmp"]
+
+
+
+	_Plugger(obj)
 	_ViewProviderPlugger(obj.ViewObject)
 	return obj
 
@@ -332,16 +364,42 @@ class _CommandPlugger:
 			say("Erst Arbeitsbereich oeffnen")
 		return
 	   
-class _Plugger:
 
+
+class _Plugger(_Actor):
 	def __init__(self,obj):
 		obj.Proxy = self
 		self.Type = "Plugger"
 
+		self.obj2 = obj 
+		#super(type(self), self).__init__(obname,start,end)
+#		obj.pin=FreeCAD.ActiveDocument.Box
+#		obj.obj=FreeCAD.ActiveDocument.Cylinder
+		obj.detail="Placement.Base"
+
+	def step(self,now):
+		
+		if not self.obj2.obj:
+			errorDialog("kein ziel zugeordnet")
+			raise Exception(' self.obj2.obj nicht definiert')
+		if not self.obj2.pin:
+			errorDialog("kein pin zugeordnet")
+			raise Exception(' self.obj2.pin nicht definiert')
+
+
+		if self.obj2.detail=="Placement.Base":
+			self.obj2.obj.Placement.Base=self.obj2.pin.Placement.Base
+		elif self.detail=="Vertex.Point":
+			self.obj2.obj.Placement.Base=self.obj2.pin.Shape.Vertexes[0].Point
+		else:
+			raise Exception("unknown detail")
+
+	def setDetail(self,detailname,param1):
+			self.obj2.detail=detailname
+			self.obj2.param1=param1
+	
 	def execute(self,obj):
 		say("execute _Plugger")
-
-
 
 class _ViewProviderPlugger(object):
 	"A View Provider for the Mover object"
@@ -378,7 +436,8 @@ if FreeCAD.GuiUp:
 
 def createTranquillizer(name='My_Tranquillizer'):
 	obj = FreeCAD.ActiveDocument.addObject("App::DocumentObjectGroupPython",name)
-	_Mover(obj)
+	obj.addProperty("App::PropertyFloat","time","params","time").time=0.02
+	_Tranquillizer(obj)
 	_ViewProviderTranquillizer(obj.ViewObject)
 	return obj
 
@@ -403,16 +462,29 @@ class _CommandTranquillizer:
 		else:
 			say("Erst Arbeitsbereich oeffnen")
 		return
+
+import time
+from time import sleep
 	   
 class _Tranquillizer:
 
 	def __init__(self,obj):
 		obj.Proxy = self
 		self.Type = "Tranquillizer"
+		self.obj2 = obj 
 
 	def execute(self,obj):
 		say("execute _Tranquillizer")
 
+	def step(self,now):
+		say(self)
+		FreeCAD.tt=self
+		time.sleep(self.obj2.time)
+	def  toInitialPlacement(self):
+		pass
+	
+	
+###############
 
 
 class _ViewProviderTranquillizer(object):
@@ -450,6 +522,16 @@ if FreeCAD.GuiUp:
 
 def createAdjuster(name='My_Adjuster'):
 	obj = FreeCAD.ActiveDocument.addObject("App::DocumentObjectGroupPython",name)
+	obj.addProperty("App::PropertyInteger","start","intervall","start").start=10
+	obj.addProperty("App::PropertyInteger","end","intervall","end").end=40
+	obj.addProperty("App::PropertyFloat","va","intervall","va").va=0
+	obj.addProperty("App::PropertyFloat","ve","intervall","ve").ve=40
+	obj.addProperty("App::PropertyLink","obj","3D Param","Sketch")
+	obj.addProperty("App::PropertyInteger","nr","intervall","nummer Datum").nr=1
+
+
+	obj.addProperty("App::PropertyString","unit","3D Param","einheit").unit=""
+
 	_Adjuster(obj)
 	_ViewProviderMover(obj.ViewObject)
 	return obj
@@ -476,14 +558,52 @@ class _CommandAdjuster:
 			say("Erst Arbeitsbereich oeffnen")
 		return
 	   
-class _Adjuster:
-
+class _Adjuster(_Actor):
+	
 	def __init__(self,obj):
+		# super(type(self), self).__init__(obname,start,end)
+		#self.nr=nr
+		#self.unit=unit
 		obj.Proxy = self
 		self.Type = "Adjuster"
+		self.obj2 = obj 
+#		obj.obj=FreeCAD.ActiveDocument.Sketch
+
+
+		
+	def step(self,now):
+		say("stepsdfdf!")
+
+		if not self.obj2.obj:
+			errorDialog("kein Sketch zugeordnet")
+			raise Exception(' self.obj2.obj nicht definiert')
+ 
+		FreeCADGui.ActiveDocument.setEdit(self.obj2.obj.Name)
+		#say(self.ve)
+		#say(self.va)
+		if 1:
+			v=self.obj2.va +  (self.obj2.ve - self.obj2.va)*(now-self.obj2.start)/(self.obj2.end-self.obj2.start)
+			say(v)
+		try:
+			say("intern")	
+			self.obj2.obj.setDatum(self.obj2.nr,FreeCAD.Units.Quantity(v))
+			
+		except:
+			 say("ffehler") 
+		say("sett")
+		FreeCAD.ActiveDocument.recompute()
+		FreeCADGui.ActiveDocument.resetEdit()
+		#FreeCADGui.updateGui() 
+
+	def setValues(self,va,ve):
+		self.obj2.va=va
+		self.obj2.ve=ve
+
+
 
 	def execute(self,obj):
 		say("execute _Adjuster")
+
 
 
 
@@ -523,11 +643,15 @@ if FreeCAD.GuiUp:
 
 
 def createPhotographer(name='My_Photographer'):
-	#obj = FreeCAD.ActiveDocument.addObject("Part::FeaturePython",name)
 	obj = FreeCAD.ActiveDocument.addObject("App::DocumentObjectGroupPython",name)
-	
-	_Mover(obj)
-	_ViewProviderManager(obj.ViewObject)
+	obj.addProperty("App::PropertyInteger","start","intervall","start").start=10
+	obj.addProperty("App::PropertyInteger","end","intervall","end").end=40
+	obj.addProperty("App::PropertyInteger","size_x","format","start").size_x=480
+	obj.addProperty("App::PropertyInteger","size_y","format","end").size_y=640
+	obj.addProperty("App::PropertyPath","fn","zzz","outdir").fn="/tmp/fc_anim_"
+	obj.addProperty("App::PropertyEnumeration","format","format","Bildformat").format=["png","jpg","bmp"]
+	_Photographer(obj)
+	_ViewProviderPhotographer(obj.ViewObject)
 	return obj
 
 class _CommandPhotographer:
@@ -552,15 +676,28 @@ class _CommandPhotographer:
 			say("Erst Arbeitsbereich oeffnen")
 		return
 	   
-class _Photographer:
+class _Photographer(_Actor):
 
 	def __init__(self,obj):
+		self.obj2 = obj 
 		obj.Proxy = self
 		self.Type = "Photographer"
 
 	def execute(self,obj):
 		say("execute _Photographer")
 
+	def step(self,now):
+		if now<self.obj2.start or now>self.obj2.end:
+			pass
+		else:
+			FreeCADGui.Selection.clearSelection()
+			FreeCADGui.updateGui() 
+			kf= "%04.f"%now
+			fn=self.obj2.fn+kf+'.png'
+			fn=self.obj2.fn+kf+'.'+self.obj2.format 
+			FreeCADGui.activeDocument().activeView().saveImage(fn,self.obj2.size_x,self.obj2.size_y,'Current')
+	def  toInitialPlacement(self):
+		pass
 
 
 class _ViewProviderPhotographer(object):
@@ -568,14 +705,10 @@ class _ViewProviderPhotographer(object):
 
 	
 	def getIcon(self):
-		return '/home/microelly2/animation_wb/icons/manager.png'
+		return '/home/microelly2/animation_wb/icons/photographer.png'
    
 	def __init__(self,vobj):
 		vobj.Proxy = self
-
- #   def getIcon(self):
- #	   import Arch_rc
- #	   return ":/icons/Arch_Floor_Tree.svg"
 
 	def attach(self,vobj):
 		self.Object = vobj.Object
@@ -592,10 +725,6 @@ class _ViewProviderPhotographer(object):
 
 	def __init__(self,vobj):
 		vobj.Proxy = self
-
-	def getIcon2(self):
-		return '/home/microelly2/animation_wb/icons/photographer.png'
-
 
 if FreeCAD.GuiUp:
 	FreeCADGui.addCommand('Anim_Photographer',_CommandPhotographer())
@@ -667,7 +796,7 @@ class _Manager:
 		self.obj2.targets.append(obj)
 
 	
-	def run(self,intervall):
+	def runORIG(self,intervall):
 		say("run " +str(intervall))
 		for nw in range(intervall):	
 			say("loop---");
@@ -680,11 +809,12 @@ class _Manager:
 			say(nw)
 			for ob in t.OutList:
 					say(ob.Label)
-					try:
-						say("step")
-						ob.step(nw)
-					except:
-						say("fehler step")
+					#try:
+					say("step")
+					ob.step(nw)
+					#except:
+					#say("fehler step")
+					#	raise Exception(ob)
 			try:
 				pass
 				#Draft.move(helper,sk,copy=False)
@@ -694,6 +824,35 @@ class _Manager:
 	###			self.showTime(nw)
 			except:
 				say ("schiefgegangen")
+
+	def run(self,intervall):
+		say("run " +str(intervall))
+		for nw in range(intervall):	
+			say("loop--" + str(nw));
+			say(self)
+		#	say(self.Name)
+			if hasattr(self,'obj2'):
+				t=FreeCAD.ActiveDocument.getObject(self.obj2.Name)
+			else:
+				raise Exception("obj2 not found --> reinit the file!")
+			for ob in t.OutList:
+					say(ob.Label)
+					try:
+						say("step")
+						ob.Proxy.step(nw)
+					except:
+						say("fehler step 2")
+						raise Exception("step nicht ausfuerbar")
+			try:
+				pass
+				#Draft.move(helper,sk,copy=False)
+				FreeCADGui.Selection.clearSelection()
+				FreeCADGui.updateGui() 
+	#			self.genOutput(nw)
+	###			self.showTime(nw)
+			except:
+				say ("schiefgegangen")
+
 
 	def setShowTime(self,texter):
 		self.obj.text=texter
@@ -755,7 +914,7 @@ if FreeCAD.GuiUp:
 class _Starter:
 	
 	def GetResources(self): 
-		return {'Pixmap' : '/home/microelly2/animation_wb/icons/icon1.svg', 'MenuText': 'Starte', 'ToolTip': 'Manager Dialog'} 
+		return {'Pixmap' : '/home/microelly2/animation_wb/icons/icon1.svg', 'MenuText': 'Starte', 'ToolTip': 'Initialisier nach Dateiladen '} 
 
 	def IsActive(self):
 		if FreeCADGui.ActiveDocument:
@@ -778,7 +937,7 @@ if FreeCAD.GuiUp:
 class _Runner:
 	
 	def GetResources(self): 
-		return {'Pixmap' : '/home/microelly2/animation_wb/icons/icon2.svg', 'MenuText': 'Run Ma nager', 'ToolTip': 'Manager Dialog'} 
+		return {'Pixmap' : '/home/microelly2/animation_wb/icons/animation.png', 'MenuText': 'Run Manager', 'ToolTip': 'Manager Run'} 
 
 	def IsActive(self):
 		if FreeCADGui.ActiveDocument:
@@ -793,15 +952,53 @@ class _Runner:
 		except:
 			pass
 		M = FreeCADGui.Selection.getSelectionEx()
-		t=M[0].Object
-		t.Proxy.run(100)
+		say(M)
+		if len(M)>0:
+			tt=M[0].Object
+		else:
+			tt=FreeCAD.ActiveDocument.My_Manager
+		say(tt)
+		tt.Proxy.run(100)
+
 
 
 
 if FreeCAD.GuiUp:
 	FreeCADGui.addCommand('A_Runner',_Runner())
 
+# fast Helpers
+# define  Activated !!
 	
+class _B1:
+	def GetResources(self): 
+		return {'Pixmap' : '/home/microelly2/animation_wb/icons/icon1.svg', 'MenuText': 'B1', 'ToolTip': 'B1'} 
+	def IsActive(self):
+		return True
+	def Activated(self):
+		say("runngi _B1")
+		say(self)
+
+class _B2:
+	def GetResources(self): 
+		return {'Pixmap' : '/home/microelly2/animation_wb/icons/icon2.svg', 'MenuText': 'B2', 'ToolTip': 'B2'} 
+	def IsActive(self):
+		return True
+	def Activated(self):
+		say("runngi _B2")
+
+class _B3:
+	def GetResources(self): 
+		return {'Pixmap' : '/home/microelly2/animation_wb/icons/icon3.svg', 'MenuText': 'B3', 'ToolTip': 'B3'} 
+	def IsActive(self):
+		return True
+	def Activated(self):
+		say("runngi _B3")
+
+
+if FreeCAD.GuiUp:
+	FreeCADGui.addCommand('B1',_B1())
+	FreeCADGui.addCommand('B2',_B2())
+	FreeCADGui.addCommand('B3',_B3())
 
 
 

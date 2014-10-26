@@ -47,7 +47,9 @@ class AnimationWorkbench(Workbench):
 
 				"Anim_Manager",
 				"A_Starter",
-				"A_Runner"
+				"A_Runner",
+				"B1","B2","B3"
+				
 		]
 
         FreeCAD.t=self.appendToolbar("Animation",self.animtools)
