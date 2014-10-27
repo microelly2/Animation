@@ -1046,7 +1046,7 @@ if FreeCAD.GuiUp:
 class _Runner:
 	
 	def GetResources(self): 
-		return {'Pixmap' : '/home/microelly2/animation_wb/icons/animation.png', 'MenuText': 'Run Manager', 'ToolTip': 'Manager Run'} 
+		return {'Pixmap' : '/home/microelly2/animation_wb/icons/animation.png', 'MenuText': 'Run Manager', 'ToolTip': 'Run Manager'} 
 
 	def IsActive(self):
 		if FreeCADGui.ActiveDocument:
@@ -1099,17 +1099,19 @@ class _B2:
 
 class _B3:
 	def GetResources(self): 
-		return {'Pixmap' : '/home/microelly2/animation_wb/icons/icon3.svg', 'MenuText': 'B3', 'ToolTip': 'B3'} 
+		return {'Pixmap' : '/home/microelly2/animation_wb/icons/icon3.svg', 'MenuText': 'Edit Object', 'ToolTip': 'Edit Object'} 
 	def IsActive(self):
 		return True
 	def Activated(self):
 		say("runngi _B3")
+		t=FreeCADGui.Selection.getSelection()
+		FreeCADGui.ActiveDocument.setEdit(t[0].Name,0)
 
 
 if FreeCAD.GuiUp:
 	FreeCADGui.addCommand('B1',_B1())
 	FreeCADGui.addCommand('B2',_B2())
-	FreeCADGui.addCommand('B3',_B3())
+	FreeCADGui.addCommand('EditObject',_B3())
 
 
 
