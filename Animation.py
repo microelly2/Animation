@@ -795,8 +795,6 @@ class _Photographer(_Actor):
 		else:
 			FreeCADGui.Selection.clearSelection()
 			FreeCADGui.updateGui() 
-			say("view")
-			FreeCADGui.activeDocument().activeView().viewAxometric()
 			kf= "%04.f"%now
 			fn=self.obj2.fn+kf+'.png'
 			fn=self.obj2.fn+kf+'.'+self.obj2.format 
@@ -943,11 +941,9 @@ class _Manager:
 			for ob in t.OutList:
 					say(ob.Label)
 					try:
-						say("step xx")
-						say(ob)
 						say(ob.Proxy)
-						say(ob.Proxy.step)
-						ob.Proxy.step(nw)
+						if ob.ViewObject.Visibility:
+							ob.Proxy.step(nw)
 					except:
 						say("fehler step 2")
 						raise Exception("step nicht ausfuerbar")
@@ -955,7 +951,15 @@ class _Manager:
 				pass
 				#Draft.move(helper,sk,copy=False)
 				FreeCADGui.Selection.clearSelection()
+				
+				c=FreeCADGui.ActiveDocument.ActiveView
+				c.setCameraOrientation(FreeCAD.Rotation (0.4247081321999479, 0.1759200437218226, 0.339851090706265, 0.8204732639190053))
+				ori=c.getCameraOrientation() 
+				say('ori ..')
+				say(ori)
 				FreeCADGui.updateGui() 
+				# FreeCADGui.activeDocument().activeView().viewFront()
+				
 	#			self.genOutput(nw)
 	###			self.showTime(nw)
 			except:
