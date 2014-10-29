@@ -476,7 +476,7 @@ class _Plugger(_Actor):
 #		obj.detail="Placement.Base"
 
 	def step(self,now):
-		say("step--------------------")
+		say("Plugger step" + str(now))
 		if not self.obj2.obj:
 			errorDialog("kein ziel zugeordnet")
 			raise Exception(' self.obj2.obj nicht definiert')
@@ -490,9 +490,15 @@ class _Plugger(_Actor):
 			say("Base")
 			self.obj2.obj.Placement.Base=self.obj2.pin.Placement.Base
 		elif self.obj2.detail=="Vertex.Point":
-			say("tuwas")
+			say("set vertex")
+			say("punkt index")
 			say(self.obj2.ix)
+
+			say("punkt alte koord")
+			say(self.obj2.obj.Placement.Base)
+			say("neue koords")
 			say(self.obj2.pin.Shape.Vertexes[self.obj2.ix].Point)
+			
 			self.obj2.obj.Placement.Base=self.obj2.pin.Shape.Vertexes[self.obj2.ix].Point
 		else:
 			say("schl,echt")
@@ -675,28 +681,32 @@ class _Adjuster(_Actor):
 
 		
 	def step(self,now):
-		say("stepsdfdf!")
+		say("Adjustor step!" + str(now))
 
-		if not self.obj2.obj:
-			errorDialog("kein Sketch zugeordnet")
-			raise Exception(' self.obj2.obj nicht definiert')
- 
-		FreeCADGui.ActiveDocument.setEdit(self.obj2.obj.Name)
-		#say(self.ve)
-		#say(self.va)
-		if 1:
-			v=self.obj2.va +  (self.obj2.ve - self.obj2.va)*(now-self.obj2.start)/(self.obj2.end-self.obj2.start)
-			say(v)
-		try:
-			say("intern")	
-			self.obj2.obj.setDatum(self.obj2.nr,FreeCAD.Units.Quantity(v))
-			
-		except:
-			 say("ffehler") 
-		say("sett")
-		FreeCAD.ActiveDocument.recompute()
-		FreeCADGui.ActiveDocument.resetEdit()
-		#FreeCADGui.updateGui() 
+		if now<self.obj2.start or now>self.obj2.end:
+			say("ausserhalb")
+			pass
+		else:
+			if not self.obj2.obj:
+				errorDialog("kein Sketch zugeordnet")
+				raise Exception(' self.obj2.obj nicht definiert')
+	 
+			FreeCADGui.ActiveDocument.setEdit(self.obj2.obj.Name)
+			#say(self.ve)
+			#say(self.va)
+			if 1:
+				v=self.obj2.va +  (self.obj2.ve - self.obj2.va)*(now-self.obj2.start)/(self.obj2.end-self.obj2.start)
+				say("value=" + str(v))
+			try:
+				#say("intern")	
+				self.obj2.obj.setDatum(self.obj2.nr,FreeCAD.Units.Quantity(v))
+				
+			except:
+				 say("ffehler") 
+			#say("sett")
+			FreeCAD.ActiveDocument.recompute()
+			FreeCADGui.ActiveDocument.resetEdit()
+			#FreeCADGui.updateGui() 
 
 	def setValues(self,va,ve):
 		self.obj2.va=va
@@ -928,12 +938,17 @@ class _Manager:
 			except:
 				say ("schiefgegangen")
 
-	def run(self,intervall):
+	def run(self,intervall=100):
+		intervall=self.obj2.intervall
 		say("run " +str(intervall))
+		
+		# funktioniert nicht - warum?
+		FreeCADGui.activeDocument().activeView().viewAxometric()
+		FreeCADGui.updateGui() 
+
+
 		for nw in range(intervall):	
-			say("loop--" + str(nw));
-			say(self)
-		#	say(self.Name)
+			say("************************* manager run loop:" + str(nw));
 			if hasattr(self,'obj2'):
 				t=FreeCAD.ActiveDocument.getObject(self.obj2.Name)
 			else:
@@ -941,7 +956,7 @@ class _Manager:
 			for ob in t.OutList:
 					say(ob.Label)
 					try:
-						say(ob.Proxy)
+#						say(ob.Proxy)
 						if ob.ViewObject.Visibility:
 							ob.Proxy.step(nw)
 					except:
@@ -953,12 +968,12 @@ class _Manager:
 				FreeCADGui.Selection.clearSelection()
 				
 				c=FreeCADGui.ActiveDocument.ActiveView
-				c.setCameraOrientation(FreeCAD.Rotation (0.4247081321999479, 0.1759200437218226, 0.339851090706265, 0.8204732639190053))
-				ori=c.getCameraOrientation() 
-				say('ori ..')
-				say(ori)
+#				c.setCameraOrientation(FreeCAD.Rotation (0.4247081321999479, 0.1759200437218226, 0.339851090706265, 0.8204732639190053))
+#				ori=c.getCameraOrientation() 
+#				say('ori ..')
+#				say(ori)
 				FreeCADGui.updateGui() 
-				# FreeCADGui.activeDocument().activeView().viewFront()
+				
 				
 	#			self.genOutput(nw)
 	###			self.showTime(nw)
