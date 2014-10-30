@@ -38,6 +38,15 @@ def say(s):
 def sayErr(s):
 		FreeCAD.Console.PrintError(str(s)+"\n")
 
+import FreeCAD , FreeCADGui , Part, Draft, math, Drawing , PyQt4, os
+from PyQt4 import QtGui,QtCore
+from FreeCAD import Base
+
+def errorDialog(msg):
+    diag = QtGui.QMessageBox(QtGui.QMessageBox.Critical,u"Error Message",msg )
+    diag.setWindowFlags(PyQt4.QtCore.Qt.WindowStaysOnTopHint)
+    diag.exec_()
+
 
 import Draft,PyQt4
 from PyQt4 import QtGui,QtCore
@@ -474,8 +483,17 @@ def createPlugger(name='My_Plugger'):
 	obj.addProperty("App::PropertyLink","pin","3D Param","pin")
 	obj.addProperty("App::PropertyLink","obj","3D Param","objekt")
 	obj.addProperty("App::PropertyInteger","ix","nummer","index 1").ix=3
+	obj.addProperty("App::PropertyInteger","status","nummer","intern").status=0
 	obj.addProperty("App::PropertyEnumeration","detail","format","art").detail=["Placement.Base","Vertex.Point","unklarmp"]
+	obj.addProperty("App::PropertyVector","offsetVector","3D Param","offsetVector").offsetVector=FreeCAD.Vector(30,30,0)
 
+#	obj.addProperty("App::PropertyLinkSub","subobj","3D Param1","Subobjekt")
+#	obj.addProperty("App::PropertyLinkSub","subobj","3D Param1","Subobjekt")
+#	obj.addProperty("App::PropertyLinkSub", "PartName", "Part", "Reference to name of part").PartName = (part, ['Name'])
+#	obj.addProperty("App::PropertyLinkSub", "Volume", "Part", "Reference to volume of part").Volume = (part, ['Shape', 'Volume'])
+#	obj.addProperty("App::PropertyLinkSub", "PartName", "Part", "Reference to name of part")
+#	obj.addProperty("App::PropertyLinkSub", "Volume", "Part", "Reference to volume of part")
+#	obj.PartName=(FreeCAD.ActiveDocument.Box,['Label'])
 
 
 	_Plugger(obj)
@@ -506,9 +524,9 @@ class _CommandPlugger:
 	   
 	   
 
-def findVertex(
-oldpos,sketch):
+def findVertex(oldpos,sketch,offset):
 	say("find Vertex 2")
+	oldpos=FreeCAD.Vector(oldpos).sub(offset)
 #	say(oldpos)
 	lst=sketch.Vertexes
 #	say(sketch)
@@ -574,12 +592,22 @@ class _Plugger(_Actor):
 			say(self.obj2.obj.Placement.Base)
 			say("neue koords")
 			# say(self.obj2.pin.Shape.Vertexes[self.obj2.ix].Point)
+			if self.obj2.status>0:
+				ixok=self.obj2.ix
+			else:
+				ixok=findVertex(self.obj2.obj.Placement.Base,self.obj2.pin.Shape,self.obj2.offsetVector)
+			self.obj2.status += 1
 			
-			ixok=findVertex(self.obj2.obj.Placement.Base,self.obj2.pin.Shape)
 			if ixok>=0:
 				self.obj2.obj.Placement.Base=self.obj2.pin.Shape.Vertexes[ixok].Point
+				
 			else:
 				self.obj2.obj.Placement.Base=self.obj2.pin.Shape.Vertexes[self.obj2.ix].Point
+			say("offset addiert ...")
+			say(self.obj2.obj.Placement.Base)
+			self.obj2.obj.Placement.Base =FreeCAD.Vector(self.obj2.obj.Placement.Base).add(self.obj2.offsetVector)
+			say(self.obj2.obj.Placement.Base)
+			
 		else:
 			say("schl,echt")
 			# raise Exception("unknown detail")
@@ -594,6 +622,7 @@ class _Plugger(_Actor):
 	
 	def execute(self,obj):
 		say("execute _Plugger")
+		self.obj2.status=0
 
 	
 	def attach(self,vobj):
@@ -624,6 +653,17 @@ class _ViewProviderPlugger(object):
 	
 	def claimChildren(self):
 		return self.Object.Group
+
+	def doubleClicked(self,vobj):
+		say("double Clicked")
+		say(self)
+		say(vobj)
+		FreeCAD.tt=self
+		FreeCAD.tv=vobj
+		errorDialog("Ein Dialog")
+		# self.Object ist der Plugger selbst.
+        say("ok")
+
 
 	def __getstate__(self):
 		return None
@@ -1212,6 +1252,16 @@ class _Starter:
 				ob.Proxy.__init__(ob)
 				# ob.Proxy.obj2=ob
 				print("init " +ob.Name)
+		for obj in FreeCAD.ActiveDocument.Objects:
+			if hasattr(obj,'Proxy'):
+				if obj.Proxy.Type=='Plugger':
+					if not hasattr(obj,'status'):
+								obj.addProperty("App::PropertyInteger","status","nummer","intern").status=0
+					if not hasattr(obj,'offsetVector'):
+								obj.addProperty("App::PropertyVector","offsetVector","3D Param","offsetVector").offsetVector=FreeCAD.Vector(0,0,0)
+					say(obj)
+
+						
 
 
 if FreeCAD.GuiUp:
