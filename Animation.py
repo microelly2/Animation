@@ -164,7 +164,7 @@ def createMover(count=6,size_bottom = 4, height=10,name='My_Mover'):
 
 class _CommandMover:
 	def GetResources(self): 
-		return {'Pixmap' : '/home/microelly2/animation_wb/icons/mover.png', 'MenuText': 'Mover', 'ToolTip': 'Mover Dialog'} 
+		return {'Pixmap' : 'Mod/Animation/icons/mover.png', 'MenuText': 'Mover', 'ToolTip': 'Mover Dialog'} 
 
 
 	def IsActive(self):
@@ -264,7 +264,7 @@ class _ViewProviderMover(object):
 
  
 	def getIcon(self):
-		return '/home/microelly2/animation_wb/icons/mover.png'
+		return 'Mod/Animation/icons/mover.png'
    
 	def __init__(self,vobj):
 		vobj.Proxy = self
@@ -311,7 +311,7 @@ def createRotator(name='My_Rotator'):
 
 class _CommandRotator:
 	def GetResources(self): 
-		return {'Pixmap' : '/home/microelly2/animation_wb/icons/rotator.png', 'MenuText': 'Rotator', 'ToolTip': 'Rotator Dialog'} 
+		return {'Pixmap' : 'Mod/Animation/icons/rotator.png', 'MenuText': 'Rotator', 'ToolTip': 'Rotator Dialog'} 
 
 	def IsActive(self):
 		if FreeCADGui.ActiveDocument:
@@ -446,7 +446,7 @@ class _ViewProviderRotator(object):
 	"A View Provider for the Mover object"
 
 	def getIcon(self):
-		return '/home/microelly2/animation_wb/icons/rotator.png'
+		return 'Mod/Animation/icons/rotator.png'
    
 	def __init__(self,vobj):
 		vobj.Proxy = self
@@ -502,7 +502,7 @@ def createPlugger(name='My_Plugger'):
 
 class _CommandPlugger:
 	def GetResources(self): 
-		return {'Pixmap' : '/home/microelly2/animation_wb/icons/plugger.png', 'MenuText': 'Plugger', 'ToolTip': 'Plugger Dialog'} 
+		return {'Pixmap' : 'Mod/Animation/icons/plugger.png', 'MenuText': 'Plugger', 'ToolTip': 'Plugger Dialog'} 
 
 	def IsActive(self):
 		if FreeCADGui.ActiveDocument:
@@ -642,7 +642,7 @@ class _ViewProviderPlugger(object):
 	"A View Provider for the Mover object"
 
 	def getIcon(self):
-		return '/home/microelly2/animation_wb/icons/plugger.png'
+		return 'Mod/Animation/icons/plugger.png'
    
 	def __init__(self,vobj):
 		vobj.Proxy = self
@@ -691,7 +691,7 @@ def createTranquillizer(name='My_Tranquillizer'):
 
 class _CommandTranquillizer:
 	def GetResources(self): 
-		return {'Pixmap' : '/home/microelly2/animation_wb/icons/tranq.png', 'MenuText': 'Tranquillizer', 'ToolTip': 'Tranquillizer Dialog'} 
+		return {'Pixmap' : 'Mod/Animation/icons/tranq.png', 'MenuText': 'Tranquillizer', 'ToolTip': 'Tranquillizer Dialog'} 
 
 	def IsActive(self):
 		if FreeCADGui.ActiveDocument:
@@ -752,7 +752,7 @@ class _ViewProviderTranquillizer(object):
 	"A View Provider for the Mover object"
 
 	def getIcon(self):
-		return '/home/microelly2/animation_wb/icons/tranq.png'
+		return 'Mod/Animation/icons/tranq.png'
 
 	def __init__(self,vobj):
 		vobj.Proxy = self
@@ -799,7 +799,7 @@ def createAdjuster(name='My_Adjuster'):
 
 class _CommandAdjuster:
 	def GetResources(self): 
-		return {'Pixmap' : '/home/microelly2/animation_wb/icons/adjuster.png', 'MenuText': 'Adjuster', 'ToolTip': 'Adjuster Dialog'} 
+		return {'Pixmap' : 'Mod/Animation/icons/adjuster.png', 'MenuText': 'Adjuster', 'ToolTip': 'Adjuster Dialog'} 
 
 	def IsActive(self):
 		if FreeCADGui.ActiveDocument:
@@ -885,7 +885,7 @@ class _ViewProviderAdjuster(object):
 
  
 	def getIcon(self):
-		return '/home/microelly2/animation_wb/icons/adjuster.png'
+		return 'Mod/Animation/icons/adjuster.png'
 
 	def __init__(self,vobj):
 		vobj.Proxy = self
@@ -929,7 +929,7 @@ def createPhotographer(name='My_Photographer'):
 
 class _CommandPhotographer:
 	def GetResources(self): 
-		return {'Pixmap' : '/home/microelly2/animation_wb/icons/photographer.png', 'MenuText': 'Photographer', 'ToolTip': 'Photographer Dialog'} 
+		return {'Pixmap' : 'Mod/Animation/icons/photographer.png', 'MenuText': 'Photographer', 'ToolTip': 'Photographer Dialog'} 
 
 	def IsActive(self):
 		if FreeCADGui.ActiveDocument:
@@ -991,7 +991,7 @@ class _ViewProviderPhotographer(object):
 
 	
 	def getIcon(self):
-		return '/home/microelly2/animation_wb/icons/photographer.png'
+		return 'Mod/Animation/icons/photographer.png'
    
 	def __init__(self,vobj):
 		vobj.Proxy = self
@@ -1037,7 +1037,7 @@ def createManager(name='My_Manager'):
 
 class _CommandManager:
 	def GetResources(self): 
-		return {'Pixmap' : '/home/microelly2/animation_wb/icons/manager.png', 'MenuText': 'Manager', 'ToolTip': 'Manager Dialog'} 
+		return {'Pixmap' : 'Mod/Animation/icons/manager.png', 'MenuText': 'Manager', 'ToolTip': 'Manager Dialog'} 
 
 	def IsActive(self):
 		if FreeCADGui.ActiveDocument:
@@ -1206,7 +1206,7 @@ class _ViewProviderManager(object):
 
 	
 	def getIcon(self):
-		return '/home/microelly2/animation_wb/icons/manager.png'
+		return 'Mod/Animation/icons/manager.png'
    
 	def __init__(self,vobj):
 		vobj.Proxy = self
@@ -1238,7 +1238,7 @@ if FreeCAD.GuiUp:
 class _Starter:
 	
 	def GetResources(self): 
-		return {'Pixmap' : '/home/microelly2/animation_wb/icons/icon1.svg', 'MenuText': 'Starte', 'ToolTip': 'Initialisier nach Dateiladen '} 
+		return {'Pixmap' : 'Mod/Animation/icons/reset.png', 'MenuText': 'ReInitialize', 'ToolTip': 'Re-Initialize after Loading'} 
 
 	def IsActive(self):
 		if FreeCADGui.ActiveDocument:
@@ -1252,6 +1252,7 @@ class _Starter:
 				ob.Proxy.__init__(ob)
 				# ob.Proxy.obj2=ob
 				print("init " +ob.Name)
+		# migration from older versions - add properties
 		for obj in FreeCAD.ActiveDocument.Objects:
 			if hasattr(obj,'Proxy'):
 				if obj.Proxy.Type=='Plugger':
@@ -1272,7 +1273,7 @@ if FreeCAD.GuiUp:
 class _Runner:
 	
 	def GetResources(self): 
-		return {'Pixmap' : '/home/microelly2/animation_wb/icons/animation.png', 'MenuText': 'Run Manager', 'ToolTip': 'Run Manager'} 
+		return {'Pixmap' : 'Mod/Animation/icons/animation.png', 'MenuText': 'Run Manager', 'ToolTip': 'Run Manager'} 
 
 	def IsActive(self):
 		if FreeCADGui.ActiveDocument:
@@ -1308,7 +1309,7 @@ if FreeCAD.GuiUp:
 	
 class _B1:
 	def GetResources(self): 
-		return {'Pixmap' : '/home/microelly2/animation_wb/icons/icon1.svg', 'MenuText': 'B1', 'ToolTip': 'B1'} 
+		return {'Pixmap' : 'Mod/Animation/icons/icon1.svg', 'MenuText': 'B1', 'ToolTip': 'B1'} 
 	def IsActive(self):
 		return True
 	def Activated(self):
@@ -1326,7 +1327,7 @@ class _B1:
 
 class _B2:
 	def GetResources(self): 
-		return {'Pixmap' : '/home/microelly2/animation_wb/icons/icon2.svg', 'MenuText': 'B2', 'ToolTip': 'B2'} 
+		return {'Pixmap' : 'Mod/Animation/icons/icon2.svg', 'MenuText': 'B2', 'ToolTip': 'B2'} 
 	def IsActive(self):
 		return True
 	def Activated(self):
@@ -1334,13 +1335,15 @@ class _B2:
 
 class _B3:
 	def GetResources(self): 
-		return {'Pixmap' : '/home/microelly2/animation_wb/icons/icon3.svg', 'MenuText': 'Edit Object', 'ToolTip': 'Edit Object'} 
+		return {'Pixmap' : 'Mod/Animation/icons/icon3.svg', 'MenuText': 'Edit Object', 'ToolTip': 'Edit Object'} 
 	def IsActive(self):
 		return True
 	def Activated(self):
 		say("runngi _B3")
 		t=FreeCADGui.Selection.getSelection()
 		FreeCADGui.ActiveDocument.setEdit(t[0].Name,0)
+		
+
 
 
 if FreeCAD.GuiUp:
