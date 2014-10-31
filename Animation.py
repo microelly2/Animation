@@ -1123,8 +1123,8 @@ class _Manager:
 
 		
 		# funktioniert nicht - warum?
-		FreeCADGui.activeDocument().activeView().viewAxometric()
-		FreeCADGui.updateGui() 
+		FreeCADGui.ActiveDocument.ActiveView.setAnimationEnabled(False)
+		FreeCADGui.ActiveDocument.ActiveView.viewTop()
 
 
 
@@ -1153,13 +1153,22 @@ class _Manager:
 				pass
 				#Draft.move(helper,sk,copy=False)
 				FreeCADGui.Selection.clearSelection()
+				#caor=FreeCADGui.ActiveDocument.ActiveView.getCameraOrientation()
+				#say("kamera orienttion -----------------------------------")
+				#say(caor)
+				#FreeCADGui.ActiveDocument.ActiveView.setCameraOrientation(FreeCAD.Rotation (1.0, 0.0, 0.0, 1.57))
+				#FreeCADGui.ActiveDocument.ActiveView.viewAxometric()
+				# FreeCADGui.ActiveDocument.ActiveView.viewFront()
+				#c=FreeCADGui.ActiveDocument.ActiveView.
+				#ori=c.getCameraOrientation() 
 				
-				c=FreeCADGui.ActiveDocument.ActiveView
-#				c.setCameraOrientation(FreeCAD.Rotation (0.4247081321999479, 0.1759200437218226, 0.339851090706265, 0.8204732639190053))
-#				ori=c.getCameraOrientation() 
-#				say('ori ..')
-#				say(ori)
 				FreeCADGui.updateGui() 
+				# time.sleep(1)
+				#say('ori .. neu')
+				#caor=FreeCADGui.ActiveDocument.ActiveView.getCameraOrientation()
+				#say("kamera orienttion -----------------------------------")
+				#say(caor)
+				#FreeCADGui.updateGui() 
 				
 				
 	#			self.genOutput(nw)
@@ -1436,6 +1445,9 @@ class _B2:
 		return True
 	def Activated(self):
 		say("runngi _B2")
+		FreeCADGui.activeDocument().activeView().viewAxometric()
+		FreeCADGui.updateGui() 
+		time.sleep(1)
 
 class _B3:
 	def GetResources(self): 
