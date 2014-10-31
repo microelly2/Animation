@@ -46,17 +46,21 @@ def errorDialog(msg):
     diag = QtGui.QMessageBox(QtGui.QMessageBox.Critical,u"Error Message",msg )
     diag.setWindowFlags(PyQt4.QtCore.Qt.WindowStaysOnTopHint)
     diag.exec_()
+#---------------------------
 
 
-import Draft,PyQt4
-from PyQt4 import QtGui,QtCore
+import PyQt4,sys
+from PyQt4 import QtCore, QtGui
 
 
-def errorDialog(msg):
-    diag = QtGui.QMessageBox(QtGui.QMessageBox.Critical,u"Error Message",msg )
-    diag.setWindowFlags(PyQt4.QtCore.Qt.WindowStaysOnTopHint)
-    diag.exec_()
+#------------------ start up ...
 
+
+
+
+
+
+#-----------------------
 
 ##import FreeCAD,Draft,ArchComponent, DraftVecUtils
 from FreeCAD import Vector
@@ -1124,7 +1128,6 @@ class _Manager:
 
 
 
-
 		for nw in range(intervall):	
 			say("************************* manager run loop:" + str(nw));
 			if os.path.exists("/tmp/stop"):
@@ -1163,6 +1166,8 @@ class _Manager:
 	###			self.showTime(nw)
 			except:
 				say ("schiefgegangen")
+		FreeCADGui.Selection.clearSelection()
+		FreeCADGui.Selection.addSelection(FreeCAD.ActiveDocument.getObject(self.obj2.Name))
 
 
 	def setShowTime(self,texter):
@@ -1192,14 +1197,91 @@ class _Manager:
 
 	def __setstate__(self,state):
 		return None
+#-------------------------
+
+# testdialig in comboview task fenster
+import FreeCAD
+import FreeCADGui
+import Part
+from PySide import QtGui, QtCore
 
 
+class AddMyWidget(QtGui.QWidget):
+	def __init__(self,fun,fun2=None,fun3=None, *args):
+		QtGui.QWidget.__init__(self, *args)
+		self.vollabel = QtGui.QLabel('Volume')
+		self.volvalue = QtGui.QLineEdit()
+		self.checkBox = QtGui.QCheckBox()
+		self.radioButton = QtGui.QRadioButton()
+
+		self.pushButton = QtGui.QPushButton()
+		self.pushButton.clicked.connect(fun)
+		
+		self.pushButton2 = QtGui.QPushButton()
+		self.pushButton2.clicked.connect(fun2)
+		
+		self.pushButton3 = QtGui.QPushButton()
+		self.pushButton3.clicked.connect(fun3)
+		
+		layout = QtGui.QGridLayout()
+		#layout.addWidget(self.vollabel, 0, 0)
+		#layout.addWidget(self.volvalue, 0, 1)
+		#layout.addWidget(self.checkBox, 1, 2)
+		#layout.addWidget(self.radioButton, 1, 0)
+
+		layout.addWidget(self.pushButton, 1,1)
+		layout.addWidget(self.pushButton2, 2,1)
+		layout.addWidget(self.pushButton3, 3,1)
+		
+		self.setLayout(layout)
+		self.setWindowTitle("Animation Manager Control Panel")
+
+	def on_pushButton_clicked(self):
+		FreeCAD.Console.PrintMessage("rt")
+
+# erweitern zu ...
+# def __init__(self, MainWindow,label1,fun1,label2=None,fun2=None,label3=None,fun3=None):
+
+class AddMyTask():
+	def __init__(self,fun,fun2=None,fun3=None):
+		self.form = AddMyWidget(fun,fun2,fun3)
+
+	def getStandardButtons(self):
+		return int(QtGui.QDialogButtonBox.Close)
 
 
+	def isAllowedAlterSelection(self):
+		return True
+
+	def isAllowedAlterView(self):
+		return True
+
+	def isAllowedAlterDocument(self):
+		return True
 
 
+def runManager():
+	say("meine funktion")
+	M = FreeCADGui.Selection.getSelectionEx()
+	tt=M[0].Object
+	say(tt)
+	tt.Proxy.run()
+	say("done")
 
 
+def stopManager():
+	fname='/tmp/stop'
+	fhandle = open(fname, 'a')
+	fhandle.close()
+
+
+def unlockManager():
+	import os
+	from os import remove
+	fname='/tmp/stop'
+	os.remove(fname) 	
+	
+		
 
 class _ViewProviderManager(object):
 	"A View Provider for the Mover object"
@@ -1214,9 +1296,11 @@ class _ViewProviderManager(object):
 
 	def attach(self,vobj):
 		self.Object = vobj.Object
+		say("attach")
 		return	
 	
 	def claimChildren(self):
+		say ("claim Children")
 		return self.Object.Group
 
 	def __getstate__(self):
@@ -1224,7 +1308,19 @@ class _ViewProviderManager(object):
 
 	def __setstate__(self,state):
 		return None
-
+		
+	def doubleClicked(self,vobj):
+		FreeCAD.tt=self
+		say(self)
+		panel = AddMyTask(runManager,stopManager,unlockManager)
+		panel.form.volvalue.setText("VOL-VALUE")
+		panel.form.vollabel.setText("VOL-LABELLO")
+		panel.form.pushButton.setText("Run ")
+		panel.form.pushButton2.setText("Stop")
+		panel.form.pushButton3.setText("Unlock ")
+		FreeCADGui.Control.showDialog(panel)
+		
+		
 
 
 if FreeCAD.GuiUp:
@@ -1233,6 +1329,14 @@ if FreeCAD.GuiUp:
 #---------------------------------------------------------------
 
 
+#--------------------------------
+
+
+
+
+
+
+#---------------------------------
 
 
 class _Starter:
