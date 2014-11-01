@@ -921,12 +921,16 @@ if FreeCAD.GuiUp:
 
 def createPhotographer(name='My_Photographer'):
 	obj = FreeCAD.ActiveDocument.addObject("App::DocumentObjectGroupPython",name)
-	obj.addProperty("App::PropertyInteger","start","intervall","start").start=10
+	obj.addProperty("App::PropertyInteger","start","intervall","start").start=0
 	obj.addProperty("App::PropertyInteger","end","intervall","end").end=40
 	obj.addProperty("App::PropertyInteger","size_x","format","start").size_x=480
 	obj.addProperty("App::PropertyInteger","size_y","format","end").size_y=640
 	obj.addProperty("App::PropertyPath","fn","zzz","outdir").fn="/tmp/fc_anim_"
 	obj.addProperty("App::PropertyEnumeration","format","format","Bildformat").format=["png","jpg","bmp"]
+	obj.addProperty("App::PropertyEnumeration","camDirection","Camera","Sichtrichtung").camDirection=["Front","Top","Axometric","Left"]
+	obj.addProperty("App::PropertyInteger","camHeight","Camera","Ausschnitt Hoehe").camHeight=100
+	
+	
 	_Photographer(obj)
 	_ViewProviderPhotographer(obj.ViewObject)
 	return obj
@@ -968,7 +972,23 @@ class _Photographer(_Actor):
 			pass
 		else:
 			FreeCADGui.Selection.clearSelection()
+			FreeCADGui.ActiveDocument.ActiveView.setAnimationEnabled(False)
+
+			cam= '#Inventor V2.1 ascii\n\n\nOrthographicCamera {\n  viewportMapping ADJUST_CAMERA\n         height ' + str(self.obj2.camHeight) +'\n\n}\n'
+			say(cam)
+			FreeCADGui.activeDocument().activeView().setCamera(cam)
+			say(FreeCADGui.activeDocument().activeView().getCamera())
+			
+			if self.obj2.camDirection == 'Top':
+					FreeCADGui.ActiveDocument.ActiveView.viewTop()
+			if self.obj2.camDirection == 'Front':
+					FreeCADGui.ActiveDocument.ActiveView.viewFront()
+			if self.obj2.camDirection == 'Axometric':
+					FreeCADGui.ActiveDocument.ActiveView.viewAxometric()
+			if self.obj2.camDirection == 'Left':
+					FreeCADGui.ActiveDocument.ActiveView.viewLeft()
 			FreeCADGui.updateGui() 
+			
 			kf= "%04.f"%now
 			fn=self.obj2.fn+kf+'.png'
 			fn=self.obj2.fn+kf+'.'+self.obj2.format 
@@ -1123,8 +1143,6 @@ class _Manager:
 
 		
 		# funktioniert nicht - warum?
-		FreeCADGui.ActiveDocument.ActiveView.setAnimationEnabled(False)
-		FreeCADGui.ActiveDocument.ActiveView.viewTop()
 
 
 
