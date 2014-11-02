@@ -1656,7 +1656,7 @@ class _ViewProviderScriptAction(object):
 
 	
 	def getIcon(self):
-		return 'Mod/Animation/icons/scriptaction.svg'
+		return 'Mod/Animation/icons/scriptaction.png'
    
 	def __init__(self,vobj):
 		vobj.Proxy = self
@@ -1719,7 +1719,7 @@ def createScriptAction(name='My_ScriptAction'):
 
 class _CommandScriptAction:
 	def GetResources(self): 
-		return {'Pixmap' : 'Mod/Animation/icons/scriptaction.svg', 'MenuText': 'Script Action generic', 'ToolTip': 'SA-TT'} 
+		return {'Pixmap' : 'Mod/Animation/icons/scriptaction.png', 'MenuText': 'Script Action generic', 'ToolTip': 'SA-TT'} 
 
 	def IsActive(self):
 		if FreeCADGui.ActiveDocument:
@@ -1754,7 +1754,7 @@ class _ViewProviderLoopAction(_ViewProviderScriptAction):
 	"A View Provider for the Mover object"
 
 	def getIcon(self):
-		return 'Mod/Animation/icons/loopaction.svg'
+		return 'Mod/Animation/icons/loopaction.png'
    
 		
 def createLoopAction(name='My_LoopAction'):
@@ -1766,7 +1766,7 @@ def createLoopAction(name='My_LoopAction'):
 
 class _CommandLoopAction:
 	def GetResources(self): 
-		return {'Pixmap' : 'Mod/Animation/icons/loopaction.svg', 'MenuText': 'Loop', 'ToolTip': 'LA-TT'} 
+		return {'Pixmap' : 'Mod/Animation/icons/loopaction.png', 'MenuText': 'Loop', 'ToolTip': 'LA-TT'} 
 
 	def IsActive(self):
 		if FreeCADGui.ActiveDocument:
@@ -1799,7 +1799,7 @@ class _ViewProviderWhileAction(_ViewProviderScriptAction):
 	"A View Provider for the Mover object"
 
 	def getIcon(self):
-		return 'Mod/Animation/icons/whileaction.svg'
+		return 'Mod/Animation/icons/whileaction.png'
    
 		
 def createWhileAction(name='My_WhileAction'):
@@ -1811,7 +1811,7 @@ def createWhileAction(name='My_WhileAction'):
 
 class _CommandWhileAction:
 	def GetResources(self): 
-		return {'Pixmap' : 'Mod/Animation/icons/whileaction.svg', 'MenuText': 'while do', 'ToolTip': 'LA-TT'} 
+		return {'Pixmap' : 'Mod/Animation/icons/whileaction.png', 'MenuText': 'while do', 'ToolTip': 'LA-TT'} 
 
 	def IsActive(self):
 		if FreeCADGui.ActiveDocument:
@@ -1844,7 +1844,7 @@ class _ViewProviderRepeatAction(_ViewProviderScriptAction):
 	"A View Provider for the Mover object"
 
 	def getIcon(self):
-		return 'Mod/Animation/icons/repeataction.svg'
+		return 'Mod/Animation/icons/repeataction.png'
    
 		
 def createRepeatAction(name='My_RepeatAction'):
@@ -1856,7 +1856,7 @@ def createRepeatAction(name='My_RepeatAction'):
 
 class _CommandRepeatAction:
 	def GetResources(self): 
-		return {'Pixmap' : 'Mod/Animation/icons/repeataction.svg', 'MenuText': 'Repeat until', 'ToolTip': 'LA-TT'} 
+		return {'Pixmap' : 'Mod/Animation/icons/repeataction.png', 'MenuText': 'Repeat until', 'ToolTip': 'LA-TT'} 
 
 	def IsActive(self):
 		if FreeCADGui.ActiveDocument:
@@ -1887,7 +1887,7 @@ class _ViewProviderFalseAction(_ViewProviderScriptAction):
 	"A View Provider for the Mover object"
 
 	def getIcon(self):
-		return 'Mod/Animation/icons/falseaction.svg'
+		return 'Mod/Animation/icons/falseaction.png'
    
 		
 def createFalseAction(name='My_FalseAction'):
@@ -1899,7 +1899,7 @@ def createFalseAction(name='My_FalseAction'):
 
 class _CommandFalseAction:
 	def GetResources(self): 
-		return {'Pixmap' : 'Mod/Animation/icons/falseaction.svg', 'MenuText': 'If else', 'ToolTip': 'LA-TT'} 
+		return {'Pixmap' : 'Mod/Animation/icons/falseaction.png', 'MenuText': 'If else', 'ToolTip': 'LA-TT'} 
 
 	def IsActive(self):
 		if FreeCADGui.ActiveDocument:
@@ -1931,7 +1931,7 @@ class _ViewProviderTrueAction(_ViewProviderScriptAction):
 	"A View Provider for the Mover object"
 
 	def getIcon(self):
-		return 'Mod/Animation/icons/trueaction.svg'
+		return 'Mod/Animation/icons/trueaction.png'
    
 		
 def createTrueAction(name='My_TrueAction'):
@@ -1943,7 +1943,7 @@ def createTrueAction(name='My_TrueAction'):
 
 class _CommandTrueAction:
 	def GetResources(self): 
-		return {'Pixmap' : 'Mod/Animation/icons/trueaction.svg', 'MenuText': 'If then', 'ToolTip': 'LA-TT'} 
+		return {'Pixmap' : 'Mod/Animation/icons/trueaction.png', 'MenuText': 'If then', 'ToolTip': 'LA-TT'} 
 
 	def IsActive(self):
 		if FreeCADGui.ActiveDocument:
@@ -1975,7 +1975,7 @@ class _ViewProviderCaseAction(_ViewProviderScriptAction):
 	"A View Provider for the Mover object"
 
 	def getIcon(self):
-		return 'Mod/Animation/icons/caseaction.svg'
+		return 'Mod/Animation/icons/caseaction.png'
    
 		
 def createCaseAction(name='My_CaseAction'):
@@ -1987,7 +1987,7 @@ def createCaseAction(name='My_CaseAction'):
 
 class _CommandCaseAction:
 	def GetResources(self): 
-		return {'Pixmap' : 'Mod/Animation/icons/caseaction.svg', 'MenuText': 'Case', 'ToolTip': 'LA-TT'} 
+		return {'Pixmap' : 'Mod/Animation/icons/caseaction.png', 'MenuText': 'Case', 'ToolTip': 'LA-TT'} 
 
 	def IsActive(self):
 		if FreeCADGui.ActiveDocument:
@@ -2018,7 +2018,7 @@ class _ViewProviderQueryAction(_ViewProviderScriptAction):
 	"A View Provider for the Mover object"
 
 	def getIcon(self):
-		return 'Mod/Animation/icons/queryaction.svg'
+		return 'Mod/Animation/icons/queryaction.png'
    
 		
 def createQueryAction(name='My_QueryAction'):
@@ -2030,7 +2030,7 @@ def createQueryAction(name='My_QueryAction'):
 
 class _CommandQueryAction:
 	def GetResources(self): 
-		return {'Pixmap' : 'Mod/Animation/icons/queryaction.svg', 'MenuText': 'Question', 'ToolTip': 'LA-TT'} 
+		return {'Pixmap' : 'Mod/Animation/icons/queryaction.png', 'MenuText': 'Question', 'ToolTip': 'LA-TT'} 
 
 	def IsActive(self):
 		if FreeCADGui.ActiveDocument:
