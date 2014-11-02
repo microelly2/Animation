@@ -850,7 +850,7 @@ class _Adjuster(_Actor):
 				say("value=" + str(v))
 			try:
 				#say("intern")	
-				self.obj2.obj.setDatum(self.obj2.nr,FreeCAD.Units.Quantity(v))
+				self.obj2.obj.setDatum(self.obj2.nr,FreeCAD.Units.Quantity(str(v) + " " + str(self.obj2.unit)))
 				
 			except:
 				 say("ffehler") 
