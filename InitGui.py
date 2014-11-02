@@ -69,6 +69,7 @@ class AnimationWorkbench(Workbench):
     def ContextMenu(self, recipient):
   #      self.appendContextMenu("Animation tools",self.animtools)
         self.appendContextMenu("My Animation tools",self.contextTools)
+        self.appendContextMenu("",self.contextTools)
         FreeCAD.yy=self
 
     def GetClassName(self): 

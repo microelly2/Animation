@@ -793,9 +793,9 @@ def createAdjuster(name='My_Adjuster'):
 	obj.addProperty("App::PropertyFloat","ve","intervall","ve").ve=40
 	obj.addProperty("App::PropertyLink","obj","3D Param","Sketch")
 	obj.addProperty("App::PropertyInteger","nr","intervall","nummer Datum").nr=1
-
-
-	obj.addProperty("App::PropertyString","unit","3D Param","einheit").unit=""
+#	obj.addProperty("App::PropertyInteger","unit","intervall","Einheit ").unit=['deg','mm']
+	
+	obj.addProperty("App::PropertyEnumeration","unit","3D Param","einheit").unit=['deg','mm']
 
 	_Adjuster(obj)
 	_ViewProviderMover(obj.ViewObject)
@@ -1359,7 +1359,25 @@ if FreeCAD.GuiUp:
 #--------------------------------
 
 
-
+def reinit():
+	for obj in FreeCAD.ActiveDocument.Objects:
+		if hasattr(obj,'Proxy'):
+			obj.Proxy.__init__(obj)
+			print("init " +obj.Name)
+			if obj.Proxy.Type=='Plugger':
+				if not hasattr(obj,'status'):
+					obj.addProperty("App::PropertyInteger","status","nummer","intern").status=0
+				if not hasattr(obj,'offsetVector'):
+					obj.addProperty("App::PropertyVector","offsetVector","3D Param","offsetVector").offsetVector=FreeCAD.Vector(0,0,0)
+			if obj.Proxy.Type=='Adjustor':
+				if not hasattr(obj,'unit'):
+					obj.addProperty("App::PropertyEnumeration","unit","3D Param","einheit").unit=['deg','mm']
+			if obj.Proxy.Type=='Photographer':
+				if not hasattr(obj,'camDirection'):
+					obj.addProperty("App::PropertyEnumeration","camDirection","Camera","Sichtrichtung").camDirection=["Front","Top","Axometric","Left"]
+				if not hasattr(obj,'camHeight'):
+					obj.addProperty("App::PropertyInteger","camHeight","Camera","Ausschnitt Hoehe").camHeight=100
+			say(obj)
 
 
 
@@ -1378,20 +1396,7 @@ class _Starter:
 			return False
 
 	def Activated(self):
-		for ob in FreeCAD.ActiveDocument.Objects:
-			if hasattr(ob,'Proxy'):
-				ob.Proxy.__init__(ob)
-				# ob.Proxy.obj2=ob
-				print("init " +ob.Name)
-		# migration from older versions - add properties
-		for obj in FreeCAD.ActiveDocument.Objects:
-			if hasattr(obj,'Proxy'):
-				if obj.Proxy.Type=='Plugger':
-					if not hasattr(obj,'status'):
-								obj.addProperty("App::PropertyInteger","status","nummer","intern").status=0
-					if not hasattr(obj,'offsetVector'):
-								obj.addProperty("App::PropertyVector","offsetVector","3D Param","offsetVector").offsetVector=FreeCAD.Vector(0,0,0)
-					say(obj)
+		reinit()
 
 						
 
@@ -1413,6 +1418,7 @@ class _Runner:
 			return False
 
 	def Activated(self):
+		reinit()
 		try:
 			pass
 			# FreeCAD.getDocument("z7").getObject("My_Manager").Proxy.run(100)
@@ -1444,8 +1450,10 @@ class _B1:
 	def IsActive(self):
 		return True
 	def Activated(self):
+		
 		say("runngi _B1")
 		FreeCAD.open(u"/home/thomas/freecad_buch/b033_animat_film/m06_sternmotor_v4_testcase.fcstd")
+		reinit()
 		FreeCAD.setActiveDocument("m06_sternmotor_v4_testcase")
 		for ob in FreeCAD.ActiveDocument.Objects:
 			if hasattr(ob,'Proxy'):
