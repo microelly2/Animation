@@ -25,12 +25,17 @@ __title__="FreeCAD Animation Toolkit"
 __author__ = "Thomas Gundermann"
 __url__ = "http://www.freecadbuch.de"
 
-import FreeCAD
+import FreeCAD , FreeCADGui , Part, Draft, math, Drawing , PyQt4, os,sys
+from FreeCAD import Vector
+import math
+import Draft, Part, FreeCAD, math, PartGui, FreeCADGui, PyQt4
+from math import sqrt, pi, sin, cos, asin
+from PyQt4 import QtGui,QtCore
+from FreeCAD import Base
+
 if FreeCAD.GuiUp:
 	import FreeCADGui
 	FreeCADGui.updateLocale()
-
-
 
 def say(s):
 		FreeCAD.Console.PrintMessage(str(s)+"\n")
@@ -38,65 +43,23 @@ def say(s):
 def sayErr(s):
 		FreeCAD.Console.PrintError(str(s)+"\n")
 
-import FreeCAD , FreeCADGui , Part, Draft, math, Drawing , PyQt4, os
-from PyQt4 import QtGui,QtCore
-from FreeCAD import Base
 
 def errorDialog(msg):
     diag = QtGui.QMessageBox(QtGui.QMessageBox.Critical,u"Error Message",msg )
     diag.setWindowFlags(PyQt4.QtCore.Qt.WindowStaysOnTopHint)
     diag.exec_()
-#---------------------------
-
-
-import PyQt4,sys
-from PyQt4 import QtCore, QtGui
-
-
-#------------------ start up ...
-
-
-
-
-
-
-#-----------------------
-
-##import FreeCAD,Draft,ArchComponent, DraftVecUtils
-from FreeCAD import Vector
-import math
-import Draft, Part, FreeCAD, math, PartGui, FreeCADGui, PyQt4
-from math import sqrt, pi, sin, cos, asin
-from FreeCAD import Base
 
 if FreeCAD.GuiUp:
 	import FreeCADGui
 	from PySide import QtCore, QtGui
-	from DraftTools import translate
-else:
-	def translate(ctxt,txt):
-		return txt
 
-#---------------------
-def say(s):
-		FreeCAD.Console.PrintMessage(str(s)+"\n")
-
-
-#------------------------------------
+#---------------------------------------------------------------
 
 class _Actor(object):
 
 	def __init__(self,obj,start=10,end=20):
-		say("71")
 		say(obj)
 		say(self.obj.Label)
-		say("71a!")
-		#self.obj.obj=self.obj.getObject(obj)
-		say("got")
-		#self.obj.start=start
-		#self.obj.end=end
-		#if self.obj.obj2:
-		#	self.obj.initPlace=	self.obj.obj2.Placement
 
 
 	def initPlacement(self,tp):
@@ -120,7 +83,6 @@ class _Actor(object):
 		self.obj.end=e
 	def step(self,now):
 		say("Step" + str(now))
-
 	
 	def attach(self,vobj):
 		self.Object = vobj.Object
@@ -136,39 +98,7 @@ class _Actor(object):
 		return None
 
 
-
-
-
-#----------------------
-def createMover(count=6,size_bottom = 4, height=10,name='My_Mover'):
-	'''makePrism(baseobj,[facenr],[angle],[name]) : Makes a Prism based on a
-	regular polygon with count(8) vertexes face and a name (default
-	= Prism).'''
-	obj = FreeCAD.ActiveDocument.addObject("App::DocumentObjectGroupPython",name)
-	
-#	obj.addProperty("App::PropertyPythonObject","step","zzz","step")
-#	obj.addProperty("App::PropertyPythonObject","reverse","zzz","reverse")
-#	obj.setEditorMode("reverse", 2)
-#	obj.setEditorMode("step", 2)
-	
-	obj.addProperty("App::PropertyInteger","start","intervall","start").start=10
-	obj.addProperty("App::PropertyInteger","end","intervall","end").end=40
-
-	obj.addProperty("App::PropertyPlacement","initPlace","3D Param","initPlace")
-	obj.addProperty("App::PropertyVector","motionVector","3D Param","motionVector").motionVector=FreeCAD.Vector(100,0,0)
-	obj.addProperty("App::PropertyLink","obj2","3D Param","moving object ")
-	obj.addProperty("App::PropertyString","obj2ro","3D Param","moving obj").obj2ro="undefined"
-	obj.setEditorMode("obj2ro", 1)
-#	obj.addProperty("App::PropertyString","obj2rw","3D Param","Tooltipp bew. Ob").obj2rw="HUGO rw"
-#	obj.setEditorMode("obj2rw", 0)
-	
-	# hack ...
-	# obj.obj2=FreeCAD.ActiveDocument.Box
-	_Mover(obj)
-	_ViewProviderMover(obj.ViewObject)
-	return obj
-
-class _CommandMover:
+class _CommandActor:
 	def GetResources(self): 
 		return {'Pixmap' : 'Mod/Animation/icons/mover.png', 'MenuText': 'Mover', 'ToolTip': 'Mover Dialog'} 
 
@@ -184,90 +114,14 @@ class _CommandMover:
 			FreeCAD.ActiveDocument.openTransaction("create Mover")
 			FreeCADGui.doCommand("import Animation")
 			FreeCADGui.doCommand("Animation.createMover()")
-			say("I create a mover")
 			FreeCAD.ActiveDocument.commitTransaction()
 			FreeCAD.ActiveDocument.recompute()
 		else:
 			say("Erst Arbeitsbereich oeffnen")
 		return
-	   
-class _Mover(_Actor):
 
 
-		
-	def __init__(self,obj,motion=FreeCAD.Vector(100,0,0) ,start=10,end=20):
-		self.obj=obj
-		obj.Proxy = self
-		self.Type = "_Mover"
-#		obj.step=self.step
-#		obj.reverse=self.reverse
-#		self.obj.motionVector=motion
-
-
-	def step(self,now):
-		say("step XX")
-		say(self)
-		if not self.obj.obj2:
-			errorDialog("kein mover objekt zugeordnet")
-			raise Exception(' self.obj2 nicht definiert')
-
-		if self.obj.obj2:
-			if now<self.obj.start or now>self.obj.end:
-				pass
-			else:
-				relativ=1.00/(self.obj.end-self.obj.start)
-				v=FreeCAD.Vector(self.obj.motionVector).multiply(relativ)
-				Draft.move(self.obj.obj2,v,copy=False)
-		else:
-			say("kein Moveobjekt ausgewaehlt")
-			
-	def reverse(self):
-		self.obj.motionVector.multiply(-1)
-
-	def execute(self,obj):
-		say("execute  _Mover")
-		say(self)
-		say(obj)
-		
-		say("execute ..2 ")
-		if hasattr(self,'obj2'):
-			self.initPlace=	self.obj2.Placements
-		# anzeigewert neu berechnen
-		# obj.obj2ro=obj.obj2rw
-		if hasattr(obj,'obj2'):
-			say(obj.obj2)
-		try:
-			obj.obj2ro=obj.obj2.Label
-		except:
-			say("kein obj2")
-			
-
-	def __getstate__(self):
-		return None
-
-	def __setstate__(self,state):
-		return None
-
-	
-	def attach(self,vobj):
-		self.Object = vobj.Object
-		return	
-	
-	def claimChildren(self):
-		return self.Object.Group
-
-	def __getstate__(self):
-		return None
-
-	def __setstate__(self,state):
-		return None
-
-
-
-
-class _ViewProviderMover(object):
-	"A View Provider for the Mover object"
-
+class _ViewProviderActor(object):
  
 	def getIcon(self):
 		return 'Mod/Animation/icons/mover.png'
@@ -290,11 +144,88 @@ class _ViewProviderMover(object):
 		return None
 
 
+#----------------------
+def createMover(name='My_Mover'):
+	obj = FreeCAD.ActiveDocument.addObject("App::DocumentObjectGroupPython",name)
+	
+#	obj.addProperty("App::PropertyPythonObject","step","zzz","step")
+#	obj.addProperty("App::PropertyPythonObject","reverse","zzz","reverse")
+#	obj.setEditorMode("reverse", 2)
+#	obj.setEditorMode("step", 2)
+	
+	obj.addProperty("App::PropertyInteger","start","intervall","start").start=0
+	obj.addProperty("App::PropertyInteger","end","intervall","end").end=10
+	obj.addProperty("App::PropertyPlacement","initPlace","3D Param","initPlace")
+	obj.addProperty("App::PropertyVector","motionVector","3D Param","motionVector").motionVector=FreeCAD.Vector(100,0,0)
+	obj.addProperty("App::PropertyLink","obj2","3D Param","moving object ")
+	_Mover(obj)
+	_ViewProviderMover(obj.ViewObject)
+	return obj
+
+class _CommandMover(_CommandActor):
+	def GetResources(self): 
+		return {'Pixmap' : 'Mod/Animation/icons/mover.png', 'MenuText': 'Mover', 'ToolTip': 'Mover Dialog'} 
+
+	def Activated(self):
+		if FreeCADGui.ActiveDocument:
+			FreeCAD.ActiveDocument.openTransaction("create Mover")
+			FreeCADGui.doCommand("import Animation")
+			FreeCADGui.doCommand("Animation.createMover()")
+			say("I create a mover")
+			FreeCAD.ActiveDocument.commitTransaction()
+			FreeCAD.ActiveDocument.recompute()
+		else:
+			say("Erst Arbeitsbereich oeffnen")
+		return
+
+class _Mover(_Actor):
+		
+	def __init__(self,obj,motion=FreeCAD.Vector(100,0,0) ,start=0,end=10):
+		self.obj=obj
+		obj.Proxy = self
+		self.Type = "_Mover"
+
+	def step(self,now):
+		say("step XX")
+		say(self)
+		if not self.obj.obj2:
+			errorDialog("kein mover objekt zugeordnet")
+			raise Exception(' self.obj2 nicht definiert')
+		if self.obj.obj2:
+			if now<self.obj.start or now>self.obj.end:
+				pass
+			else:
+				relativ=1.00/(self.obj.end-self.obj.start)
+				v=FreeCAD.Vector(self.obj.motionVector).multiply(relativ)
+				Draft.move(self.obj.obj2,v,copy=False)
+		else:
+			say("kein Moveobjekt ausgewaehlt")
+			
+	def reverse(self):
+		self.obj.motionVector.multiply(-1)
+
+	def execute(self,obj):
+		say("execute  _Mover")
+		say(self)
+		say(obj)
+		
+		say("execute ..2 ")
+		if hasattr(self,'obj2'):
+			self.initPlace=	self.obj2.Placements
+		# anzeigewert neu berechnen
+		if hasattr(obj,'obj2'):
+			say(obj.obj2)
+
+
+class _ViewProviderMover(_ViewProviderActor):
+	"A View Provider for the Mover object"
+ 
+	def getIcon(self):
+		return 'Mod/Animation/icons/mover.png'
 
 if FreeCAD.GuiUp:
 	FreeCADGui.addCommand('Anim_Mover',_CommandMover())
-	
-	
+
 #-------------------------------------
 
 
@@ -311,36 +242,27 @@ def createRotator(name='My_Rotator'):
 	obj.addProperty("App::PropertyFloat","angle","intervall","Dreh Winkel").angle=270
 	
 	obj.addProperty("App::PropertyLink","obj2","3D Param","rotating object ")
-	obj.addProperty("App::PropertyString","obj2ro","3D Param","moving obj").obj2ro="undefined"
-	obj.setEditorMode("obj2ro", 1)
 
 	_Rotator(obj)
 	_ViewProviderRotator(obj.ViewObject)
 	return obj
 
-class _CommandRotator:
+class _CommandRotator(_CommandActor):
 	def GetResources(self): 
 		return {'Pixmap' : 'Mod/Animation/icons/rotator.png', 'MenuText': 'Rotator', 'ToolTip': 'Rotator Dialog'} 
-
-	def IsActive(self):
-		if FreeCADGui.ActiveDocument:
-			return True
-		else:
-			return False
 
 	def Activated(self):
 		if FreeCADGui.ActiveDocument:
 			FreeCAD.ActiveDocument.openTransaction("create Rotator")
 			FreeCADGui.doCommand("import Animation")
 			FreeCADGui.doCommand("Animation.createRotator()")
-			say("I create a rotator")
 			FreeCAD.ActiveDocument.commitTransaction()
 			FreeCAD.ActiveDocument.recompute()
 		else:
 			say("Erst Arbeitsbereich oeffnen")
 		return
 	   
-class _Rotator:
+class _Rotator(_Actor):
 
 	def __init__(self,obj):
 		obj.Proxy = self
@@ -351,35 +273,8 @@ class _Rotator:
 		say("execute _Rotator")
 		if hasattr(obj,'obj2'):
 			say(obj.obj2)
-		try:
-			obj.obj2ro=obj.obj2.Label
-		except:
-			say("kein obj2")
-			
-
-		#self.positionVector=position
-		#self.axisVector=axis
-		#self.angle=angle
-
-
-
-	def stepx(self,now):
-		say("difgfdgd2rn")
-		say(now)
-		say("-----ffffff----------")
-		say(self.obj2.start)
-		say(self.end)
-		say("ende")
-
-
 	def step(self,now):
-		say("di2rn")
-		say(now)
-		say(self.obj2.start)
-
-		say("---------------")
 		if now<self.obj2.start or now>self.obj2.end:
-			say("ausserhalb")
 			pass
 		else:
 			say(self.obj2.end-self.obj2.start)
@@ -401,48 +296,28 @@ class _Rotator:
 				#say(v)
 				#Draft.move(self.obj2.obj2,v,copy=False)
 			else:
-
 				Draft.rotate([self.obj2.obj2],angle2,rotCenter,axis=self.obj2.rotationAxis,copy=False)
-			try:
-				pass
-				
-			except:
-				say("Fehler warum ...")
-			finally:
-				say("fertig")
 		say("ende")
 
 	def  setRot(self,dwireName):
 		import math
 		obj=self.getObject(dwireName)
-#		t=App.ActiveDocument.DWire002
 		t=obj
 		a=t.Shape.Vertexes[0]
 		b=t.Shape.Vertexes[1]
 		c=t.Shape.Vertexes[2]
 		v1=FreeCAD.Vector(a.X,a.Y,a.Z).sub(FreeCAD.Vector(b.X,b.Y,b.Z))
-		
 		v2=FreeCAD.Vector(c.X,c.Y,c.Z).sub(FreeCAD.Vector(b.X,b.Y,b.Z))
 		
-		print v1
 		axis=v1.cross(v2)
-		print axis
-		
-		
-		print v1
-		
 		dot=v1.dot(v2)
-		print dot
-		
+
 		cosAngle=dot/(v1.Length *v2.Length)
-		
-		print cosAngle
 		angle=math.acos(cosAngle)/math.pi *180
-		
-		print angle
 		self.axisVector=axis
 		self.angle=angle
 		self.positionVector=FreeCAD.Vector(b.X,b.Y,b.Z)
+	
 	def reverse(self):
 		self.angle =- self.angle
 	def reverse2(self):
@@ -450,56 +325,13 @@ class _Rotator:
 	def reverse3(self):
 		self.angle =   self.angle -180
 
-	
-	def attach(self,vobj):
-		self.Object = vobj.Object
-		return	
-	
-	def claimChildren(self):
-		return self.Object.Group
 
-	def __getstate__(self):
-		return None
-
-	def __setstate__(self,state):
-		return None
-
-
-
-class _ViewProviderRotator(object):
-	"A View Provider for the Mover object"
-
+class _ViewProviderRotator(_ViewProviderActor):
 	def getIcon(self):
 		return 'Mod/Animation/icons/rotator.png'
-   
-	def __init__(self,vobj):
-		vobj.Proxy = self
-
-	def attach(self,vobj):
-		self.Object = vobj.Object
-		return	
-	
-	def claimChildren(self):
-		return self.Object.Group
-
-	def __getstate__(self):
-		return None
-
-	def __setstate__(self,state):
-		return None
-
 
 if FreeCAD.GuiUp:
 	FreeCADGui.addCommand('Anim_Rotator',_CommandRotator())
-
-#---------------------------------------------------------------
-
-	
-#-------------------------------------
-
-
-	
-#-------------------------------------
 
 
 def createPlugger(name='My_Plugger'):
@@ -519,42 +351,30 @@ def createPlugger(name='My_Plugger'):
 #	obj.addProperty("App::PropertyLinkSub", "Volume", "Part", "Reference to volume of part")
 #	obj.PartName=(FreeCAD.ActiveDocument.Box,['Label'])
 
-
 	_Plugger(obj)
 	_ViewProviderPlugger(obj.ViewObject)
 	return obj
 
-class _CommandPlugger:
+class _CommandPlugger(_CommandActor):
 	def GetResources(self): 
 		return {'Pixmap' : 'Mod/Animation/icons/plugger.png', 'MenuText': 'Plugger', 'ToolTip': 'Plugger Dialog'} 
-
-	def IsActive(self):
-		if FreeCADGui.ActiveDocument:
-			return True
-		else:
-			return False
 
 	def Activated(self):
 		if FreeCADGui.ActiveDocument:
 			FreeCAD.ActiveDocument.openTransaction("create Plugger")
 			FreeCADGui.doCommand("import Animation")
 			FreeCADGui.doCommand("Animation.createPlugger()")
-			say("I create a Plugger")
 			FreeCAD.ActiveDocument.commitTransaction()
 			FreeCAD.ActiveDocument.recompute()
 		else:
 			say("Erst Arbeitsbereich oeffnen")
 		return
 	   
-	   
 
 def findVertex(oldpos,sketch,offset):
-	say("find Vertex 2")
+	say("find Vertex")
 	oldpos=FreeCAD.Vector(oldpos).sub(offset)
-#	say(oldpos)
 	lst=sketch.Vertexes
-#	say(sketch)
-#	say(lst)
 	dist=30
 	mdist=99999
 	oks=0
@@ -576,22 +396,16 @@ def findVertex(oldpos,sketch,offset):
 	say ("---------------min dist =" + str(mdist))
 	if oks>1:
 		sayErr("distance of the sketcher points to small")
-		
 	if oks<1:
 		sayErr("near radius is too small -slow down the animation dist=" +str(dist))
-	
 	return(ixok)
+
 
 class _Plugger(_Actor):
 	def __init__(self,obj):
 		obj.Proxy = self
 		self.Type = "Plugger"
-
 		self.obj2 = obj 
-		#super(type(self), self).__init__(obname,start,end)
-#		obj.pin=FreeCAD.ActiveDocument.Box
-#		obj.obj=FreeCAD.ActiveDocument.Cylinder
-#		obj.detail="Placement.Base"
 
 	def step(self,now):
 		say("Plugger step" + str(now))
@@ -633,12 +447,7 @@ class _Plugger(_Actor):
 			say(self.obj2.obj.Placement.Base)
 			
 		else:
-			say("schl,echt")
-			# raise Exception("unknown detail")
-		#say("tuwas")
-		#say(self.obj2.ix)
-		#say(self.obj2.pin.Shape.Vertexes[self.obj2.ix].Point)
-		#self.obj2.obj.Placement.Base=self.obj2.pin.Shape.Vertexes[self.obj2.ix].Point
+			say("schlecht")
 
 	def setDetail(self,detailname,param1):
 			self.obj2.detail=detailname
@@ -648,63 +457,14 @@ class _Plugger(_Actor):
 		say("execute _Plugger")
 		self.obj2.status=0
 
-	
-	def attach(self,vobj):
-		self.Object = vobj.Object
-		return	
-	
-	def claimChildren(self):
-		return self.Object.Group
-
-	def __getstate__(self):
-		return None
-
-	def __setstate__(self,state):
-		return None
-
-class _ViewProviderPlugger(object):
-	"A View Provider for the Mover object"
-
+class _ViewProviderPlugger(_ViewProviderActor):
 	def getIcon(self):
 		return 'Mod/Animation/icons/plugger.png'
-   
-	def __init__(self,vobj):
-		vobj.Proxy = self
-
-	def attach(self,vobj):
-		self.Object = vobj.Object
-		return	
-	
-	def claimChildren(self):
-		return self.Object.Group
-
-	def doubleClicked(self,vobj):
-		say("double Clicked")
-		say(self)
-		say(vobj)
-		FreeCAD.tt=self
-		FreeCAD.tv=vobj
-		errorDialog("Ein Dialog")
-		# self.Object ist der Plugger selbst.
-        say("ok")
-
-
-	def __getstate__(self):
-		return None
-
-	def __setstate__(self,state):
-		return None
-
 
 if FreeCAD.GuiUp:
 	FreeCADGui.addCommand('Anim_Plugger',_CommandPlugger())
 
 #---------------------------------------------------------------
-
-
-	
-#-------------------------------------
-
 
 def createTranquillizer(name='My_Tranquillizer'):
 	obj = FreeCAD.ActiveDocument.addObject("App::DocumentObjectGroupPython",name)
@@ -713,22 +473,15 @@ def createTranquillizer(name='My_Tranquillizer'):
 	_ViewProviderTranquillizer(obj.ViewObject)
 	return obj
 
-class _CommandTranquillizer:
+class _CommandTranquillizer(_CommandActor):
 	def GetResources(self): 
 		return {'Pixmap' : 'Mod/Animation/icons/tranq.png', 'MenuText': 'Tranquillizer', 'ToolTip': 'Tranquillizer Dialog'} 
-
-	def IsActive(self):
-		if FreeCADGui.ActiveDocument:
-			return True
-		else:
-			return False
 
 	def Activated(self):
 		if FreeCADGui.ActiveDocument:
 			FreeCAD.ActiveDocument.openTransaction("create Tranquillizer")
 			FreeCADGui.doCommand("import Animation")
 			FreeCADGui.doCommand("Animation.createTranquillizer()")
-			say("I create a Tranquillizer")
 			FreeCAD.ActiveDocument.commitTransaction()
 			FreeCAD.ActiveDocument.recompute()
 		else:
@@ -738,7 +491,7 @@ class _CommandTranquillizer:
 import time
 from time import sleep
 	   
-class _Tranquillizer:
+class _Tranquillizer(_Actor):
 
 	def __init__(self,obj):
 		obj.Proxy = self
@@ -752,56 +505,18 @@ class _Tranquillizer:
 		say(self)
 		FreeCAD.tt=self
 		time.sleep(self.obj2.time)
+		
 	def  toInitialPlacement(self):
 		pass
-	
-	
-	def attach(self,vobj):
-		self.Object = vobj.Object
-		return	
-	
-	def claimChildren(self):
-		return self.Object.Group
 
-	def __getstate__(self):
-		return None
-
-	def __setstate__(self,state):
-		return None
-	
-###############
-
-
-class _ViewProviderTranquillizer(object):
-	"A View Provider for the Mover object"
+class _ViewProviderTranquillizer(_ViewProviderActor):
 
 	def getIcon(self):
 		return 'Mod/Animation/icons/tranq.png'
 
-	def __init__(self,vobj):
-		vobj.Proxy = self
-
-
-	def attach(self,vobj):
-		self.Object = vobj.Object
-		return	
-	
-	def claimChildren(self):
-		return self.Object.Group
-
-	def __getstate__(self):
-		return None
-
-	def __setstate__(self,state):
-		return None
-
-
 if FreeCAD.GuiUp:
 	FreeCADGui.addCommand('Anim_Tranquillizer',_CommandTranquillizer())
 
-#---------------------------------------------------------------
-
-	
 #-------------------------------------
 
 
@@ -813,30 +528,20 @@ def createAdjuster(name='My_Adjuster'):
 	obj.addProperty("App::PropertyFloat","ve","intervall","ve").ve=40
 	obj.addProperty("App::PropertyLink","obj","3D Param","Sketch")
 	obj.addProperty("App::PropertyInteger","nr","intervall","nummer Datum").nr=1
-#	obj.addProperty("App::PropertyInteger","unit","intervall","Einheit ").unit=['deg','mm']
-	
 	obj.addProperty("App::PropertyEnumeration","unit","3D Param","einheit").unit=['deg','mm']
-
 	_Adjuster(obj)
 	_ViewProviderMover(obj.ViewObject)
 	return obj
 
-class _CommandAdjuster:
+class _CommandAdjuster(_CommandActor):
 	def GetResources(self): 
 		return {'Pixmap' : 'Mod/Animation/icons/adjuster.png', 'MenuText': 'Adjuster', 'ToolTip': 'Adjuster Dialog'} 
-
-	def IsActive(self):
-		if FreeCADGui.ActiveDocument:
-			return True
-		else:
-			return False
 
 	def Activated(self):
 		if FreeCADGui.ActiveDocument:
 			FreeCAD.ActiveDocument.openTransaction("create Adjuster")
 			FreeCADGui.doCommand("import Animation")
 			FreeCADGui.doCommand("Animation.createAdjuster()")
-			say("I create a Adjuster")
 			FreeCAD.ActiveDocument.commitTransaction()
 			FreeCAD.ActiveDocument.recompute()
 		else:
@@ -883,61 +588,18 @@ class _Adjuster(_Actor):
 		self.obj2.va=va
 		self.obj2.ve=ve
 
-
-
 	def execute(self,obj):
 		say("execute _Adjuster")
 
-
+class _ViewProviderAdjuster(_ViewProviderActor):
 	
-	def attach(self,vobj):
-		self.Object = vobj.Object
-		return	
-	
-	def claimChildren(self):
-		return self.Object.Group
-
-	def __getstate__(self):
-		return None
-
-	def __setstate__(self,state):
-		return None
-
-
-class _ViewProviderAdjuster(object):
-	"A View Provider for the Mover object"
-
- 
 	def getIcon(self):
 		return 'Mod/Animation/icons/adjuster.png'
-
-	def __init__(self,vobj):
-		vobj.Proxy = self
-
-
-	def attach(self,vobj):
-		self.Object = vobj.Object
-		return	
-	
-	def claimChildren(self):
-		return self.Object.Group
-
-	def __getstate__(self):
-		return None
-
-	def __setstate__(self,state):
-		return None
-
 
 if FreeCAD.GuiUp:
 	FreeCADGui.addCommand('Anim_Adjuster',_CommandAdjuster())
 
 #---------------------------------------------------------------
-
-
-	
-#-------------------------------------
-
 
 def createPhotographer(name='My_Photographer'):
 	obj = FreeCAD.ActiveDocument.addObject("App::DocumentObjectGroupPython",name)
@@ -945,32 +607,24 @@ def createPhotographer(name='My_Photographer'):
 	obj.addProperty("App::PropertyInteger","end","intervall","end").end=40
 	obj.addProperty("App::PropertyInteger","size_x","format","start").size_x=480
 	obj.addProperty("App::PropertyInteger","size_y","format","end").size_y=640
-	obj.addProperty("App::PropertyPath","fn","zzz","outdir").fn="/tmp/fc_anim_"
+	obj.addProperty("App::PropertyPath","fn","format","outdir").fn="/tmp/fc_anim_"
 	obj.addProperty("App::PropertyEnumeration","format","format","Bildformat").format=["png","jpg","bmp"]
 	obj.addProperty("App::PropertyEnumeration","camDirection","Camera","Sichtrichtung").camDirection=["Front","Top","Axometric","Left"]
 	obj.addProperty("App::PropertyInteger","camHeight","Camera","Ausschnitt Hoehe").camHeight=100
-	
-	
 	_Photographer(obj)
 	_ViewProviderPhotographer(obj.ViewObject)
 	return obj
 
+
 class _CommandPhotographer:
 	def GetResources(self): 
 		return {'Pixmap' : 'Mod/Animation/icons/photographer.png', 'MenuText': 'Photographer', 'ToolTip': 'Photographer Dialog'} 
-
-	def IsActive(self):
-		if FreeCADGui.ActiveDocument:
-			return True
-		else:
-			return False
 
 	def Activated(self):
 		if FreeCADGui.ActiveDocument:
 			FreeCAD.ActiveDocument.openTransaction("create Photographer")
 			FreeCADGui.doCommand("import Animation")
 			FreeCADGui.doCommand("Animation.createPhotographer()")
-			say("I create a Photographer")
 			FreeCAD.ActiveDocument.commitTransaction()
 			FreeCAD.ActiveDocument.recompute()
 		else:
@@ -1264,11 +918,7 @@ class AddMyWidget(QtGui.QWidget):
 		self.pushButton = QtGui.QPushButton()
 		self.pushButton.clicked.connect(fun)
 		
-		self.pushButton2 = QtGui.QPushButton()
-		self.pushButton2.clicked.connect(fun2)
 		
-		self.pushButton3 = QtGui.QPushButton()
-		self.pushButton3.clicked.connect(fun3)
 		
 		layout = QtGui.QGridLayout()
 		#layout.addWidget(self.vollabel, 0, 0)
@@ -1277,8 +927,14 @@ class AddMyWidget(QtGui.QWidget):
 		#layout.addWidget(self.radioButton, 1, 0)
 
 		layout.addWidget(self.pushButton, 1,1)
-		layout.addWidget(self.pushButton2, 2,1)
-		layout.addWidget(self.pushButton3, 3,1)
+		if fun2:
+			self.pushButton2 = QtGui.QPushButton()
+			self.pushButton2.clicked.connect(fun2)
+			layout.addWidget(self.pushButton2, 2,1)
+		if fun3:
+			self.pushButton3 = QtGui.QPushButton()
+			self.pushButton3.clicked.connect(fun3)
+			layout.addWidget(self.pushButton3, 3,1)
 		
 		self.setLayout(layout)
 		self.setWindowTitle("Animation Manager Control Panel")
@@ -1309,6 +965,8 @@ class AddMyTask():
 
 def runManager():
 	say("meine funktion")
+	unlockManager()
+	say("unlocked")
 	M = FreeCADGui.Selection.getSelectionEx()
 	tt=M[0].Object
 	say(tt)
@@ -1326,7 +984,10 @@ def unlockManager():
 	import os
 	from os import remove
 	fname='/tmp/stop'
-	os.remove(fname) 	
+	try:
+		os.remove(fname)
+	except:
+		pass
 	
 		
 
@@ -1359,12 +1020,13 @@ class _ViewProviderManager(object):
 	def doubleClicked(self,vobj):
 		FreeCAD.tt=self
 		say(self)
-		panel = AddMyTask(runManager,stopManager,unlockManager)
+		#panel = AddMyTask(runManager,stopManager,unlockManager)
+		panel = AddMyTask(runManager,stopManager)
 		panel.form.volvalue.setText("VOL-VALUE")
 		panel.form.vollabel.setText("VOL-LABELLO")
 		panel.form.pushButton.setText("Run ")
 		panel.form.pushButton2.setText("Stop")
-		panel.form.pushButton3.setText("Unlock ")
+#		panel.form.pushButton3.setText("Unlock ")
 		FreeCADGui.Control.showDialog(panel)
 		
 		
@@ -1494,10 +1156,20 @@ class _B2:
 	def IsActive(self):
 		return True
 	def Activated(self):
-		say("runngi _B2")
-		FreeCADGui.activeDocument().activeView().viewAxometric()
-		FreeCADGui.updateGui() 
-		time.sleep(1)
+		FreeCAD.open(u"/home/thomas/freecad_buch/b035_scriptactions/m04_mittag_v2.fcstd")
+		FreeCAD.setActiveDocument("m04_mittag_v2")
+		FreeCAD.ActiveDocument=FreeCAD.getDocument("m04_mittag_v2")
+		FreeCADGui.ActiveDocument=FreeCADGui.getDocument("m04_mittag_v2")
+
+		for ob in FreeCAD.ActiveDocument.Objects:
+			if hasattr(ob,'Proxy'):
+				ob.Proxy.__init__(ob)
+				# ob.Proxy.obj2=ob
+				print("init " +ob.Name)
+		#tt=FreeCAD.ActiveDocument.
+		#tt.Proxy.run()
+		
+		
 
 class _B3:
 	def GetResources(self): 
@@ -1516,105 +1188,6 @@ if FreeCAD.GuiUp:
 	FreeCADGui.addCommand('B1',_B1())
 	FreeCADGui.addCommand('B2',_B2())
 	FreeCADGui.addCommand('EditObject',_B3())
-	
-	
-
-
-
-
-
-
-#----------------------------
-
-
-
-#***************************************************************************
-#*																		 *
-#*   Copyright (c) 2014													*  
-#*   <microelly2@freecadbuch.de>										   * 
-#*																		 *
-#*   This program is free software; you can redistribute it and/or modify  *
-#*   it under the terms of the GNU Lesser General Public License (LGPL)	*
-#*   as published by the Free Software Foundation; either version 2 of	 *
-#*   the License, or (at your option) any later version.				   *
-#*   for detail see the LICENCE text file.								 *
-#*																		 *
-#*   This program is distributed in the hope that it will be useful,	   *
-#*   but WITHOUT ANY WARRANTY; without even the implied warranty of		*
-#*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the		 *
-#*   GNU Library General Public License for more details.				  *
-#*																		 *
-#*   You should have received a copy of the GNU Library General Public	 *
-#*   License along with this program; if not, write to the Free Software   *
-#*   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  *
-#*   USA																   *
-#*																		 *
-#***************************************************************************
-
-__title__="FreeCAD Animation Toolkit"
-__author__ = "Thomas Gundermann"
-__url__ = "http://www.freecadbuch.de"
-
-import FreeCAD
-if FreeCAD.GuiUp:
-	import FreeCADGui
-	FreeCADGui.updateLocale()
-
-
-
-def say(s):
-		FreeCAD.Console.PrintMessage(str(s)+"\n")
-		
-def sayErr(s):
-		FreeCAD.Console.PrintError(str(s)+"\n")
-
-import FreeCAD , FreeCADGui , Part, Draft, math, Drawing , PyQt4, os
-from PyQt4 import QtGui,QtCore
-from FreeCAD import Base
-
-def errorDialog(msg):
-    diag = QtGui.QMessageBox(QtGui.QMessageBox.Critical,u"Error Message",msg )
-    diag.setWindowFlags(PyQt4.QtCore.Qt.WindowStaysOnTopHint)
-    diag.exec_()
-#---------------------------
-
-
-import PyQt4,sys
-from PyQt4 import QtCore, QtGui
-
-
-#------------------ start up ...
-
-
-
-
-
-
-#-----------------------
-
-##import FreeCAD,Draft,ArchComponent, DraftVecUtils
-from FreeCAD import Vector
-import math
-import Draft, Part, FreeCAD, math, PartGui, FreeCADGui, PyQt4
-from math import sqrt, pi, sin, cos, asin
-from FreeCAD import Base
-
-if FreeCAD.GuiUp:
-	import FreeCADGui
-	from PySide import QtCore, QtGui
-	from DraftTools import translate
-else:
-	def translate(ctxt,txt):
-		return txt
-
-#---------------------
-def say(s):
-		FreeCAD.Console.PrintMessage(str(s)+"\n")
-
-
-#------------------------------------
-
-
 
 
 
@@ -1633,14 +1206,34 @@ class _ScriptAction(object):
 	def __setstate__(self,state):
 		return None
 
-	def run(self):
-		say("run" +str(self))
+	def croak(self,index=0,debug=0,mode="",params=[]):
+		intent="x-- " *index
+		say(intent + "CROAK "+ self.Type)
+		
+	def run(self,index=0,debug=0,mode="",params=[]):
+		#say("run" +str(self))
 		FreeCAD.ttz=self
 		#say(self.obj2.Name)
 		#say(self.Object.Label)
-		say(self.Type)
-		say(self.obj2.Label)
-		say(self.Type + ": "+ self.obj2.Label)
+		intent="x-- " *index
+		#say(self.Type)
+		#say(self.obj2.Label)
+		self.croak(index,debug,mode,params)
+		if debug:
+			say(intent + self.Type + ": "+ self.obj2.Label)
+		else:
+			say(intent + self.obj2.Label) 
+		#say("index="+ str(index))
+		#say("subparts")
+		t=FreeCAD.ActiveDocument.getObject(self.obj2.Name)
+		for ob in t.OutList:
+			# say(intent + ob.Label)
+			FreeCAD.ttu=ob
+			try:
+				ob.Proxy.run(index+1,debug,mode,[self.obj2.Label])
+			except:
+				say("run sub fehlerhaft")
+		#say("end subparts")
 		
 
 def runScript():
@@ -1689,29 +1282,12 @@ class _ViewProviderScriptAction(object):
 		FreeCADGui.Control.showDialog(panel)
 		
 def createScriptAction(name='My_ScriptAction'):
-	'''makePrism(baseobj,[facenr],[angle],[name]) : Makes a Prism based on a
-	regular polygon with count(8) vertexes face and a name (default
-	= Prism).'''
 	obj = FreeCAD.ActiveDocument.addObject("App::DocumentObjectGroupPython",name)
-	
-#	obj.addProperty("App::PropertyPythonObject","step","zzz","step")
-#	obj.addProperty("App::PropertyPythonObject","reverse","zzz","reverse")
-#	obj.setEditorMode("reverse", 2)
-#	obj.setEditorMode("step", 2)
-	
 	obj.addProperty("App::PropertyInteger","start","intervall","start").start=10
 	obj.addProperty("App::PropertyInteger","end","intervall","end").end=40
-
 	obj.addProperty("App::PropertyPlacement","initPlace","3D Param","initPlace")
 	obj.addProperty("App::PropertyVector","motionVector","3D Param","motionVector").motionVector=FreeCAD.Vector(100,0,0)
 	obj.addProperty("App::PropertyLink","obj2","3D Param","moving object ")
-	obj.addProperty("App::PropertyString","obj2ro","3D Param","moving obj").obj2ro="undefined"
-	obj.setEditorMode("obj2ro", 1)
-#	obj.addProperty("App::PropertyString","obj2rw","3D Param","Tooltipp bew. Ob").obj2rw="HUGO rw"
-#	obj.setEditorMode("obj2rw", 0)
-	
-	# hack ...
-	# obj.obj2=FreeCAD.ActiveDocument.Box
 	_ScriptAction(obj)
 	_ViewProviderScriptAction(obj.ViewObject)
 	return obj
@@ -1883,6 +1459,11 @@ class _FalseAction(_ScriptAction):
 		obj.Proxy = self
 		self.Type = "_FalseAction"
 
+	def croak(self,index=0,debug=0,mode="",params=[]):
+		intent="x-- " *index
+		say(intent + "CROAK "+   " ELSE:")
+
+
 class _ViewProviderFalseAction(_ViewProviderScriptAction):
 	"A View Provider for the Mover object"
 
@@ -1926,6 +1507,12 @@ class _TrueAction(_ScriptAction):
 		self.obj2=obj
 		obj.Proxy = self
 		self.Type = "_TrueAction"
+
+	def croak(self,index=0,debug=0,mode="",params=[]):
+		intent="x-- " *index
+		say(intent + "CROAK "+   " IF " + params[0] + "?:")
+
+
 
 class _ViewProviderTrueAction(_ViewProviderScriptAction):
 	"A View Provider for the Mover object"
@@ -2043,16 +1630,12 @@ class _CommandQueryAction:
 			FreeCAD.ActiveDocument.openTransaction("create Manager")
 			FreeCADGui.doCommand("import Animation")
 			FreeCADGui.doCommand("Animation.createQueryAction()")
-			say("I create a Query-Action")
 			FreeCAD.ActiveDocument.commitTransaction()
 			FreeCAD.ActiveDocument.recompute()
 		else:
 			say("Erst Arbeitsbereich oeffnen")
 		return
 # end Query action #--------------------------------------------------------------
-
-
-
 
 
 
