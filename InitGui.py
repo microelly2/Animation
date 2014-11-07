@@ -45,12 +45,15 @@ class AnimationWorkbench(Workbench):
 				"Anim_Photographer",
 				"Anim_Plugger",
 				"Anim_Adjuster",
+				"Anim_Styler",
 
 				"Anim_Manager",
 				
 				"A_Starter",
 				"A_Runner",
-				"B1","B2","EditObject",
+				"B1","B2",
+				"EditObject",
+				
 				
 						]
 						
