@@ -288,19 +288,24 @@ class _Rotator(_Actor):
 			say(angle2)
 			say(self.obj2.rotationAxis)
 			rotCenter=self.obj2.rotationCentre
-			if self.obj2.rotCenterRelative:
+			
+			# if self.obj2.rotCenterRelative:
+			if 0:
 				#v=FreeCAD.Vector(self.obj2.obj2.Placement.Base)
 				#v.multiply(-1)
 				#say(v)
 				rotCenter=FreeCAD.Vector(self.obj2.rotationCentre).add(self.obj2.obj2.Placement.Base)
 				#Draft.move(self.obj2.obj2,v,copy=False)
 				#rotCenter=FreeCAD.Vector(self.obj2.obj2.Placement.Base).add(self.obj2.rotationCentre)
+				
 				Draft.rotate([self.obj2.obj2],angle2,rotCenter,axis=self.obj2.rotationAxis,copy=False)
 				#v.multiply(-1)
 				#say(v)
 				#Draft.move(self.obj2.obj2,v,copy=False)
 			else:
+				say(angle2)
 				Draft.rotate([self.obj2.obj2],angle2,rotCenter,axis=self.obj2.rotationAxis,copy=False)
+			FreeCADGui.Selection.clearSelection()
 		say("ende")
 
 	def  setRot(self,dwireName):
@@ -696,7 +701,7 @@ def createPhotographer(name='My_Photographer'):
 	obj.addProperty("App::PropertyInteger","end","intervall","end").end=40
 	obj.addProperty("App::PropertyInteger","size_x","format","start").size_x=640
 	obj.addProperty("App::PropertyInteger","size_y","format","end").size_y=480
-	obj.addProperty("App::PropertyPath","fn","format","outdir").fn="/tmp/fc_anim_"
+	obj.addProperty("App::PropertyPath","fn","format","outdir").fn="/tmp/animation/t"
 	obj.addProperty("App::PropertyEnumeration","format","format","Bildformat").format=["png","jpg","bmp"]
 	obj.addProperty("App::PropertyEnumeration","camDirection","Camera","Sichtrichtung").camDirection=["Front","Top","Axometric","Left","View"]
 	obj.addProperty("App::PropertyInteger","camHeight","Camera","Ausschnitt Hoehe").camHeight=100
@@ -862,13 +867,17 @@ class _Manager(_Actor):
 					raise Exception("Notbremse Manager main loop")
 			for ob in t.OutList:
 					say(ob.Label)
-					try:
-#						say(ob.Proxy)
-						if ob.ViewObject.Visibility:
+					if ob.ViewObject.Visibility:
 							ob.Proxy.step(nw)
-					except:
-						say("fehler step 2")
-						raise Exception("step nicht ausfuerbar")
+
+#					try:
+#						say(ob.Proxy)
+#						if ob.ViewObject.Visibility:
+#							ob.Proxy.step(nw)
+#					except:
+#						say("fehler step 2")
+#						raise Exception("step nicht ausfuerbar")
+					
 			FreeCADGui.updateGui() 
 		FreeCADGui.Selection.clearSelection()
 		FreeCADGui.Selection.addSelection(FreeCAD.ActiveDocument.getObject(self.obj2.Name))
