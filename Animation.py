@@ -197,7 +197,7 @@ class _Billboard(_Actor):
 		self.Type = "_Billboard"
 
 	def step(self,now):
-		say("step " +str(now))
+		sayd("step " +str(now))
 		FreeCAD.tt=self
 		# self.obj2.textObj.LabelText=
 		k=self.obj2.text
