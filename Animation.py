@@ -150,6 +150,89 @@ class _ViewProviderActor(object):
 
 	def __setstate__(self,state):
 		return None
+#----------------------------------------------------------------------------------------------------------
+def createBillboard(name='My_Billboard'):
+	obj = FreeCAD.ActiveDocument.addObject("App::DocumentObjectGroupPython",name)
+	obj.addProperty("App::PropertyInteger","start","intervall","start").start=0
+	obj.addProperty("App::PropertyInteger","end","intervall","end").end=10
+	# obj.addProperty("App::PropertyPlacement","initPlace","3D Param","initPlace")
+	obj.addProperty("App::PropertyBool","showFrame","info","Rotationsachse Zentrum relativ").showFrame=False
+	obj.addProperty("App::PropertyBool","showFile","info","Rotationsachse Zentrum relativ").showFile=False
+	obj.addProperty("App::PropertyBool","showDate","info","Rotationsachse Zentrum relativ").showDate=False
+	obj.addProperty("App::PropertyStringList","text","info","text").text=["Animation can display","configurable Text Information","in a HUD"]
+	# obj.addProperty("App::PropertyVector","text","3D Param","motionVector").motionVector=FreeCAD.Vector(100,0,0)
+	obj.addProperty("App::PropertyLink","textObj","3D Param","moving object ")
+	obj.textObj=FreeCAD.ActiveDocument.addObject("App::Annotation","Text")
+	obj.textObj.LabelText=obj.text
+	obj.textObj.Position=FreeCAD.Vector(0,0,0)
+	
+	_Billboard(obj)
+	_ViewProviderBillboard(obj.ViewObject)
+	return obj
+
+class _CommandBillboard(_CommandActor):
+	def GetResources(self): 
+		return {'Pixmap' : 'Mod/Animation/icons/mover.png', 'MenuText': 'Billboard', 'ToolTip': 'Billboard Dialog'} 
+
+	def Activated(self):
+		if FreeCADGui.ActiveDocument:
+			FreeCAD.ActiveDocument.openTransaction("create BB")
+			FreeCADGui.doCommand("import Animation")
+			FreeCADGui.doCommand("Animation.createBillboard()")
+			FreeCAD.ActiveDocument.commitTransaction()
+			FreeCAD.ActiveDocument.recompute()
+		else:
+			say("Erst Arbeitsbereich oeffnen")
+		return
+
+
+from time import *
+import os
+
+class _Billboard(_Actor):
+		
+	def __init__(self,obj):
+		self.obj2=obj
+		obj.Proxy = self
+		self.Type = "_Billboard"
+
+	def step(self,now):
+		say("step " +str(now))
+		FreeCAD.tt=self
+		# self.obj2.textObj.LabelText=
+		k=self.obj2.text
+		kf= "%04.f"%now
+		k.append("Frame: " + kf)
+		lt = localtime()
+		tz=strftime("Tag.Monat.Jahr: %d.%m.%Y", lt)
+		ts=strftime("Stunde:Minute:Sekunde: %H:%M:%S", lt)
+		k.append(tz)
+		k.append(ts)
+		k.append("File: "+ os.path.basename(FreeCAD.ActiveDocument.FileName))
+		k.append("Author: "+ FreeCAD.ActiveDocument.LastModifiedBy)
+
+		self.obj2.textObj.LabelText=k
+		
+		FreeCAD.ActiveDocument.recompute()
+		# say(self)
+
+	def execute(self,obj):
+		say("execute  Billboard")
+		say(self)
+		say(obj)
+
+
+class _ViewProviderBillboard(_ViewProviderActor):
+
+	def getIcon(self):
+		return 'Mod/Animation/icons/mover.png'
+
+if FreeCAD.GuiUp:
+	FreeCADGui.addCommand('Anim_Billboard',_CommandBillboard())
+
+
+
+
 
 
 #----------------------

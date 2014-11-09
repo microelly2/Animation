@@ -49,11 +49,12 @@ class AnimationWorkbench(Workbench):
 
 				"Anim_Manager",
 				
+				
 				"A_Starter",
 				"A_Runner",
 				"B1","B2",
 				"EditObject",
-				
+				"Anim_Billboard"
 				
 						]
 						
@@ -73,7 +74,7 @@ class AnimationWorkbench(Workbench):
 		
 
 		
-		Log ('Loading School module... done\n')
+		Log ('Loading Animation Workbench ... done\n')
 
 	def Activated(self):
 		Msg("Animation workbench activated\n")
