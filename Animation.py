@@ -44,7 +44,6 @@ def say(s):
 def sayErr(s):
 		FreeCAD.Console.PrintError(str(s)+"\n")
 
-
 def errorDialog(msg):
     diag = QtGui.QMessageBox(QtGui.QMessageBox.Critical,u"Error Message",msg )
     diag.setWindowFlags(PyQt4.QtCore.Qt.WindowStaysOnTopHint)
@@ -152,12 +151,6 @@ class _ViewProviderActor(object):
 #----------------------
 def createMover(name='My_Mover'):
 	obj = FreeCAD.ActiveDocument.addObject("App::DocumentObjectGroupPython",name)
-	
-#	obj.addProperty("App::PropertyPythonObject","step","zzz","step")
-#	obj.addProperty("App::PropertyPythonObject","reverse","zzz","reverse")
-#	obj.setEditorMode("reverse", 2)
-#	obj.setEditorMode("step", 2)
-	
 	obj.addProperty("App::PropertyInteger","start","intervall","start").start=0
 	obj.addProperty("App::PropertyInteger","end","intervall","end").end=10
 	obj.addProperty("App::PropertyPlacement","initPlace","3D Param","initPlace")
@@ -283,27 +276,13 @@ class _Rotator(_Actor):
 		if now<self.obj2.start or now>self.obj2.end:
 			pass
 		else:
-			#say(self.obj2.end-self.obj2.start)
 			relativ=1.00/(self.obj2.end-self.obj2.start+1)
-			#say(relativ)
 			angle2=self.obj2.angle*relativ
-			#say(angle2)
-			#say(self.obj2.rotationAxis)
 			rotCenter=self.obj2.rotationCentre
 			
-			# if self.obj2.rotCenterRelative:
 			if 0:
-				#v=FreeCAD.Vector(self.obj2.obj2.Placement.Base)
-				#v.multiply(-1)
-				#say(v)
 				rotCenter=FreeCAD.Vector(self.obj2.rotationCentre).add(self.obj2.obj2.Placement.Base)
-				#Draft.move(self.obj2.obj2,v,copy=False)
-				#rotCenter=FreeCAD.Vector(self.obj2.obj2.Placement.Base).add(self.obj2.rotationCentre)
-				
 				Draft.rotate([self.obj2.obj2],angle2,rotCenter,axis=self.obj2.rotationAxis,copy=False)
-				#v.multiply(-1)
-				#say(v)
-				#Draft.move(self.obj2.obj2,v,copy=False)
 			else:
 				say("rotation")
 				say(angle2)
@@ -312,11 +291,8 @@ class _Rotator(_Actor):
 				say(ro1)
 				say(self.obj2.rotationAxis)
 				say(rotCenter)
-				
-
 				r1=FreeCAD.Rotation(self.obj2.rotationAxis,angle2)
 				r=self.obj2.obj2.Placement.Rotation
-				zzz=r.multiply(r1)
 				zzz=r1.multiply(r)
 				self.obj2.obj2.Placement.Rotation=zzz
 
@@ -1597,8 +1573,7 @@ class _ViewProviderQueryAction(_ViewProviderScriptAction):
 
 	def getIcon(self):
 		return 'Mod/Animation/icons/queryaction.png'
-   
-		
+
 def createQueryAction(name='My_QueryAction'):
 	'''creatQueryAction(name)'''
 	obj = FreeCAD.ActiveDocument.addObject("App::DocumentObjectGroupPython",name)
@@ -1628,8 +1603,6 @@ class _CommandQueryAction:
 		return
 # end Query action #--------------------------------------------------------------
 
-
-
 if FreeCAD.GuiUp:
 	FreeCADGui.addCommand('ScriptAction',_CommandScriptAction())
 	FreeCADGui.addCommand('LoopAction',_CommandLoopAction())
@@ -1639,5 +1612,3 @@ if FreeCAD.GuiUp:
 	FreeCADGui.addCommand('TrueAction',_CommandTrueAction())
 	FreeCADGui.addCommand('CaseAction',_CommandCaseAction())
 	FreeCADGui.addCommand('QueryAction',_CommandQueryAction())
-
-
