@@ -38,6 +38,7 @@ if FreeCAD.GuiUp:
 	FreeCADGui.updateLocale()
 
 def say(s):
+		
 		FreeCAD.Console.PrintMessage(str(s)+"\n")
 		
 def sayErr(s):
@@ -276,17 +277,18 @@ class _Rotator(_Actor):
 	def execute(self,obj):
 		say("execute _Rotator")
 		if hasattr(obj,'obj2'):
-			say(obj.obj2)
+			#say(obj.obj2)
+			pass
 	def step(self,now):
 		if now<self.obj2.start or now>self.obj2.end:
 			pass
 		else:
-			say(self.obj2.end-self.obj2.start)
+			#say(self.obj2.end-self.obj2.start)
 			relativ=1.00/(self.obj2.end-self.obj2.start+1)
-			say(relativ)
+			#say(relativ)
 			angle2=self.obj2.angle*relativ
-			say(angle2)
-			say(self.obj2.rotationAxis)
+			#say(angle2)
+			#say(self.obj2.rotationAxis)
 			rotCenter=self.obj2.rotationCentre
 			
 			# if self.obj2.rotCenterRelative:
@@ -303,8 +305,22 @@ class _Rotator(_Actor):
 				#say(v)
 				#Draft.move(self.obj2.obj2,v,copy=False)
 			else:
+				say("rotation")
 				say(angle2)
-				Draft.rotate([self.obj2.obj2],angle2,rotCenter,axis=self.obj2.rotationAxis,copy=False)
+				say("before");	say(self.obj2.obj2.Placement)
+				ro1=self.obj2.obj2.Placement
+				say(ro1)
+				say(self.obj2.rotationAxis)
+				say(rotCenter)
+				
+
+				r1=FreeCAD.Rotation(self.obj2.rotationAxis,angle2)
+				r=self.obj2.obj2.Placement.Rotation
+				zzz=r.multiply(r1)
+				zzz=r1.multiply(r)
+				self.obj2.obj2.Placement.Rotation=zzz
+
+				say("after");	say(self.obj2.obj2.Placement)
 			FreeCADGui.Selection.clearSelection()
 		say("ende")
 
@@ -839,11 +855,18 @@ class _Manager(_Actor):
 		
 		if (intervall<0):
 			intervall=self.obj2.intervall
+		say("x1")
 		# else:
 		if hasattr(self,'obj2'):
 			t=FreeCAD.ActiveDocument.getObject(self.obj2.Name)
 		else:
 			raise Exception("obj2 not found --> reinit the file!")
+		say("x2")
+		say(t)
+		FreeCAD.ttt=t
+		say("x3")
+		say(t.OutList)
+		say("x4")
 		for ob in t.OutList:
 			say(ob.Label)
 			ob.Proxy.initialize()
@@ -866,17 +889,18 @@ class _Manager(_Actor):
 					say("notbremse gezogen")
 					raise Exception("Notbremse Manager main loop")
 			for ob in t.OutList:
+				if 1: # fehler analysieren
 					say(ob.Label)
 					if ob.ViewObject.Visibility:
 							ob.Proxy.step(nw)
-
-#					try:
-#						say(ob.Proxy)
-#						if ob.ViewObject.Visibility:
-#							ob.Proxy.step(nw)
-#					except:
-#						say("fehler step 2")
-#						raise Exception("step nicht ausfuerbar")
+				else:
+					try:
+						say(ob.Proxy)
+						if ob.ViewObject.Visibility:
+							ob.Proxy.step(nw)
+					except:
+						say("fehler step 2")
+						raise Exception("step nicht ausfuerbar")
 					
 			FreeCADGui.updateGui() 
 		FreeCADGui.Selection.clearSelection()
@@ -1084,7 +1108,7 @@ if FreeCAD.GuiUp:
 	FreeCADGui.addCommand('A_Starter',_Starter())
 
 class _Runner:
-	''' Manaer laufen lassen'''
+	''' Manager als Transaktion laufen lassen'''
 	def GetResources(self): 
 		return {'Pixmap' : 'Mod/Animation/icons/animation.png', 'MenuText': 'Run Manager', 'ToolTip': 'Run Manager'} 
 
@@ -1113,11 +1137,6 @@ class _Runner:
 			FreeCAD.ActiveDocument.recompute()
 
 
-			## deaktiverit
-			#tt=M[0].Object
-			#say(tt)
-			#tt.Proxy.run(100)
-
 
 if FreeCAD.GuiUp:
 	FreeCADGui.addCommand('A_Runner',_Runner())
@@ -1125,23 +1144,13 @@ if FreeCAD.GuiUp:
 # fast Helpers
 # define  Activated !!
 	
-class _B1: # testcase sternmotor laufen lassen
+class _B1: 
 	def GetResources(self): 
 		return {'Pixmap' : 'Mod/Animation/icons/icon1.svg', 'MenuText': 'B1', 'ToolTip': 'B1'} 
 	def IsActive(self):
 		return True
 	def Activated(self):
-		
-		say("runngi _B1")
-		FreeCAD.open(u"/home/thomas/freecad_buch/b033_animat_film/m06_sternmotor_v4_testcase.fcstd")
-		reinit()
-		FreeCAD.setActiveDocument("m06_sternmotor_v4_testcase")
-		for ob in FreeCAD.ActiveDocument.Objects:
-			if hasattr(ob,'Proxy'):
-				ob.Proxy.__init__(ob)
-				# ob.Proxy.obj2=ob
-				print("init " +ob.Name)
-		FreeCAD.ActiveDocument.My_Manager.Proxy.run(100)
+		say("running _B1 dummy")
 
 class _B2:
 	def GetResources(self): 
@@ -1149,16 +1158,7 @@ class _B2:
 	def IsActive(self):
 		return True
 	def Activated(self):
-		FreeCAD.open(u"/home/thomas/freecad_buch/b035_scriptactions/m04_mittag_v2.fcstd")
-		FreeCAD.setActiveDocument("m04_mittag_v2")
-		FreeCAD.ActiveDocument=FreeCAD.getDocument("m04_mittag_v2")
-		FreeCADGui.ActiveDocument=FreeCADGui.getDocument("m04_mittag_v2")
-
-		for ob in FreeCAD.ActiveDocument.Objects:
-			if hasattr(ob,'Proxy'):
-				ob.Proxy.__init__(ob)
-				# ob.Proxy.obj2=ob
-				print("init " +ob.Name)
+		say("running B2  - dummy ")
 
 class _B3:
 	def GetResources(self): 
@@ -1169,6 +1169,7 @@ class _B3:
 		say("runngi _B3")
 		t=FreeCADGui.Selection.getSelection()
 		FreeCADGui.ActiveDocument.setEdit(t[0].Name,0)
+
 
 if FreeCAD.GuiUp:
 	FreeCADGui.addCommand('B1',_B1())
