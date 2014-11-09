@@ -39,7 +39,8 @@ if FreeCAD.GuiUp:
 
 def sayd(s):
 		if hasattr(FreeCAD,'animation_debug'):
-			FreeCAD.Console.PrintMessage(str(s)+"\n")
+			pass
+		FreeCAD.Console.PrintMessage(str(s)+"\n")
 
 def say(s):
 		FreeCAD.Console.PrintMessage(str(s)+"\n")
@@ -150,6 +151,98 @@ class _ViewProviderActor(object):
 
 	def __setstate__(self,state):
 		return None
+#--------------------------------------
+
+import Draft
+
+
+#----------------------------------------------------------------------------------------------------------
+def createMoviescreen(name='My_Moviescreen'):
+	say("creat movie screen")
+	
+	obj = FreeCAD.ActiveDocument.addObject("App::DocumentObjectGroupPython",name)
+	obj.addProperty("App::PropertyInteger","start","intervall","start").start=0
+	obj.addProperty("App::PropertyInteger","end","intervall","end").end=10
+	# obj.addProperty("App::PropertyPlacement","initPlace","3D Param","initPlace")
+	obj.addProperty("App::PropertyBool","showFrame","info","Rotationsachse Zentrum relativ").showFrame=False
+	obj.addProperty("App::PropertyBool","showFile","info","Rotationsachse Zentrum relativ").showFile=False
+#	obj.addProperty("App::PropertyString","movie","info","Rotationsachse Zentrum relativ").movie="/tmp/movie/"
+	obj.addProperty("App::PropertyIntegerList","pictureStart","info","Rotationsachse Zentrum relativ").pictureStart=[0,50,100]
+	
+	obj.addProperty("App::PropertyStringList","pictures","info","text").pictures=["Animation can display","configurable Text Information","in a HUD"]
+	# obj.addProperty("App::PropertyVector","text","3D Param","motionVector").motionVector=FreeCAD.Vector(100,0,0)
+	obj.addProperty("App::PropertyLink","rectangle","3D Param","moving object ")
+	obj.rectangle = FreeCAD.ActiveDocument.addObject("Part::Part2DObjectPython","Rectangle")
+	Draft._Rectangle(obj.rectangle)
+
+	obj.rectangle.Length = 64
+	obj.rectangle.Height = 48
+	obj.rectangle.MakeFace = True
+	
+	_Moviescreen(obj)
+	Draft._ViewProviderRectangle(obj.rectangle.ViewObject)
+	_ViewProviderMoviescreen(obj.ViewObject)
+	
+	tx=FreeCADGui.activeDocument().activeView()
+	rx=tx.getCameraOrientation()
+	obj.rectangle.Placement.Rotation=rx
+
+	return obj
+
+class _CommandMoviescreen(_CommandActor):
+	def GetResources(self): 
+		return {'Pixmap' : 'Mod/Animation/icons/moviescreen.png', 'MenuText': 'Moviescreen', 'ToolTip': 'Moviescreen Dialog'} 
+
+	def Activated(self):
+		if FreeCADGui.ActiveDocument:
+			FreeCAD.ActiveDocument.openTransaction("create BB")
+			FreeCADGui.doCommand("import Animation")
+			FreeCADGui.doCommand("Animation.createMoviescreen()")
+			FreeCAD.ActiveDocument.commitTransaction()
+			FreeCAD.ActiveDocument.recompute()
+		else:
+			say("Erst Arbeitsbereich oeffnen")
+		return
+
+
+from time import *
+import os
+
+class _Moviescreen(_Actor):
+		
+	def __init__(self,obj):
+		self.obj2=obj
+		obj.Proxy = self
+		self.Type = "_Moviescreen"
+
+	def step(self,now):
+		sayd("step " +str(now))
+		FreeCAD.tt=self
+		self.obj2.rectangle.ViewObject.TextureImage = "/home/thomas/Bilder/sonstig/bn_089.png"
+		
+		tx=FreeCADGui.activeDocument().activeView()
+		rx=tx.getCameraOrientation()
+		self.obj2.rectangle.Placement.Rotation=rx
+		FreeCAD.ActiveDocument.recompute()
+		# say(self)
+
+	def execute(self,obj):
+		say("execute  Moviescreen")
+		say(self)
+		say(obj)
+
+
+class _ViewProviderMoviescreen(_ViewProviderActor):
+
+	def getIcon(self):
+		return 'Mod/Animation/icons/moviescreen.png'
+
+if FreeCAD.GuiUp:
+	FreeCADGui.addCommand('Anim_Moviescreen',_CommandMoviescreen())
+
+#----------------------
+
+		
 #----------------------------------------------------------------------------------------------------------
 def createBillboard(name='My_Billboard'):
 	obj = FreeCAD.ActiveDocument.addObject("App::DocumentObjectGroupPython",name)
@@ -172,7 +265,7 @@ def createBillboard(name='My_Billboard'):
 
 class _CommandBillboard(_CommandActor):
 	def GetResources(self): 
-		return {'Pixmap' : 'Mod/Animation/icons/mover.png', 'MenuText': 'Billboard', 'ToolTip': 'Billboard Dialog'} 
+		return {'Pixmap' : 'Mod/Animation/icons/billboard.png', 'MenuText': 'Billboard', 'ToolTip': 'Billboard Dialog'} 
 
 	def Activated(self):
 		if FreeCADGui.ActiveDocument:
@@ -225,17 +318,13 @@ class _Billboard(_Actor):
 class _ViewProviderBillboard(_ViewProviderActor):
 
 	def getIcon(self):
-		return 'Mod/Animation/icons/mover.png'
+		return 'Mod/Animation/icons/billboard.png'
 
 if FreeCAD.GuiUp:
 	FreeCADGui.addCommand('Anim_Billboard',_CommandBillboard())
 
-
-
-
-
-
 #----------------------
+
 def createMover(name='My_Mover'):
 	obj = FreeCAD.ActiveDocument.addObject("App::DocumentObjectGroupPython",name)
 	obj.addProperty("App::PropertyInteger","start","intervall","start").start=0
@@ -1119,11 +1208,23 @@ if FreeCAD.GuiUp:
 
 #---------------------------------------------------------------
 
+def reinitxx():
+	say("reinit deaktiverit")
+	pass
+
 def reinit():
 	''' zum re initialisieren beim dateiload und bei alten dateien'''
 	for obj in FreeCAD.ActiveDocument.Objects:
 		if hasattr(obj,'Proxy'):
-			obj.Proxy.__init__(obj)
+			say ("re init Proxy ");say(obj.Name)
+			if hasattr(obj.Proxy,'Type'):
+				say("we")
+				say(obj.Proxy.Type)
+			else:
+				say("reinit")
+				obj.Proxy.__init__(obj)
+				say(obj.Proxy.Type)
+			
 			print("init " +obj.Name)
 			if obj.Proxy.Type=='Plugger':
 				if not hasattr(obj,'status'):

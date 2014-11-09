@@ -54,7 +54,8 @@ class AnimationWorkbench(Workbench):
 				"A_Runner",
 				"B1","B2",
 				"EditObject",
-				"Anim_Billboard"
+				"Anim_Billboard",
+				"Anim_Moviescreen"
 				
 						]
 						
