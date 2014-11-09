@@ -40,7 +40,7 @@ if FreeCAD.GuiUp:
 def sayd(s):
 		if hasattr(FreeCAD,'animation_debug'):
 			pass
-		FreeCAD.Console.PrintMessage(str(s)+"\n")
+			FreeCAD.Console.PrintMessage(str(s)+"\n")
 
 def say(s):
 		FreeCAD.Console.PrintMessage(str(s)+"\n")
