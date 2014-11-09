@@ -37,12 +37,16 @@ if FreeCAD.GuiUp:
 	import FreeCADGui
 	FreeCADGui.updateLocale()
 
+def sayd(s):
+		if hasattr(FreeCAD,'animation_debug'):
+			FreeCAD.Console.PrintMessage(str(s)+"\n")
+
 def say(s):
-		
 		FreeCAD.Console.PrintMessage(str(s)+"\n")
-		
+
 def sayErr(s):
 		FreeCAD.Console.PrintError(str(s)+"\n")
+
 
 def errorDialog(msg):
     diag = QtGui.QMessageBox(QtGui.QMessageBox.Critical,u"Error Message",msg )
@@ -58,8 +62,8 @@ if FreeCAD.GuiUp:
 class _Actor(object):
 
 	def __init__(self,obj,start=10,end=20):
-		say(obj)
-		say(self.obj.Label)
+		sayd(obj)
+		sayd(self.obj.Label)
 
 
 	def initPlacement(self,tp):
@@ -67,17 +71,17 @@ class _Actor(object):
 		self.obj.obj2.Placement=tp
 
 	def initialize(self):
-		say("initialize ...")
+		sayd("initialize ...")
 	
 	def getObject(self,name):
 		if  isinstance(name,str):
 #			obj=FreeCAD.ActiveDocument.getObject(name)
 			objl=App.ActiveDocument.getObjectsByLabel(name)
 			obj=objl[0]
-			say('obj found')
+			sayd('obj found')
 		else:
 			obj=name
-		say(obj)
+		sayd(obj)
 		return obj
 
 	def toInitialPlacement(self):
@@ -86,7 +90,7 @@ class _Actor(object):
 		self.obj.start=s
 		self.obj.end=e
 	def step(self,now):
-		say("Step" + str(now))
+		sayd("Step" + str(now))
 	
 	def attach(self,vobj):
 		self.Object = vobj.Object
@@ -184,8 +188,8 @@ class _Mover(_Actor):
 		self.Type = "_Mover"
 
 	def step(self,now):
-		say("step XX")
-		say(self)
+		sayd("step XX")
+		sayd(self)
 		if not self.obj.obj2:
 			errorDialog("kein mover objekt zugeordnet")
 			raise Exception(' self.obj2 nicht definiert')
@@ -203,11 +207,11 @@ class _Mover(_Actor):
 		self.obj.motionVector.multiply(-1)
 
 	def execute(self,obj):
-		say("execute  _Mover")
-		say(self)
-		say(obj)
+		sayd("execute  _Mover")
+		sayd(self)
+		sayd(obj)
 		
-		say("execute ..2 ")
+		sayd("execute ..2 ")
 		if hasattr(self,'obj2'):
 			self.initPlace=	self.obj2.Placements
 		# anzeigewert neu berechnen
@@ -268,7 +272,7 @@ class _Rotator(_Actor):
 		self.obj2=obj
 		
 	def execute(self,obj):
-		say("execute _Rotator")
+		sayd("execute _Rotator")
 		if hasattr(obj,'obj2'):
 			#say(obj.obj2)
 			pass
@@ -284,21 +288,21 @@ class _Rotator(_Actor):
 				rotCenter=FreeCAD.Vector(self.obj2.rotationCentre).add(self.obj2.obj2.Placement.Base)
 				Draft.rotate([self.obj2.obj2],angle2,rotCenter,axis=self.obj2.rotationAxis,copy=False)
 			else:
-				say("rotation")
-				say(angle2)
-				say("before");	say(self.obj2.obj2.Placement)
+				sayd("rotation")
+				sayd(angle2)
+				sayd("before");	sayd(self.obj2.obj2.Placement)
 				ro1=self.obj2.obj2.Placement
-				say(ro1)
-				say(self.obj2.rotationAxis)
-				say(rotCenter)
+				sayd(ro1)
+				sayd(self.obj2.rotationAxis)
+				sayd(rotCenter)
 				r1=FreeCAD.Rotation(self.obj2.rotationAxis,angle2)
 				r=self.obj2.obj2.Placement.Rotation
 				zzz=r1.multiply(r)
 				self.obj2.obj2.Placement.Rotation=zzz
 
-				say("after");	say(self.obj2.obj2.Placement)
+				sayd("after");	sayd(self.obj2.obj2.Placement)
 			FreeCADGui.Selection.clearSelection()
-		say("ende")
+		sayd("ende")
 
 	def  setRot(self,dwireName):
 		import math
@@ -373,7 +377,7 @@ class _CommandPlugger(_CommandActor):
 	   
 
 def findVertex(oldpos,sketch,offset):
-	say("find Vertex")
+	sayd("find Vertex")
 	oldpos=FreeCAD.Vector(oldpos).sub(offset)
 	lst=sketch.Vertexes
 	dist=30
@@ -409,27 +413,27 @@ class _Plugger(_Actor):
 		self.obj2 = obj 
 
 	def step(self,now):
-		say("Plugger step" + str(now))
+		sayd("Plugger step" + str(now))
 		if not self.obj2.obj:
 			errorDialog("kein ziel zugeordnet")
 			raise Exception(' self.obj2.obj nicht definiert')
 		if not self.obj2.pin:
 			errorDialog("kein pin zugeordnet")
 			raise Exception(' self.obj2.pin nicht definiert')
-		say(self.obj2.ix)
-		say(self.obj2.detail)
+		sayd(self.obj2.ix)
+		sayd(self.obj2.detail)
 
 		if self.obj2.detail=="Placement.Base":
-			say("Base")
+			sayd("Base")
 			self.obj2.obj.Placement.Base=self.obj2.pin.Placement.Base
 		elif self.obj2.detail=="Vertex.Point":
-			say("set vertex")
-			say("punkt index")
-			say(self.obj2.ix)
+			sayd("set vertex")
+			sayd("punkt index")
+			sayd(self.obj2.ix)
 
-			say("punkt alte koord")
+			sayd("punkt alte koord")
 			say(self.obj2.obj.Placement.Base)
-			say("neue koords")
+			sayd("neue koords")
 			# say(self.obj2.pin.Shape.Vertexes[self.obj2.ix].Point)
 			if self.obj2.status>0:
 				ixok=self.obj2.ix
@@ -442,20 +446,20 @@ class _Plugger(_Actor):
 				
 			else:
 				self.obj2.obj.Placement.Base=self.obj2.pin.Shape.Vertexes[self.obj2.ix].Point
-			say("offset addiert ...")
-			say(self.obj2.obj.Placement.Base)
+			sayd("offset addiert ...")
+			sayd(self.obj2.obj.Placement.Base)
 			self.obj2.obj.Placement.Base =FreeCAD.Vector(self.obj2.obj.Placement.Base).add(self.obj2.offsetVector)
-			say(self.obj2.obj.Placement.Base)
+			sayd(self.obj2.obj.Placement.Base)
 			
 		else:
-			say("schlecht")
+			say("unerwartete zuordnung detail")
 
 	def setDetail(self,detailname,param1):
 			self.obj2.detail=detailname
 			self.obj2.param1=param1
 	
 	def execute(self,obj):
-		say("execute _Plugger")
+		sayd("execute _Plugger")
 		self.obj2.status=0
 
 class _ViewProviderPlugger(_ViewProviderActor):
@@ -503,7 +507,7 @@ class _Tranquillizer(_Actor):
 		say("execute _Tranquillizer")
 
 	def step(self,now):
-		say(self)
+		sayd(self)
 		FreeCAD.tt=self
 		time.sleep(self.obj2.time)
 		
@@ -561,7 +565,7 @@ class _Adjuster(_Actor):
 		say("Adjustor step!" + str(now))
 
 		if now<self.obj2.start or now>self.obj2.end:
-			say("ausserhalb")
+			sayd("ausserhalb")
 			pass
 		else:
 			if not self.obj2.obj:
@@ -648,7 +652,7 @@ class _Styler(_Actor):
 
 		
 	def step(self,now):
-		say("Styler step!" + str(now))
+		sayd("Styler step!" + str(now))
 
 		if now<self.obj2.start or now>self.obj2.end:
 			say("ausserhalb")
@@ -675,7 +679,7 @@ class _Styler(_Actor):
 		self.obj2.ve=ve
 
 	def execute(self,obj):
-		say("execute _Adjuster")
+		sayd("execute _Adjuster")
 
 class _ViewProviderStyler(_ViewProviderActor):
 	
@@ -727,7 +731,7 @@ class _Photographer(_Actor):
 		self.Type = "Photographer"
 
 	def execute(self,obj):
-		say("execute _Photographer")
+		sayd("execute _Photographer")
 
 	def step(self,now):
 		if now<self.obj2.start or now>self.obj2.end:
@@ -821,7 +825,7 @@ class _Manager(_Actor):
 
 
 	def execute(self,obj):
-		say("execute _Manager")
+		sayd("execute _Manager")
 
 	def register(self,obj):
 		self.obj2.targets.append(obj)
@@ -831,18 +835,13 @@ class _Manager(_Actor):
 		
 		if (intervall<0):
 			intervall=self.obj2.intervall
-		say("x1")
+		sayd("x1")
 		# else:
 		if hasattr(self,'obj2'):
 			t=FreeCAD.ActiveDocument.getObject(self.obj2.Name)
 		else:
 			raise Exception("obj2 not found --> reinit the file!")
-		say("x2")
-		say(t)
-		FreeCAD.ttt=t
-		say("x3")
-		say(t.OutList)
-		say("x4")
+		sayd("x2")
 		for ob in t.OutList:
 			say(ob.Label)
 			ob.Proxy.initialize()
@@ -866,12 +865,12 @@ class _Manager(_Actor):
 					raise Exception("Notbremse Manager main loop")
 			for ob in t.OutList:
 				if 1: # fehler analysieren
-					say(ob.Label)
+					sayd(ob.Label)
 					if ob.ViewObject.Visibility:
 							ob.Proxy.step(nw)
 				else:
 					try:
-						say(ob.Proxy)
+						sayd(ob.Proxy)
 						if ob.ViewObject.Visibility:
 							ob.Proxy.step(nw)
 					except:
@@ -932,7 +931,6 @@ class AddMyWidget(QtGui.QWidget):
 			self.pushButton3 = QtGui.QPushButton()
 			self.pushButton3.clicked.connect(self.on_pushButton_clicked3)
 			layout.addWidget(self.pushButton3, 3,1)
-		
 
 		if 0:
 			# close control dialog
@@ -940,29 +938,27 @@ class AddMyWidget(QtGui.QWidget):
 			self.pushButton3.clicked.connect(self.on_pushButton_clicked)
 			layout.addWidget(self.pushButton3, 3,1)
 		
-
-		
 		self.setLayout(layout)
 		self.setWindowTitle("Animation Manager Control Panel")
 
 	def on_pushButton_clicked(self):
 		FreeCAD.Console.PrintMessage("rt")
-		FreeCAD.zx=self
-		say(self)
+		#FreeCAD.zx=self
+		#say(self)
 		self.fun(self.vobj)
 		FreeCADGui.Control.closeDialog()
 		
 	def on_pushButton_clicked2(self):
 		FreeCAD.Console.PrintMessage("rt")
-		FreeCAD.zx=self
-		say(self)
+		#FreeCAD.zx=self
+		#say(self)
 		self.fun2(self.vobj)
 		FreeCADGui.Control.closeDialog()
 	
 	def on_pushButton_clicked3(self):
 		FreeCAD.Console.PrintMessage("rt")
-		FreeCAD.zx=self
-		say(self)
+		#FreeCAD.zx=self
+		#say(self)
 		self.fun3(self.vobj)
 		FreeCADGui.Control.closeDialog()
 	
@@ -972,10 +968,10 @@ class AddMyTask():
 	def __init__(self,vobj,fun,fun2=None,fun3=None):
 		reinit()
 		self.form = AddMyWidget(vobj,fun,fun2,fun3)
-		FreeCAD.zz=vobj
-		FreeCAD.zy=self
-		say("Admm my task")
-		say(vobj)
+		#FreeCAD.zz=vobj
+		#FreeCAD.zy=self
+		#say("Admm my task")
+		#say(vobj)
 
 	def getStandardButtons(self):
 		return int(QtGui.QDialogButtonBox.Close)
@@ -991,8 +987,8 @@ class AddMyTask():
 
 
 def runManager(vobj=None):
-	say(vobj)
-	FreeCAD.zz=vobj
+	#say(vobj)
+	#FreeCAD.zz=vobj
 	unlockManager()
 	say("unlocked")
 	if vobj:
@@ -1000,7 +996,7 @@ def runManager(vobj=None):
 	else:
 		M = FreeCADGui.Selection.getSelectionEx()
 		tt=M[0].Object
-		say(tt)
+		sayd(tt)
 	tt.Proxy.run()
 	say("done")
 
@@ -1025,7 +1021,7 @@ class _ViewProviderManager(_ViewProviderActor):
 		
 	def doubleClicked(self,vobj):
 		FreeCAD.tt=self
-		say(self)
+		#say(self)
 		#panel = AddMyTask(runManager,stopManager,unlockManager)
 		panel = AddMyTask(self,runManager,stopManager)
 #		panel.form.volvalue.setText("VOL-VALUE")
@@ -1258,7 +1254,6 @@ def createScriptAction(name='My_ScriptAction'):
 	_ScriptAction(obj)
 	_ViewProviderScriptAction(obj.ViewObject)
 	return obj
-		
 
 class _CommandScriptAction:
 	def GetResources(self): 
@@ -1281,7 +1276,6 @@ class _CommandScriptAction:
 		else:
 			say("Erst Arbeitsbereich oeffnen")
 		return
-#-----------------------------------------
 
 #--------------------------------------------------------------------------
 # start loop action
@@ -1330,7 +1324,6 @@ class _CommandLoopAction:
 		return
 # end loop action
 #-----------------------------------------------------------------------------------------------------------
-
 # start While action
 class _WhileAction(_ScriptAction):
 	def __init__(self,obj):
@@ -1373,9 +1366,8 @@ class _CommandWhileAction:
 		else:
 			say("Erst Arbeitsbereich oeffnen")
 		return
-# end While action #--------------------------------------------------------------
-
-
+# end While action 
+#--------------------------------------------------------------
 # start Repeat action
 class _RepeatAction(_ScriptAction):
 	def __init__(self,obj):
@@ -1418,7 +1410,8 @@ class _CommandRepeatAction:
 		else:
 			say("Erst Arbeitsbereich oeffnen")
 		return
-# end Repeat action #--------------------------------------------------------------
+# end Repeat action 
+#--------------------------------------------------------------
 # start False action
 class _FalseAction(_ScriptAction):
 	def __init__(self,obj):
@@ -1466,8 +1459,8 @@ class _CommandFalseAction:
 		else:
 			say("Erst Arbeitsbereich oeffnen")
 		return
-# end False action #--------------------------------------------------------------
-
+# end False action 
+#--------------------------------------------------------------
 # start True action
 class _TrueAction(_ScriptAction):
 	def __init__(self,obj):
@@ -1516,8 +1509,8 @@ class _CommandTrueAction:
 		else:
 			say("Erst Arbeitsbereich oeffnen")
 		return
-# end True action #--------------------------------------------------------------
-
+# end True action 
+#--------------------------------------------------------------
 # start Case action
 class _CaseAction(_ScriptAction):
 	def __init__(self,obj):
@@ -1560,7 +1553,8 @@ class _CommandCaseAction:
 		else:
 			say("Erst Arbeitsbereich oeffnen")
 		return
-# end Case action #--------------------------------------------------------------
+# end Case action 
+#--------------------------------------------------------------
 # start Query action
 class _QueryAction(_ScriptAction):
 	def __init__(self,obj):
@@ -1601,7 +1595,8 @@ class _CommandQueryAction:
 		else:
 			say("Erst Arbeitsbereich oeffnen")
 		return
-# end Query action #--------------------------------------------------------------
+# end Query action 
+#--------------------------------------------------------------
 
 if FreeCAD.GuiUp:
 	FreeCADGui.addCommand('ScriptAction',_CommandScriptAction())

@@ -66,13 +66,11 @@ class AnimationWorkbench(Workbench):
 		self.contextTools=["A_Runner","B1","B2","EditObject"]
 
 		FreeCAD.t=self.appendToolbar("Animation",self.animtools)
-		
-		FreeCAD.t=self.appendToolbar("ActionScript",self.actions)
+##		FreeCAD.t=self.appendToolbar("ActionScript",self.actions)
 		
 		self.appendMenu('Animation',self.animtools)
-		self.appendMenu('Script Actions',self.actions)
+##		self.appendMenu('Script Actions',self.actions)
 		
-#		self.appendCommandbar("&Generic Tools",["ColorCodeShape"])
 
 		
 		Log ('Loading School module... done\n')
