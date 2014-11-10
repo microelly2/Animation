@@ -45,7 +45,11 @@ class AnimationWorkbench(Workbench):
 				"Anim_Photographer",
 				"Anim_Plugger",
 				"Anim_Adjuster",
+				
 				"Anim_Styler",
+				"Anim_Billboard",
+				"Anim_Moviescreen",
+
 
 				"Anim_Manager",
 				
@@ -54,8 +58,6 @@ class AnimationWorkbench(Workbench):
 				"A_Runner",
 				"B1","B2",
 				"EditObject",
-				"Anim_Billboard",
-				"Anim_Moviescreen"
 				
 						]
 						

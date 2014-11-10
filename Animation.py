@@ -169,7 +169,7 @@ def createMoviescreen(name='My_Moviescreen'):
 #	obj.addProperty("App::PropertyString","movie","info","Rotationsachse Zentrum relativ").movie="/tmp/movie/"
 	obj.addProperty("App::PropertyIntegerList","pictureStart","info","Rotationsachse Zentrum relativ").pictureStart=[0,50,100]
 	
-	obj.addProperty("App::PropertyStringList","pictures","info","text").pictures=["Animation can display","configurable Text Information","in a HUD"]
+	obj.addProperty("App::PropertyPath","pictures","info","text").pictures="/home/microelly2/pics/t%04.f.png"
 	# obj.addProperty("App::PropertyVector","text","3D Param","motionVector").motionVector=FreeCAD.Vector(100,0,0)
 	obj.addProperty("App::PropertyLink","rectangle","3D Param","moving object ")
 	obj.rectangle = FreeCAD.ActiveDocument.addObject("Part::Part2DObjectPython","Rectangle")
@@ -218,11 +218,18 @@ class _Moviescreen(_Actor):
 	def step(self,now):
 		sayd("step " +str(now))
 		FreeCAD.tt=self
-		self.obj2.rectangle.ViewObject.TextureImage = "/home/thomas/Bilder/sonstig/bn_089.png"
+		# self.obj2.rectangle.ViewObject.TextureImage = "/home/thomas/Bilder/sonstig/bn_089.png"
+		
+		pfn=self.obj2.pictures%now
+		say("image: " + pfn)
+		if os.path.exists(pfn):
+			self.obj2.rectangle.ViewObject.TextureImage = pfn
 		
 		tx=FreeCADGui.activeDocument().activeView()
 		rx=tx.getCameraOrientation()
-		self.obj2.rectangle.Placement.Rotation=rx
+		r2=FreeCAD.Rotation(FreeCAD.Vector(1,0,0),180)
+		r3=rx.multiply(r2)
+		self.obj2.rectangle.Placement.Rotation=r3
 		FreeCAD.ActiveDocument.recompute()
 		# say(self)
 
@@ -253,6 +260,8 @@ def createBillboard(name='My_Billboard'):
 	obj.addProperty("App::PropertyBool","showFile","info","Rotationsachse Zentrum relativ").showFile=False
 	obj.addProperty("App::PropertyBool","showDate","info","Rotationsachse Zentrum relativ").showDate=False
 	obj.addProperty("App::PropertyStringList","text","info","text").text=["Animation can display","configurable Text Information","in a HUD"]
+	obj.addProperty("App::PropertyPath","textFiles","info","text").textFiles="/home/microelly2/texts/t%04.f.txt"
+
 	# obj.addProperty("App::PropertyVector","text","3D Param","motionVector").motionVector=FreeCAD.Vector(100,0,0)
 	obj.addProperty("App::PropertyLink","textObj","3D Param","moving object ")
 	obj.textObj=FreeCAD.ActiveDocument.addObject("App::Annotation","Text")
@@ -294,11 +303,26 @@ class _Billboard(_Actor):
 		FreeCAD.tt=self
 		# self.obj2.textObj.LabelText=
 		k=self.obj2.text
+		# append txt files
+		
+		# fne="/home/microelly2/texts/t%04.f.txt"
+		fne=self.obj2.textFiles
+		fn=fne%now
+		say("textfile: " + fn)
+		if os.path.exists(fn):
+			data = [line.strip() for line in open(fn, 'r')]
+			say(data)
+			self.obj2.text=data
+		
+		k=self.obj2.text
+		
+		
+		#--------------------------------
 		kf= "%04.f"%now
 		k.append("Frame: " + kf)
 		lt = localtime()
-		tz=strftime("Tag.Monat.Jahr: %d.%m.%Y", lt)
-		ts=strftime("Stunde:Minute:Sekunde: %H:%M:%S", lt)
+		tz=strftime("%d.%m.%Y", lt)
+		ts=strftime("%H:%M:%S", lt)
 		k.append(tz)
 		k.append(ts)
 		k.append("File: "+ os.path.basename(FreeCAD.ActiveDocument.FileName))
