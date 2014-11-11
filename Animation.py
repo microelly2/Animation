@@ -1,25 +1,25 @@
 #***************************************************************************
+#*																		*
+#*   Copyright (c) 2014													 *  
+#*   <microelly2@freecadbuch.de>										 * 
 #*																		 *
-#*   Copyright (c) 2014													*  
-#*   <microelly2@freecadbuch.de>										   * 
-#*																		 *
-#*   This program is free software; you can redistribute it and/or modify  *
+#*   This program is free software; you can redistribute it and/or modify*
 #*   it under the terms of the GNU Lesser General Public License (LGPL)	*
-#*   as published by the Free Software Foundation; either version 2 of	 *
-#*   the License, or (at your option) any later version.				   *
-#*   for detail see the LICENCE text file.								 *
-#*																		 *
-#*   This program is distributed in the hope that it will be useful,	   *
+#*   as published by the Free Software Foundation; either version 2 of	*
+#*   the License, or (at your option) any later version.				*
+#*   for detail see the LICENCE text file.								*
+#*																		*
+#*   This program is distributed in the hope that it will be useful,	*
 #*   but WITHOUT ANY WARRANTY; without even the implied warranty of		*
-#*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the		 *
-#*   GNU Library General Public License for more details.				  *
-#*																		 *
-#*   You should have received a copy of the GNU Library General Public	 *
-#*   License along with this program; if not, write to the Free Software   *
-#*   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  *
-#*   USA																   *
-#*																		 *
-#***************************************************************************
+#*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the		*
+#*   GNU Library General Public License for more details.				*
+#*																		*
+#*   You should have received a copy of the GNU Library General Public	*
+#*   License along with this program; if not, write to the Free Software*
+#*   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307*
+#*   USA																*
+#*																		*
+#************************************************************************
 
 __title__="FreeCAD Animation Toolkit"
 __author__ = "Thomas Gundermann"
@@ -38,9 +38,9 @@ if FreeCAD.GuiUp:
 	FreeCADGui.updateLocale()
 
 def sayd(s):
-		if hasattr(FreeCAD,'animation_debug'):
-			pass
-			FreeCAD.Console.PrintMessage(str(s)+"\n")
+	if hasattr(FreeCAD,'animation_debug'):
+		pass
+		FreeCAD.Console.PrintMessage(str(s)+"\n")
 
 def say(s):
 		FreeCAD.Console.PrintMessage(str(s)+"\n")
@@ -92,6 +92,9 @@ class _Actor(object):
 		self.obj.end=e
 	def step(self,now):
 		sayd("Step" + str(now))
+	def execute(self,obj):
+		pass
+
 	
 	def attach(self,vobj):
 		self.Object = vobj.Object
@@ -161,18 +164,18 @@ def createMoviescreen(name='My_Moviescreen'):
 	say("creat movie screen")
 	
 	obj = FreeCAD.ActiveDocument.addObject("App::DocumentObjectGroupPython",name)
-	obj.addProperty("App::PropertyInteger","start","intervall","start").start=0
-	obj.addProperty("App::PropertyInteger","end","intervall","end").end=10
-	# obj.addProperty("App::PropertyPlacement","initPlace","3D Param","initPlace")
-	obj.addProperty("App::PropertyBool","showFrame","info","Rotationsachse Zentrum relativ").showFrame=False
-	obj.addProperty("App::PropertyBool","showFile","info","Rotationsachse Zentrum relativ").showFile=False
+#	obj.addProperty("App::PropertyInteger","start","intervall","start").start=0
+#	obj.addProperty("App::PropertyInteger","end","intervall","end").end=10
+#	obj.addProperty("App::PropertyPlacement","initPlace","3D Param","initPlace")
+#	obj.addProperty("App::PropertyBool","showFrame","info","Rotationsachse Zentrum relativ").showFrame=False
+#	obj.addProperty("App::PropertyBool","showFile","info","Rotationsachse Zentrum relativ").showFile=False
 #	obj.addProperty("App::PropertyString","movie","info","Rotationsachse Zentrum relativ").movie="/tmp/movie/"
 	obj.addProperty("App::PropertyIntegerList","pictureStart","info","Rotationsachse Zentrum relativ").pictureStart=[0,50,100]
 	
-	obj.addProperty("App::PropertyPath","pictures","info","text").pictures="/home/microelly2/pics/t%04.f.png"
+	obj.addProperty("App::PropertyPath","pictures","screen","text").pictures="/home/microelly2/pics/t%04.f.png"
 	# obj.addProperty("App::PropertyVector","text","3D Param","motionVector").motionVector=FreeCAD.Vector(100,0,0)
-	obj.addProperty("App::PropertyLink","rectangle","3D Param","moving object ")
-	obj.rectangle = FreeCAD.ActiveDocument.addObject("Part::Part2DObjectPython","Rectangle")
+	obj.addProperty("App::PropertyLink","rectangle","screen","moving object ")
+	obj.rectangle = FreeCAD.ActiveDocument.addObject("Part::Part2DObjectPython","Rectangle Moviescreen")
 	Draft._Rectangle(obj.rectangle)
 
 	obj.rectangle.Length = 64
@@ -209,7 +212,7 @@ from time import *
 import os
 
 class _Moviescreen(_Actor):
-		
+
 	def __init__(self,obj):
 		self.obj2=obj
 		obj.Proxy = self
@@ -217,14 +220,10 @@ class _Moviescreen(_Actor):
 
 	def step(self,now):
 		sayd("step " +str(now))
-		FreeCAD.tt=self
-		# self.obj2.rectangle.ViewObject.TextureImage = "/home/thomas/Bilder/sonstig/bn_089.png"
-		
 		pfn=self.obj2.pictures%now
-		say("image: " + pfn)
 		if os.path.exists(pfn):
 			self.obj2.rectangle.ViewObject.TextureImage = pfn
-		
+			say("image: " + pfn)
 		tx=FreeCADGui.activeDocument().activeView()
 		rx=tx.getCameraOrientation()
 		r2=FreeCAD.Rotation(FreeCAD.Vector(1,0,0),180)
@@ -232,12 +231,6 @@ class _Moviescreen(_Actor):
 		self.obj2.rectangle.Placement.Rotation=r3
 		FreeCAD.ActiveDocument.recompute()
 		# say(self)
-
-	def execute(self,obj):
-		say("execute  Moviescreen")
-		say(self)
-		say(obj)
-
 
 class _ViewProviderMoviescreen(_ViewProviderActor):
 
