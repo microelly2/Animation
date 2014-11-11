@@ -246,21 +246,19 @@ if FreeCAD.GuiUp:
 #----------------------------------------------------------------------------------------------------------
 def createBillboard(name='My_Billboard'):
 	obj = FreeCAD.ActiveDocument.addObject("App::DocumentObjectGroupPython",name)
-	obj.addProperty("App::PropertyInteger","start","intervall","start").start=0
-	obj.addProperty("App::PropertyInteger","end","intervall","end").end=10
+#	obj.addProperty("App::PropertyInteger","start","intervall","start").start=0
+#	obj.addProperty("App::PropertyInteger","end","intervall","end").end=10
 	# obj.addProperty("App::PropertyPlacement","initPlace","3D Param","initPlace")
 	obj.addProperty("App::PropertyBool","showFrame","info","Rotationsachse Zentrum relativ").showFrame=False
 	obj.addProperty("App::PropertyBool","showFile","info","Rotationsachse Zentrum relativ").showFile=False
 	obj.addProperty("App::PropertyBool","showDate","info","Rotationsachse Zentrum relativ").showDate=False
 	obj.addProperty("App::PropertyStringList","text","info","text").text=["Animation can display","configurable Text Information","in a HUD"]
 	obj.addProperty("App::PropertyPath","textFiles","info","text").textFiles="/home/microelly2/texts/t%04.f.txt"
-
 	# obj.addProperty("App::PropertyVector","text","3D Param","motionVector").motionVector=FreeCAD.Vector(100,0,0)
-	obj.addProperty("App::PropertyLink","textObj","3D Param","moving object ")
-	obj.textObj=FreeCAD.ActiveDocument.addObject("App::Annotation","Text")
+	obj.addProperty("App::PropertyLink","textObj","info","moving object ")
+	obj.textObj=FreeCAD.ActiveDocument.addObject("App::Annotation","Text Billboard")
 	obj.textObj.LabelText=obj.text
 	obj.textObj.Position=FreeCAD.Vector(0,0,0)
-	
 	_Billboard(obj)
 	_ViewProviderBillboard(obj.ViewObject)
 	return obj
@@ -293,43 +291,31 @@ class _Billboard(_Actor):
 
 	def step(self,now):
 		sayd("step " +str(now))
-		FreeCAD.tt=self
-		# self.obj2.textObj.LabelText=
 		k=self.obj2.text
-		# append txt files
-		
-		# fne="/home/microelly2/texts/t%04.f.txt"
 		fne=self.obj2.textFiles
 		fn=fne%now
-		say("textfile: " + fn)
 		if os.path.exists(fn):
+			say("textfile: " + fn)
 			data = [line.strip() for line in open(fn, 'r')]
-			say(data)
+			sayd(data)
 			self.obj2.text=data
-		
 		k=self.obj2.text
-		
-		
 		#--------------------------------
 		kf= "%04.f"%now
-		k.append("Frame: " + kf)
+		if self.obj2.showFrame:
+			k.append("Frame: " + kf)
 		lt = localtime()
-		tz=strftime("%d.%m.%Y", lt)
-		ts=strftime("%H:%M:%S", lt)
-		k.append(tz)
-		k.append(ts)
-		k.append("File: "+ os.path.basename(FreeCAD.ActiveDocument.FileName))
-		k.append("Author: "+ FreeCAD.ActiveDocument.LastModifiedBy)
-
+		if self.obj2.showDate:
+			tz=strftime("%d.%m.%Y", lt)
+			ts=strftime("%H:%M:%S", lt)
+			k.append(tz)
+			k.append(ts)
+		if self.obj2.showFile:
+			k.append("File: "+ os.path.basename(FreeCAD.ActiveDocument.FileName))
+			k.append("Author: "+ FreeCAD.ActiveDocument.LastModifiedBy)
 		self.obj2.textObj.LabelText=k
-		
 		FreeCAD.ActiveDocument.recompute()
-		# say(self)
 
-	def execute(self,obj):
-		say("execute  Billboard")
-		say(self)
-		say(obj)
 
 
 class _ViewProviderBillboard(_ViewProviderActor):
