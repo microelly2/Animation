@@ -330,11 +330,19 @@ if FreeCAD.GuiUp:
 
 def createMover(name='My_Mover'):
 	obj = FreeCAD.ActiveDocument.addObject("App::DocumentObjectGroupPython",name)
-	obj.addProperty("App::PropertyInteger","start","intervall","start").start=0
-	obj.addProperty("App::PropertyInteger","end","intervall","end").end=10
-	obj.addProperty("App::PropertyPlacement","initPlace","3D Param","initPlace")
-	obj.addProperty("App::PropertyVector","motionVector","3D Param","motionVector").motionVector=FreeCAD.Vector(100,0,0)
-	obj.addProperty("App::PropertyLink","obj2","3D Param","moving object ")
+	obj.addProperty("App::PropertyInteger","start","Base","start").start=0
+	obj.addProperty("App::PropertyInteger","end","Base","end").end=10
+	obj.addProperty("App::PropertyInteger","duration","Base","end").duration=10
+	obj.addProperty("App::PropertyPlacement","initPlaceMotion","Motion","initPlace")
+	obj.addProperty("App::PropertyEnumeration","ModeMotion","Motion","Modus").ModeMotion=['Vector','DLine','DWire','Shape.Edge','Path']
+
+	##obj.addProperty("App::PropertyVector","motionVector","Motion","motionVector").motionVector=FreeCAD.Vector(100,0,0)
+	obj.addProperty("App::PropertyVector","vectorMotion","Motion","motionVector").vectorMotion=FreeCAD.Vector(100,0,0)
+	obj.addProperty("App::PropertyLink","sourceMotion","Motion","source objectfor the motion vector")
+	obj.addProperty("App::PropertyInteger","indexMotion","Motion","position on the source").indexMotion=1
+	obj.addProperty("App::PropertyBool","reverseMotion","Motion","recvers the direction fo the vector").reverseMotion=False
+	
+	obj.addProperty("App::PropertyLink","obj2","Motion","moving object ")
 	_Mover(obj)
 	_ViewProviderMover(obj.ViewObject)
 	return obj
@@ -373,13 +381,13 @@ class _Mover(_Actor):
 				pass
 			else:
 				relativ=1.00/(self.obj.end-self.obj.start+1)
-				v=FreeCAD.Vector(self.obj.motionVector).multiply(relativ)
+				v=FreeCAD.Vector(self.obj.vectorMotion).multiply(relativ)
 				Draft.move(self.obj.obj2,v,copy=False)
 		else:
 			say("kein Moveobjekt ausgewaehlt")
 			
-	def reverse(self):
-		self.obj.motionVector.multiply(-1)
+	def Xreverse(self):
+		self.obj.vectorMotion.multiply(-1)
 
 	def execute(self,obj):
 		sayd("execute  _Mover")
@@ -392,6 +400,16 @@ class _Mover(_Actor):
 		# anzeigewert neu berechnen
 		if hasattr(obj,'obj2'):
 			say(obj.obj2)
+		say("recalculate vector")
+		say(obj.ModeMotion)
+		if obj.ModeMotion <> 'Vector':
+			obj.setEditorMode("vectorMotion", 1) #ro
+			obj.setEditorMode("reverseMotion", 1) #ro
+		else: 
+			obj.setEditorMode("vectorMotion", 0) #rw
+			obj.setEditorMode("reverseMotion", 0) #rw
+		obj.end=obj.start+obj.duration
+		obj.setEditorMode("end", 1) #rw
 
 
 class _ViewProviderMover(_ViewProviderActor):
