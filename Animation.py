@@ -380,14 +380,27 @@ class _Mover(_Actor):
 			if now<self.obj.start or now>self.obj.end:
 				pass
 			else:
-				relativ=1.00/(self.obj.end-self.obj.start+1)
-				v=FreeCAD.Vector(self.obj.vectorMotion).multiply(relativ)
-				Draft.move(self.obj.obj2,v,copy=False)
+				if self.obj.ModeMotion == 'Path':
+					pos=-self.obj.indexMotion
+					t=FreeCAD.animMover[pos]
+					v=t.pop()
+					Draft.move(self.obj.obj2,v,copy=False)
+				else:
+					relativ=1.00/(self.obj.end-self.obj.start+1)
+					v=FreeCAD.Vector(self.obj.vectorMotion).multiply(relativ)
+					Draft.move(self.obj.obj2,v,copy=False)
 		else:
 			say("kein Moveobjekt ausgewaehlt")
-			
+		
 	def Xreverse(self):
 		self.obj.vectorMotion.multiply(-1)
+
+	def initialize(self):
+		say("initialize ...")
+		if  self.obj.ModeMotion == 'Path':
+			self.obj.indexMotion=1
+			say("set indexMotion to 1 for Path")
+
 
 	def execute(self,obj):
 		sayd("execute  _Mover")
@@ -400,8 +413,9 @@ class _Mover(_Actor):
 		# anzeigewert neu berechnen
 		if hasattr(obj,'obj2'):
 			say(obj.obj2)
-		say("recalculate vector")
-		say(obj.ModeMotion)
+		say("recalculate vector ")
+		FreeCAD.zu=obj
+		# say(obj.ModeMotion)
 		if obj.ModeMotion <> 'Vector':
 			obj.setEditorMode("vectorMotion", 1) #ro
 			obj.setEditorMode("reverseMotion", 1) #ro
@@ -410,6 +424,48 @@ class _Mover(_Actor):
 			obj.setEditorMode("reverseMotion", 0) #rw
 		obj.end=obj.start+obj.duration
 		obj.setEditorMode("end", 1) #rw
+		if obj.ModeMotion == 'Path':
+			if obj.indexMotion>0:
+				obj.indexMotion=-1
+				obj.vectorMotion=FreeCAD.Vector(0,0,0)
+				# x=FreeCAD.ActiveDocument.DWire001
+				x=obj.sourceMotion
+
+				steps=obj.duration+1+1
+				l=x.Shape.copy().discretize(steps)
+				ll=[]
+				for pp in range(len(l)-1):
+					print(pp)
+					v=FreeCAD.Vector(l[pp+1]).sub(l[pp])
+					ll.append(v)
+					
+					print(v)
+				ll.reverse()
+
+
+				if not hasattr(FreeCAD,'animMover'):
+					FreeCAD.animMover=[]
+					print ("neu")
+
+				# print (FreeCAD.animMover)
+
+				#FreeCAD.animMover.append("start")
+				#FreeCAD.animMover.append("start")
+				pos=len(FreeCAD.animMover)
+				obj.indexMotion=-pos
+				FreeCAD.animMover.append(ll)
+				say("!!!!!!!!!!!!!!!!!  haenge an pos:"+ str(pos))
+				#FreeCAD.animMover.append("end")
+				print(FreeCAD.animMover)
+				
+			else:
+					say("Pfad bereits berechnet")
+
+
+
+			
+			
+		
 
 
 class _ViewProviderMover(_ViewProviderActor):
@@ -1057,7 +1113,7 @@ class _Manager(_Actor):
 					say("notbremse gezogen")
 					raise Exception("Notbremse Manager main loop")
 			for ob in t.OutList:
-				if 1: # fehler analysieren
+				if 0: # fehler analysieren
 					sayd(ob.Label)
 					if ob.ViewObject.Visibility:
 							ob.Proxy.step(nw)
