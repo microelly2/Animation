@@ -158,6 +158,98 @@ class _ViewProviderActor(object):
 
 import Draft
 
+#-------------------------
+
+
+#----------------------------------------------------------------------------------------------------------
+def createExtruder(name='My_Extruder'):
+	say("creat movie screen")
+	
+	obj = FreeCAD.ActiveDocument.addObject("App::DocumentObjectGroupPython",name)
+	obj.addProperty("App::PropertyInteger","start","intervall","start").start=0
+	obj.addProperty("App::PropertyInteger","duration","intervall","start").duration=10
+
+#	obj.addProperty("App::PropertyInteger","end","intervall","end").end=10
+#	obj.addProperty("App::PropertyPlacement","initPlace","3D Param","initPlace")
+#	obj.addProperty("App::PropertyBool","showFrame","info","Rotationsachse Zentrum relativ").showFrame=False
+#	obj.addProperty("App::PropertyBool","showFile","info","Rotationsachse Zentrum relativ").showFile=False
+#	obj.addProperty("App::PropertyString","movie","info","Rotationsachse Zentrum relativ").movie="/tmp/movie/"
+
+	obj.addProperty("App::PropertyLink","path","screen","path ")
+	obj.addProperty("App::PropertyLink","sweep","screen","sweep")
+	obj.addProperty("App::PropertyLink","ext","screen","extrusion")
+	
+	_Extruder(obj)
+	_ViewProviderExtruder(obj.ViewObject)
+	return obj
+
+class _CommandExtruder(_CommandActor):
+	def GetResources(self): 
+		return {'Pixmap' : 'Mod/Animation/icons/Extruder.png', 'MenuText': 'Extruder', 'ToolTip': 'Extruder Dialog'} 
+
+	def Activated(self):
+		if FreeCADGui.ActiveDocument:
+			FreeCAD.ActiveDocument.openTransaction("create BB")
+			FreeCADGui.doCommand("import Animation")
+			FreeCADGui.doCommand("Animation.createExtruder()")
+			FreeCAD.ActiveDocument.commitTransaction()
+			FreeCAD.ActiveDocument.recompute()
+		else:
+			say("Erst Arbeitsbereich oeffnen")
+		return
+
+
+
+class _Extruder(_Actor):
+
+	def __init__(self,obj):
+		self.obj2=obj
+		obj.Proxy = self
+		self.Type = "_Extruder"
+
+	def step(self,now):
+		App=FreeCAD
+		say("step " +str(now))
+		s=self.obj2.ext.Spine
+		ss=s[0]
+		kk=s[1]
+		if now==self.obj2.start:
+			kk=[]
+			steps=20
+			steps=self.obj2.duration
+			l=ss.Shape.copy().discretize(steps)
+			f=Part.makePolygon(l)
+			f1=Part.show(f)
+			ss=FreeCAD.ActiveDocument.Objects[-1]
+		kk.append("Edge"+str(now+1-self.obj2.start))
+		if now<self.obj2.start:
+			kk=["Edge1"]
+			self.obj2.ext.ViewObject.Visibility=False
+		else: 
+			self.obj2.ext.ViewObject.Visibility=True
+		self.obj2.ext.Spine=(ss,kk)
+		App.ActiveDocument.recompute()
+		FreeCADGui.updateGui() 
+
+
+class _ViewProviderExtruder(_ViewProviderActor):
+
+	def getIcon(self):
+		return 'Mod/Animation/icons/manager.png'
+
+if FreeCAD.GuiUp:
+	FreeCADGui.addCommand('Anim_Extruder',_CommandExtruder())
+
+#----------------------
+
+
+
+#--------------------------
+
+
+
+
+
 
 #----------------------------------------------------------------------------------------------------------
 def createMoviescreen(name='My_Moviescreen'):
