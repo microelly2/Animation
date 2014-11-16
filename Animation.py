@@ -301,7 +301,7 @@ def createExtruder(name='My_Extruder'):
 
 class _CommandExtruder(_CommandActor):
 	def GetResources(self): 
-		return {'Pixmap' : 'Mod/Animation/icons/Extruder.png', 'MenuText': 'Extruder', 'ToolTip': 'Extruder Dialog'} 
+		return {'Pixmap' : 'Mod/Animation/icons/extruder.png', 'MenuText': 'Extruder', 'ToolTip': 'Extruder Dialog'} 
 
 	def Activated(self):
 		if FreeCADGui.ActiveDocument:
@@ -351,7 +351,7 @@ class _Extruder(_Actor):
 class _ViewProviderExtruder(_ViewProviderActor):
 
 	def getIcon(self):
-		return 'Mod/Animation/icons/manager.png'
+		return 'Mod/Animation/icons/extruder.png'
 
 if FreeCAD.GuiUp:
 	FreeCADGui.addCommand('Anim_Extruder',_CommandExtruder())
@@ -543,7 +543,7 @@ def createMover(name='My_Mover'):
 	obj.addProperty("App::PropertyInteger","start","Base","start").start=0
 	obj.addProperty("App::PropertyInteger","end","Base","end").end=10
 	obj.addProperty("App::PropertyInteger","duration","Base","end").duration=10
-	obj.addProperty("App::PropertyPlacement","initPlaceMotion","Motion","initPlace")
+	obj.addProperty("App::PropertyPlacement","initPlaceMotion","Object","initPlace")
 	obj.addProperty("App::PropertyEnumeration","ModeMotion","Motion","Modus").ModeMotion=['Vector','DLine','DWire','Shape.Edge','Path']
 
 	##obj.addProperty("App::PropertyVector","motionVector","Motion","motionVector").motionVector=FreeCAD.Vector(100,0,0)
@@ -552,7 +552,7 @@ def createMover(name='My_Mover'):
 	obj.addProperty("App::PropertyInteger","indexMotion","Motion","position on the source").indexMotion=1
 	obj.addProperty("App::PropertyBool","reverseMotion","Motion","recvers the direction fo the vector").reverseMotion=False
 	
-	obj.addProperty("App::PropertyLink","obj2","Motion","moving object ")
+	obj.addProperty("App::PropertyLink","obj2","Object","moving object ")
 	_Mover(obj)
 	_ViewProviderMover(obj.ViewObject)
 	return obj
@@ -693,17 +693,17 @@ if FreeCAD.GuiUp:
 
 def createRotator(name='My_Rotator'):
 	obj = FreeCAD.ActiveDocument.addObject("App::DocumentObjectGroupPython",name)
-	obj.addProperty("App::PropertyInteger","start","intervall","start").start=10
-	obj.addProperty("App::PropertyInteger","end","intervall","end").end=40
-
-	obj.addProperty("App::PropertyPlacement","initPlace","3D Param","initPlace")
-	obj.addProperty("App::PropertyVector","rotationCentre","3D Param","Rotationszentrum")
-	obj.addProperty("App::PropertyVector","rotationAxis","3D Param","Rotationsachse")
-	obj.addProperty("App::PropertyBool","rotCenterRelative","3D Param","Rotationsachse Zentrum relativ").rotCenterRelative=False
+	obj.addProperty("App::PropertyInteger","start","Base","start").start=10
+	obj.addProperty("App::PropertyInteger","end","Base","end").end=40
+	obj.addProperty("App::PropertyInteger","duration","Base","end").end=40
+	obj.addProperty("App::PropertyPlacement","initPlace","Object","initPlace")
+	obj.addProperty("App::PropertyVector","rotationCentre","Motion","Rotationszentrum")
+	obj.addProperty("App::PropertyVector","rotationAxis","Motion","Rotationsachse")
+	obj.addProperty("App::PropertyBool","rotCenterRelative","Motion","Rotationsachse Zentrum relativ").rotCenterRelative=False
 	
-	obj.addProperty("App::PropertyFloat","angle","intervall","Dreh Winkel").angle=270
+	obj.addProperty("App::PropertyFloat","angle","Motion","Dreh Winkel").angle=270
 	
-	obj.addProperty("App::PropertyLink","obj2","3D Param","rotating object ")
+	obj.addProperty("App::PropertyLink","obj2","Object","rotating object ")
 
 	_Rotator(obj)
 	_ViewProviderRotator(obj.ViewObject)
@@ -801,12 +801,12 @@ if FreeCAD.GuiUp:
 
 def createPlugger(name='My_Plugger'):
 	obj = FreeCAD.ActiveDocument.addObject("App::DocumentObjectGroupPython",name)
-	obj.addProperty("App::PropertyLink","pin","3D Param","pin")
-	obj.addProperty("App::PropertyLink","obj","3D Param","objekt")
-	obj.addProperty("App::PropertyInteger","ix","nummer","index 1").ix=3
-	obj.addProperty("App::PropertyInteger","status","nummer","intern").status=0
-	obj.addProperty("App::PropertyEnumeration","detail","format","art").detail=["Placement.Base","Vertex.Point","unklarmp"]
-	obj.addProperty("App::PropertyVector","offsetVector","3D Param","offsetVector").offsetVector=FreeCAD.Vector(30,30,0)
+	obj.addProperty("App::PropertyLink","pin","Pin","pin")
+	obj.addProperty("App::PropertyLink","obj","Object","objekt")
+	obj.addProperty("App::PropertyInteger","ix","Pin","index 1").ix=3
+	obj.addProperty("App::PropertyInteger","status","Pin","intern").status=0
+	obj.addProperty("App::PropertyEnumeration","detail","Pin","art").detail=["Placement.Base","Vertex.Point","unklarmp"]
+	obj.addProperty("App::PropertyVector","offsetVector","Pin","offsetVector").offsetVector=FreeCAD.Vector(30,30,0)
 
 #	obj.addProperty("App::PropertyLinkSub","subobj","3D Param1","Subobjekt")
 #	obj.addProperty("App::PropertyLinkSub","subobj","3D Param1","Subobjekt")
@@ -995,12 +995,13 @@ if FreeCAD.GuiUp:
 
 def createAdjuster(name='My_Adjuster'):
 	obj = FreeCAD.ActiveDocument.addObject("App::DocumentObjectGroupPython",name)
-	obj.addProperty("App::PropertyInteger","start","intervall","start").start=10
-	obj.addProperty("App::PropertyInteger","end","intervall","end").end=40
+	obj.addProperty("App::PropertyInteger","start","Base","start").start=10
+	obj.addProperty("App::PropertyInteger","end","Base","end").end=40
+	obj.addProperty("App::PropertyInteger","duration","Base","end").end=40
 	obj.addProperty("App::PropertyFloat","va","intervall","va").va=0
 	obj.addProperty("App::PropertyFloat","ve","intervall","ve").ve=40
-	obj.addProperty("App::PropertyLink","obj","3D Param","Sketch")
-	obj.addProperty("App::PropertyInteger","nr","intervall","nummer Datum").nr=1
+	obj.addProperty("App::PropertyLink","obj","Object","Sketch")
+	obj.addProperty("App::PropertyInteger","nr","Object","nummer Datum").nr=1
 	obj.addProperty("App::PropertyEnumeration","unit","3D Param","einheit").unit=['deg','mm']
 	_Adjuster(obj)
 	_ViewProviderMover(obj.ViewObject)
@@ -1161,12 +1162,13 @@ if FreeCAD.GuiUp:
 
 def createPhotographer(name='My_Photographer'):
 	obj = FreeCAD.ActiveDocument.addObject("App::DocumentObjectGroupPython",name)
-	obj.addProperty("App::PropertyInteger","start","intervall","start").start=0
-	obj.addProperty("App::PropertyInteger","end","intervall","end").end=40
-	obj.addProperty("App::PropertyInteger","size_x","format","start").size_x=640
-	obj.addProperty("App::PropertyInteger","size_y","format","end").size_y=480
-	obj.addProperty("App::PropertyPath","fn","format","outdir").fn="/tmp/animation/t"
-	obj.addProperty("App::PropertyEnumeration","format","format","Bildformat").format=["png","jpg","bmp"]
+	obj.addProperty("App::PropertyInteger","start","Base","start").start=0
+	obj.addProperty("App::PropertyInteger","end","Base","end").end=40
+	
+	obj.addProperty("App::PropertyInteger","size_x","Output","start").size_x=640
+	obj.addProperty("App::PropertyInteger","size_y","Output","end").size_y=480
+	obj.addProperty("App::PropertyPath","fn","Output","outdir").fn="/tmp/animation/t"
+	obj.addProperty("App::PropertyEnumeration","format","Output","Bildformat").format=["png","jpg","bmp"]
 	obj.addProperty("App::PropertyEnumeration","camDirection","Camera","Sichtrichtung").camDirection=["Front","Top","Axometric","Left","View"]
 	obj.addProperty("App::PropertyInteger","camHeight","Camera","Ausschnitt Hoehe").camHeight=100
 	_Photographer(obj)
