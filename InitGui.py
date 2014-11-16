@@ -58,7 +58,8 @@ class AnimationWorkbench(Workbench):
 				"A_Runner",
 				"B1","B2",
 				"EditObject",
-				
+				"Anim_Extruder",
+				"Anim_Viewpoint"
 						]
 						
 		self.actions = [	
