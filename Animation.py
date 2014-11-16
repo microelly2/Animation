@@ -160,6 +160,122 @@ import Draft
 
 #-------------------------
 
+#----------------------------------------------------------------------------------------------------------
+def createViewpoint(name='My_Viewpoint'):
+	say("creat movie screen")
+	
+	obj = FreeCAD.ActiveDocument.addObject("App::DocumentObjectGroupPython",name)
+	obj.addProperty("App::PropertyInteger","start","intervall","start").start=0
+	obj.addProperty("App::PropertyInteger","duration","intervall","start").duration=10
+
+#	obj.addProperty("App::PropertyInteger","end","intervall","end").end=10
+#	obj.addProperty("App::PropertyPlacement","initPlace","3D Param","initPlace")
+#	obj.addProperty("App::PropertyBool","showFrame","info","Rotationsachse Zentrum relativ").showFrame=False
+#	obj.addProperty("App::PropertyBool","showFile","info","Rotationsachse Zentrum relativ").showFile=False
+#	obj.addProperty("App::PropertyString","movie","info","Rotationsachse Zentrum relativ").movie="/tmp/movie/"
+
+	obj.addProperty("App::PropertyEnumeration","dirMode","dir","Rotationsachse Zentrum relativ").dirMode=['None','Vector','Object']
+	obj.addProperty("App::PropertyVector","dirVector","dir","richutng ")
+	obj.addProperty("App::PropertyLink","dirTarget","dir","richutng ")
+	
+	obj.addProperty("App::PropertyEnumeration","posMode","pos","Rotationsachse Zentrum relativ").posMode=['None','Vector','Object']
+	obj.addProperty("App::PropertyVector","posVector","pos","sweep").posVector=FreeCAD.Vector(0,0,0)
+	obj.addProperty("App::PropertyLink","posObject","pos","sweep")
+	
+	obj.addProperty("App::PropertyFloat","zoom","lens geometry","extrusion").zoom=1
+	
+	_Viewpoint(obj)
+	_ViewProviderViewpoint(obj.ViewObject)
+	return obj
+
+class _CommandViewpoint(_CommandActor):
+	def GetResources(self): 
+		return {'Pixmap' : 'Mod/Animation/icons/viewpoint.png', 'MenuText': 'Viewpoint', 'ToolTip': 'Viewpoint Dialog'} 
+
+	def Activated(self):
+		if FreeCADGui.ActiveDocument:
+			FreeCAD.ActiveDocument.openTransaction("create BB")
+			FreeCADGui.doCommand("import Animation")
+			FreeCADGui.doCommand("Animation.createViewpoint()")
+			FreeCAD.ActiveDocument.commitTransaction()
+			FreeCAD.ActiveDocument.recompute()
+		else:
+			say("Erst Arbeitsbereich oeffnen")
+		return
+
+
+
+class _Viewpoint(_Actor):
+
+	def __init__(self,obj):
+		self.obj2=obj
+		obj.Proxy = self
+		self.Type = "_Viewpoint"
+
+	def step(self,now):
+		App=FreeCAD
+		say("step " +str(now))
+		
+		from pivy import coin
+		camera = FreeCADGui.ActiveDocument.ActiveView.getCameraNode()
+
+# ziel, aufrichtung - wo ist oben bei der kamera
+
+		# camera.pointAt(coin.SbVec3f(0,0,0),coin.SbVec3f(0,0,1))
+		campos=Base.Vector( 100, 50, 30)
+		camera.position.setValue( campos) 
+		
+	
+
+		if now==self.obj2.start:
+			pass
+			
+		if self.obj2.zoom <>1:
+			if self.obj2.zoom <=0:
+				sayErr("Zoom darf nicht <= NULL seinn")
+				errorDialog("Zoom darf nicht <= NULL seinn")
+			SS=1/(self.obj2.zoom)-1
+			start=float(self.obj2.start)
+			end=float(self.obj2.start + self.obj2.duration)
+			if now>start and now<=end:
+				s1=0.00+(1+(now-start)/(end-start)*SS)
+				s2=0.00+(1+(now-1-start)/(end-start)*SS)
+				s=s1/s2
+				camera.scaleHeight(s)
+		
+		if self.obj2.dirMode=='Object':
+			target=self.obj2.dirTarget
+			say(target.Placement.Base)
+			pos3=target.Placement.Base
+			pos3.sub(campos)
+			
+			
+			#pos=FreeCAD.Vector(campos)
+			#pos2=pos.sub(target.Placement.Base)
+			#say(pos)
+			#say(pos3)
+			camera.pointAt(coin.SbVec3f(pos3),coin.SbVec3f(0,0,1))
+			say("redirected")
+		
+		App.ActiveDocument.recompute()
+		FreeCADGui.updateGui() 
+
+
+class _ViewProviderViewpoint(_ViewProviderActor):
+
+	def getIcon(self):
+		return 'Mod/Animation/icons/viewpoint.png'
+
+if FreeCAD.GuiUp:
+	FreeCADGui.addCommand('Anim_Viewpoint',_CommandViewpoint())
+
+#----------------------
+
+
+
+
+
+
 
 #----------------------------------------------------------------------------------------------------------
 def createExtruder(name='My_Extruder'):
@@ -346,8 +462,10 @@ def createBillboard(name='My_Billboard'):
 	obj.addProperty("App::PropertyBool","showDate","info","Rotationsachse Zentrum relativ").showDate=False
 	obj.addProperty("App::PropertyStringList","text","info","text").text=["Animation can display","configurable Text Information","in a HUD"]
 	obj.addProperty("App::PropertyPath","textFiles","info","text").textFiles="/home/microelly2/texts/t%04.f.txt"
-	# obj.addProperty("App::PropertyVector","text","3D Param","motionVector").motionVector=FreeCAD.Vector(100,0,0)
 	obj.addProperty("App::PropertyLink","textObj","info","moving object ")
+#	obj.addProperty("App::PropertyLink","anchor","info","moving object ")
+#	obj.addProperty("App::PropertyVector","offsetAnchor","3D Param","motionVector").motionVector=FreeCAD.Vector(100,0,0)
+	
 	obj.textObj=FreeCAD.ActiveDocument.addObject("App::Annotation","Text Billboard")
 	obj.textObj.LabelText=obj.text
 	obj.textObj.Position=FreeCAD.Vector(0,0,0)
@@ -481,6 +599,7 @@ class _Mover(_Actor):
 					relativ=1.00/(self.obj.end-self.obj.start+1)
 					v=FreeCAD.Vector(self.obj.vectorMotion).multiply(relativ)
 					Draft.move(self.obj.obj2,v,copy=False)
+				FreeCADGui.Selection.clearSelection()
 		else:
 			say("kein Moveobjekt ausgewaehlt")
 		
@@ -766,7 +885,15 @@ class _Plugger(_Actor):
 
 		if self.obj2.detail=="Placement.Base":
 			sayd("Base")
-			self.obj2.obj.Placement.Base=self.obj2.pin.Placement.Base
+			if self.obj2.obj.TypeId=='App::Annotation':
+				p=FreeCAD.Vector(self.obj2.pin.Placement.Base)
+				p2=p.add(self.obj2.offsetVector)
+				self.obj2.obj.Position=p2
+			else:
+				p=FreeCAD.Vector(self.obj2.pin.Placement.Base)
+				p2=p.add(self.obj2.offsetVector)
+				self.obj2.obj.Placement.Base=p2
+				
 		elif self.obj2.detail=="Vertex.Point":
 			sayd("set vertex")
 			sayd("punkt index")
@@ -1448,7 +1575,10 @@ class _Runner:
 		M = FreeCADGui.Selection.getSelectionEx()
 		say(M)
 		if len(M)==0:
-			errorDialog("Manager auswahlen")
+			FreeCAD.ActiveDocument.openTransaction("run Manager")
+			FreeCADGui.doCommand("App.ActiveDocument.My_Manager.Proxy.run(-1)")
+			FreeCAD.ActiveDocument.commitTransaction()
+			FreeCAD.ActiveDocument.recompute()
 		elif M[0].Object.Proxy.Type <> '_Manager':
 			errorDialog("Manager auswahlen")
 		else:
@@ -1473,7 +1603,7 @@ class _B1:
 	def GetResources(self): 
 		return {'Pixmap' : 'Mod/Animation/icons/icon1.svg', 'MenuText': 'B1', 'ToolTip': 'B1'} 
 	def IsActive(self):
-		return True
+		return False
 	def Activated(self):
 		say("running _B1 dummy")
 
@@ -1481,7 +1611,7 @@ class _B2:
 	def GetResources(self): 
 		return {'Pixmap' : 'Mod/Animation/icons/icon2.svg', 'MenuText': 'B2', 'ToolTip': 'B2'} 
 	def IsActive(self):
-		return True
+		return False
 	def Activated(self):
 		say("running B2  - dummy ")
 
@@ -1489,7 +1619,7 @@ class _B3:
 	def GetResources(self): 
 		return {'Pixmap' : 'Mod/Animation/icons/icon3.svg', 'MenuText': 'Edit Object', 'ToolTip': 'Edit Object'} 
 	def IsActive(self):
-		return True
+		return False
 	def Activated(self):
 		say("runngi _B3")
 		t=FreeCADGui.Selection.getSelection()
