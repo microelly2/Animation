@@ -49,6 +49,8 @@ class AnimationWorkbench(Workbench):
 				"Anim_Styler",
 				"Anim_Billboard",
 				"Anim_Moviescreen",
+				"Anim_Extruder",
+				"Anim_Viewpoint",
 
 
 				"Anim_Manager",
@@ -58,8 +60,6 @@ class AnimationWorkbench(Workbench):
 				"A_Runner",
 				"B1","B2",
 				"EditObject",
-				"Anim_Extruder",
-				"Anim_Viewpoint"
 						]
 						
 		self.actions = [	
@@ -87,10 +87,11 @@ class AnimationWorkbench(Workbench):
 		Msg("Animation workbench deactivated\n")
 
 	def ContextMenu(self, recipient):
-  #	  self.appendContextMenu("Animation tools",self.animtools)
-		self.appendContextMenu("My Animation tools",self.contextTools)
-		self.appendContextMenu("",self.contextTools)
-		FreeCAD.yy=self
+#	  self.appendContextMenu("Animation tools",self.animtools)
+# 		self.appendContextMenu("My Animation tools",self.contextTools)
+#		self.appendContextMenu("",self.contextTools)
+#		FreeCAD.yy=self
+		pass
 
 	def GetClassName(self): 
 		return "Gui::PythonWorkbench"
