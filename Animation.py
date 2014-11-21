@@ -182,7 +182,8 @@ def createViewpoint(name='My_Viewpoint'):
 	obj.addProperty("App::PropertyVector","posVector","Position","sweep").posVector=FreeCAD.Vector(0,0,0)
 	obj.addProperty("App::PropertyLink","posObject","Position","sweep")
 	obj.addProperty("App::PropertyFloat","zoom","lens geometry","extrusion").zoom=1
-	
+	obj.addProperty("App::PropertyEnumeration","typeCamera","Camera","extrusion").typeCamera=["Orthographic","Perspective"]
+	obj.typeCamera="Orthographic"
 	obj.modeCamera='Vector'
 	obj.indexCamera=1
 	
@@ -220,6 +221,13 @@ class _Viewpoint(_Actor):
 		
 		from pivy import coin
 		camera = FreeCADGui.ActiveDocument.ActiveView.getCameraNode()
+
+		Gui=FreeCADGui
+		if self.obj2.typeCamera=="Orthographic":
+			Gui.activeDocument().activeView().setCameraType("Orthographic")
+		else:
+			Gui.activeDocument().activeView().setCameraType("Perspective")
+
 
 # ziel, aufrichtung - wo ist oben bei der kamera
 
