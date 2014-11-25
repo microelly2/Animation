@@ -96,10 +96,10 @@ class _Actor(object):
 		say("runsub ...")
 		say(self)
 		FreeCAD.yy=self
-		g=self.obj.Group
+		g=self.obj2.Group
 		say(g)
 		for sob in g:
-				FreeCAD.tt=sob
+				FreeCAD.ty=sob
 				say(sob.Label)
 				sob.Proxy.step(now)
 		
@@ -654,7 +654,7 @@ class _CommandMover(_CommandActor):
 class _Mover(_Actor):
 		
 	def __init__(self,obj,motion=FreeCAD.Vector(100,0,0) ,start=0,end=10):
-		self.obj=obj
+		self.obj2=obj
 		obj.Proxy = self
 		self.Type = "_Mover"
 
@@ -663,36 +663,36 @@ class _Mover(_Actor):
 		sayd(self)
 		self.stepsub(now)
 		FreeCAD.zz=self
-		say(self.obj)
-		say(self.obj.ModeMotion)
-		if not self.obj.obj2:
+		say(self.obj2)
+		say(self.obj2.ModeMotion)
+		if not self.obj2.obj2:
 			errorDialog("kein mover objekt zugeordnet")
 			raise Exception(' self.obj2 nicht definiert')
-		if self.obj.obj2:
-			if now<self.obj.start or now>self.obj.end:
+		if self.obj2.obj2:
+			if now<self.obj2.start or now>self.obj2.end:
 				pass
 			else:
 				#if self.obj.ModeMotion == 'Path':
-				if self.obj.ModeMotion == 'Path' or  self.obj.ModeMotion == 'DLine' or  self.obj.ModeMotion == 'DWire':
-					pos=-self.obj.indexMotion
+				if self.obj2.ModeMotion == 'Path' or  self.obj2.ModeMotion == 'DLine' or  self.obj2.ModeMotion == 'DWire':
+					pos=-self.obj2.indexMotion
 					t=FreeCAD.animMover[pos]
 					v=t.pop()
-					Draft.move(self.obj.obj2,v,copy=False)
+					Draft.move(self.obj2.obj2,v,copy=False)
 				else:
-					relativ=1.00/(self.obj.end-self.obj.start+1)
-					v=FreeCAD.Vector(self.obj.vectorMotion).multiply(relativ)
-					Draft.move(self.obj.obj2,v,copy=False)
+					relativ=1.00/(self.obj2.end-self.obj2.start+1)
+					v=FreeCAD.Vector(self.obj2.vectorMotion).multiply(relativ)
+					Draft.move(self.obj2.obj2,v,copy=False)
 				FreeCADGui.Selection.clearSelection()
 		else:
 			say("kein Moveobjekt ausgewaehlt")
 		
 	def Xreverse(self):
-		self.obj.vectorMotion.multiply(-1)
+		self.obj2.vectorMotion.multiply(-1)
 
 	def initialize(self):
 		say("initialize ...")
-		if  self.obj.ModeMotion == 'Path':
-			self.obj.indexMotion=1
+		if  self.obj2.ModeMotion == 'Path':
+			self.obj2.indexMotion=1
 			say("set indexMotion to 1 for Path")
 
 
@@ -702,8 +702,8 @@ class _Mover(_Actor):
 		sayd(obj)
 		
 		sayd("execute ..2 ")
-		if hasattr(self,'obj2'):
-			self.initPlace=	self.obj2.Placements
+		#if hasattr(self,'obj2'):
+		#	self.initPlace=	self.obj2.Placement
 		# anzeigewert neu berechnen
 		if hasattr(obj,'obj2'):
 			say(obj.obj2)
@@ -1437,7 +1437,8 @@ class _Manager(_Actor):
 					say("notbremse gezogen")
 					raise Exception("Notbremse Manager main loop")
 			for ob in t.OutList:
-				if 0: # fehler analysieren
+				if 1: # fehler analysieren
+					say(" step fuer ")
 					sayd(ob.Label)
 					if ob.ViewObject.Visibility:
 							ob.Proxy.step(nw)
