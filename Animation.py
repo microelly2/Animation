@@ -92,6 +92,17 @@ class _Actor(object):
 		self.obj.end=e
 	def step(self,now):
 		sayd("Step" + str(now))
+	def stepsub(self,now):
+		say("runsub ...")
+		say(self)
+		FreeCAD.yy=self
+		g=self.obj.Group
+		say(g)
+		for sob in g:
+				FreeCAD.tt=sob
+				say(sob.Label)
+				sob.Proxy.step(now)
+		
 	def execute(self,obj):
 		pass
 
@@ -167,7 +178,9 @@ def createViewpoint(name='My_Viewpoint'):
 	obj = FreeCAD.ActiveDocument.addObject("App::DocumentObjectGroupPython",name)
 	obj.addProperty("App::PropertyInteger","start","Base","start").start=0
 	obj.addProperty("App::PropertyInteger","duration","Base","start").duration=10
-	
+
+	obj.addProperty("App::PropertyInteger","end","Base","end")
+
 	obj.addProperty("App::PropertyVector","posCamera","Camera","sweep").posCamera=FreeCAD.Vector(10,50,30)
 	obj.addProperty("App::PropertyLink","pathCamera","Camera","sweep")
 	obj.addProperty("App::PropertyInteger","indexCamera","Camera","sweep")
@@ -285,6 +298,8 @@ class _Viewpoint(_Actor):
 		say("execute Viewpoint")
 		say(self)
 		say(obj)
+		obj.setEditorMode("end", 1) #ro
+		obj.end=obj.start+obj.duration
 		if obj.modeCamera == 'Path':
 			say("drin 1")
 			if 1  or obj.indexCamera >= 0:
@@ -646,6 +661,7 @@ class _Mover(_Actor):
 	def step(self,now):
 		sayd("step XX")
 		sayd(self)
+		self.stepsub(now)
 		FreeCAD.zz=self
 		say(self.obj)
 		say(self.obj.ModeMotion)
@@ -701,7 +717,7 @@ class _Mover(_Actor):
 			obj.setEditorMode("vectorMotion", 0) #rw
 			obj.setEditorMode("reverseMotion", 0) #rw
 		obj.end=obj.start+obj.duration
-		obj.setEditorMode("end", 1) #rw
+		obj.setEditorMode("end", 1) #ro
 		if obj.ModeMotion == 'Path' or  obj.ModeMotion == 'DLine' or  obj.ModeMotion == 'DWire':
 			if obj.indexMotion>0:
 				obj.indexMotion=-1
@@ -803,6 +819,9 @@ class _Rotator(_Actor):
 		if hasattr(obj,'obj2'):
 			#say(obj.obj2)
 			pass
+		obj.setEditorMode("end", 1) #ro
+		obj.end=obj.start+obj.duration
+
 	def step(self,now):
 		if now<self.obj2.start or now>self.obj2.end:
 			pass
@@ -1138,6 +1157,8 @@ class _Adjuster(_Actor):
 
 	def execute(self,obj):
 		say("execute _Adjuster")
+		obj.setEditorMode("end", 1) #ro
+		obj.end=obj.start+obj.duration
 
 class _ViewProviderAdjuster(_ViewProviderActor):
 	
@@ -1152,6 +1173,8 @@ def createStyler(name='MyStyler'):
 	obj = FreeCAD.ActiveDocument.addObject("App::DocumentObjectGroupPython",name)
 	obj.addProperty("App::PropertyInteger","start","Base","start").start=10
 	obj.addProperty("App::PropertyInteger","end","Base","end").end=40
+	obj.addProperty("App::PropertyInteger","duration","Base","end")
+
 #	obj.addProperty("App::PropertyFloat","va","intervall","va").va=0
 #	obj.addProperty("App::PropertyFloat","ve","intervall","ve").ve=40
 	obj.addProperty("App::PropertyLink","obj","Object","Objekt")
@@ -1222,7 +1245,9 @@ class _Styler(_Actor):
 		self.obj2.ve=ve
 
 	def execute(self,obj):
-		sayd("execute _Adjuster")
+		sayd("execute _Styler")
+		obj.setEditorMode("end", 1) #ro
+		obj.end=obj.start+obj.duration
 
 class _ViewProviderStyler(_ViewProviderActor):
 	
@@ -1237,8 +1262,8 @@ if FreeCAD.GuiUp:
 def createPhotographer(name='My_Photographer'):
 	obj = FreeCAD.ActiveDocument.addObject("App::DocumentObjectGroupPython",name)
 	obj.addProperty("App::PropertyInteger","start","Base","start").start=0
-	obj.addProperty("App::PropertyInteger","end","Base","end").end=40
-	
+	obj.addProperty("App::PropertyInteger","end","Base","end").end=40000
+	obj.addProperty("App::PropertyInteger","duration","Base","end").duration=40000
 	obj.addProperty("App::PropertyInteger","size_x","Output","start").size_x=640
 	obj.addProperty("App::PropertyInteger","size_y","Output","end").size_y=480
 	obj.addProperty("App::PropertyPath","fn","Output","outdir").fn="/tmp/animation/t"
@@ -1276,6 +1301,8 @@ class _Photographer(_Actor):
 
 	def execute(self,obj):
 		sayd("execute _Photographer")
+		obj.setEditorMode("end", 1) #ro
+		obj.end=obj.start+obj.duration
 
 	def step(self,now):
 		if now<self.obj2.start or now>self.obj2.end:
@@ -1336,7 +1363,8 @@ if FreeCAD.GuiUp:
 
 def createManager(name='My_Manager'):
 	obj = FreeCAD.ActiveDocument.addObject("App::DocumentObjectGroupPython",name)
-	obj.addProperty("App::PropertyInteger","intervall","params","intervall").intervall=10
+	obj.addProperty("App::PropertyInteger","start","Base","start").start=0
+	obj.addProperty("App::PropertyInteger","intervall","Base","intervall").intervall=10
 	obj.addProperty("App::PropertyString","text","params","text").text="NO"
 	_Manager(obj)
 	_ViewProviderManager(obj.ViewObject)
