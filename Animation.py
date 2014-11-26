@@ -40,7 +40,7 @@ if FreeCAD.GuiUp:
 def sayd(s):
 	if hasattr(FreeCAD,'animation_debug'):
 		pass
-	FreeCAD.Console.PrintMessage(str(s)+"\n")
+		FreeCAD.Console.PrintMessage(str(s)+"\n")
 
 def say(s):
 		FreeCAD.Console.PrintMessage(str(s)+"\n")
@@ -97,11 +97,20 @@ class _Actor(object):
 		say(self)
 		FreeCAD.yy=self
 		g=self.obj2.Group
-		say(g)
+		#say(g)
 		for sob in g:
 				FreeCAD.ty=sob
 				say(sob.Label)
 				sob.Proxy.step(now)
+		
+	def move(self,vec=FreeCAD.Vector(0,0,0)):
+		FreeCAD.uu=self
+		say("move " + str(self.obj2.Label) + " vector=" +str(vec))
+	def rot(self,angle=0):
+		FreeCAD.uu=self
+		say("rotate " + str(self.obj2.Label) + " angle=" +str(angle))
+		
+
 		
 	def execute(self,obj):
 		pass
@@ -658,29 +667,48 @@ class _Mover(_Actor):
 		obj.Proxy = self
 		self.Type = "_Mover"
 
+	def stepsub(self,now,vec):
+		sayd("run mover step sub ...")
+		
+		FreeCAD.yy=self
+		g=self.obj2.Group
+		# say(g)
+		for sob in g:
+				FreeCAD.ty=sob
+				# say(sob.Label)
+				sob.Proxy.step(now)
+				sob.Proxy.move(vec)
+	
+
+
+
 	def step(self,now):
 		sayd("step XX")
 		sayd(self)
-		self.stepsub(now)
+		
 		FreeCAD.zz=self
-		say(self.obj2)
-		say(self.obj2.ModeMotion)
+		#say(self.obj2)
+		#say(self.obj2.ModeMotion)
 		if not self.obj2.obj2:
 			errorDialog("kein mover objekt zugeordnet")
 			raise Exception(' self.obj2 nicht definiert')
 		if self.obj2.obj2:
+			sayd("Move it ");
 			if now<self.obj2.start or now>self.obj2.end:
 				pass
 			else:
+				sayd("move steps")
 				#if self.obj.ModeMotion == 'Path':
 				if self.obj2.ModeMotion == 'Path' or  self.obj2.ModeMotion == 'DLine' or  self.obj2.ModeMotion == 'DWire':
 					pos=-self.obj2.indexMotion
 					t=FreeCAD.animMover[pos]
 					v=t.pop()
+					self.stepsub(now,v)
 					Draft.move(self.obj2.obj2,v,copy=False)
 				else:
 					relativ=1.00/(self.obj2.end-self.obj2.start+1)
 					v=FreeCAD.Vector(self.obj2.vectorMotion).multiply(relativ)
+					self.stepsub(now,v)
 					Draft.move(self.obj2.obj2,v,copy=False)
 				FreeCADGui.Selection.clearSelection()
 		else:
@@ -690,7 +718,7 @@ class _Mover(_Actor):
 		self.obj2.vectorMotion.multiply(-1)
 
 	def initialize(self):
-		say("initialize ...")
+		sayd("initialize ...")
 		if  self.obj2.ModeMotion == 'Path':
 			self.obj2.indexMotion=1
 			say("set indexMotion to 1 for Path")
@@ -706,8 +734,9 @@ class _Mover(_Actor):
 		#	self.initPlace=	self.obj2.Placement
 		# anzeigewert neu berechnen
 		if hasattr(obj,'obj2'):
-			say(obj.obj2)
-		say("recalculate vector ")
+			sayd(obj.obj2)
+			pass
+		
 		FreeCAD.zu=obj
 		# say(obj.ModeMotion)
 		if obj.ModeMotion <> 'Vector':
@@ -729,7 +758,7 @@ class _Mover(_Actor):
 				l=x.Shape.copy().discretize(steps)
 				ll=[]
 				for pp in range(len(l)-1):
-					print(pp)
+					
 					v=FreeCAD.Vector(l[pp+1]).sub(l[pp])
 					ll.append(v)
 					
@@ -822,6 +851,9 @@ class _Rotator(_Actor):
 		obj.setEditorMode("end", 1) #ro
 		obj.end=obj.start+obj.duration
 
+	def move(self,vec):
+		self.obj2.rotationCentre=self.obj2.rotationCentre.add(vec)
+
 	def step(self,now):
 		if now<self.obj2.start or now>self.obj2.end:
 			pass
@@ -830,30 +862,20 @@ class _Rotator(_Actor):
 			angle2=self.obj2.angle*relativ
 			rotCenter=self.obj2.rotationCentre
 			
-			if 0:
-				rotCenter=FreeCAD.Vector(self.obj2.rotationCentre).add(self.obj2.obj2.Placement.Base)
-				Draft.rotate([self.obj2.obj2],angle2,rotCenter,axis=self.obj2.rotationAxis,copy=False)
-			else:
-				sayd("rotation")
-				sayd(angle2)
-				sayd("before");	sayd(self.obj2.obj2.Placement)
-				ro1=self.obj2.obj2.Placement
-				sayd(ro1)
-				sayd(self.obj2.rotationAxis)
-				sayd(rotCenter)
-				pos=self.obj2.obj2.Placement.Base
-				r1=FreeCAD.Rotation(self.obj2.rotationAxis,angle2)
-				
-				r=self.obj2.obj2.Placement.Rotation
-				zzz=r1.multiply(r)
-				self.obj2.obj2.Placement.Rotation=zzz
-				newplace = FreeCAD.Placement(pos,zzz,rotCenter)       # make a new Placement object
-				self.obj2.obj2.Placement = newplace      
-				pos2=self.obj2.obj2.Placement.Base
-				pos3=pos2.sub(pos)
-				self.obj2.obj2.Placement.Base=pos3
+			FreeCAD.ActiveDocument.recompute()
+			sayd("rotation")
+			sayd(angle2)
+			sayd("before");	sayd(self.obj2.obj2.Placement)
+			
+			zzz=FreeCAD.Rotation(self.obj2.rotationAxis,angle2)
+			App=FreeCAD
+			self.obj2.obj2.Placement=App.Placement(
+			FreeCAD.Vector(0,0,0), 
+			zzz,
+			self.obj2.rotationCentre).multiply(self.obj2.obj2.Placement)
+			FreeCAD.ActiveDocument.recompute()
 
-				sayd("after");	sayd(self.obj2.obj2.Placement)
+			sayd("after");	sayd(self.obj2.obj2.Placement)
 			FreeCADGui.Selection.clearSelection()
 		sayd("ende")
 
@@ -1065,7 +1087,7 @@ class _Tranquillizer(_Actor):
 		self.obj2 = obj 
 
 	def execute(self,obj):
-		say("execute _Tranquillizer")
+		sayd("execute _Tranquillizer")
 
 	def step(self,now):
 		sayd(self)
@@ -1403,7 +1425,7 @@ class _Manager(_Actor):
 		self.obj2.targets.append(obj)
 
 	def run(self,intervall=-1):
-		say("run  intervall=" + str(intervall))
+		sayd("run  intervall=" + str(intervall))
 		
 		if (intervall<0):
 			intervall=self.obj2.intervall
@@ -1438,7 +1460,7 @@ class _Manager(_Actor):
 					raise Exception("Notbremse Manager main loop")
 			for ob in t.OutList:
 				if 1: # fehler analysieren
-					say(" step fuer ")
+					sayd("step fuer ")
 					sayd(ob.Label)
 					if ob.ViewObject.Visibility:
 							ob.Proxy.step(nw)
@@ -1516,21 +1538,21 @@ class AddMyWidget(QtGui.QWidget):
 		self.setWindowTitle("Animation Manager Control Panel")
 
 	def on_pushButton_clicked(self):
-		FreeCAD.Console.PrintMessage("rt")
+		#FreeCAD.Console.PrintMessage("rt")
 		#FreeCAD.zx=self
 		#say(self)
 		self.fun(self.vobj)
 		FreeCADGui.Control.closeDialog()
 		
 	def on_pushButton_clicked2(self):
-		FreeCAD.Console.PrintMessage("rt")
+		#FreeCAD.Console.PrintMessage("rt")
 		#FreeCAD.zx=self
 		#say(self)
 		self.fun2(self.vobj)
 		FreeCADGui.Control.closeDialog()
 	
 	def on_pushButton_clicked3(self):
-		FreeCAD.Console.PrintMessage("rt")
+		#FreeCAD.Console.PrintMessage("rt")
 		#FreeCAD.zx=self
 		#say(self)
 		self.fun3(self.vobj)
@@ -1564,14 +1586,26 @@ def runManager(vobj=None):
 	#say(vobj)
 	#FreeCAD.zz=vobj
 	unlockManager()
-	say("unlocked")
+	sayd("manager unlocked")
 	if vobj:
 		tt=vobj.Object
+		FreeCAD.ActiveDocument.openTransaction("run Manager")
+		tt.Proxy.run()
+		FreeCAD.ActiveDocument.commitTransaction()
+		FreeCAD.ActiveDocument.recompute()
 	else:
-		M = FreeCADGui.Selection.getSelectionEx()
-		tt=M[0].Object
-		sayd(tt)
-	tt.Proxy.run()
+		FreeCAD.ActiveDocument.openTransaction("run Manager")
+		FreeCADGui.doCommand("import Animation")
+		FreeCADGui.doCommand("M=FreeCADGui.Selection.getSelectionEx()")
+		FreeCADGui.doCommand("tt=M[0].Object")
+		FreeCADGui.doCommand("print(tt)")
+		FreeCADGui.doCommand("tt.Proxy.run()")
+		FreeCAD.ActiveDocument.commitTransaction()
+		FreeCAD.ActiveDocument.recompute()
+		#M = FreeCADGui.Selection.getSelectionEx()
+		#tt=M[0].Object
+		#sayd(tt)
+	##tt.Proxy.run()
 	say("done")
 
 def stopManager(vobj=None):
@@ -1618,16 +1652,17 @@ def reinit():
 	''' zum re initialisieren beim dateiload und bei alten dateien'''
 	for obj in FreeCAD.ActiveDocument.Objects:
 		if hasattr(obj,'Proxy'):
-			say ("re init Proxy ");say(obj.Name)
+			say ("re init Proxy " + str(obj.Name))
 			if hasattr(obj.Proxy,'Type'):
-				say("we")
-				say(obj.Proxy.Type)
+				##say("we")
+				##say(obj.Proxy.Type)
+				pass
 			else:
-				say("reinit")
+				##say("reinit")
 				obj.Proxy.__init__(obj)
-				say(obj.Proxy.Type)
+				##say(obj.Proxy.Type)
 			
-			print("init " +obj.Name)
+			# print("init " +obj.Name)
 			if obj.Proxy.Type=='Plugger':
 				if not hasattr(obj,'status'):
 					obj.addProperty("App::PropertyInteger","status","nummer","intern").status=0
@@ -1644,7 +1679,7 @@ def reinit():
 			if obj.Proxy.Type=='Rotator':
 				if not hasattr(obj,'rotCenterRelative'):
 					obj.addProperty("App::PropertyBool","rotCenterRelative","3D Param","Rotationsachse Zentrum relativ").rotCenterRelative=False
-			say(obj)
+			sayd(obj)
 
 #---------------------------------
 
