@@ -679,7 +679,24 @@ class _Mover(_Actor):
 				sob.Proxy.step(now)
 				sob.Proxy.move(vec)
 	
-
+	def rot(self,angle=0):
+		FreeCAD.uu=self
+		say("rotate " + str(self.obj2.Label) + " angle=" +str(angle))
+		if self.obj2.ModeMotion =='Vector':
+			say(self.obj2.vectorMotion)
+			
+			a=FreeCAD.Placement()
+			a.Base=self.obj2.vectorMotion
+			zzz=FreeCAD.Rotation(FreeCAD.Vector(0,0,1),angle)
+			r=FreeCAD.Placement()
+			r.Rotation=FreeCAD.Rotation(FreeCAD.Vector(0,0,1),angle)
+			a2=r.multiply(a)
+			
+			self.obj2.vectorMotion=a2.Base
+			FreeCAD.ActiveDocument.recompute()
+					
+			# self.obj2.vectorMotion=multiply(self.obj2.vectorMotion)
+			say(self.obj2.vectorMotion)
 
 
 	def step(self,now):
@@ -854,12 +871,27 @@ class _Rotator(_Actor):
 	def move(self,vec):
 		self.obj2.rotationCentre=self.obj2.rotationCentre.add(vec)
 
+	def stepsub(self,now,angle):
+		sayd("run rotator step sub ...")
+		
+		FreeCAD.yy=self
+		g=self.obj2.Group
+		say(g)
+		for sob in g:
+				FreeCAD.ty=sob
+				say(sob.Label)
+				sob.Proxy.step(now)
+				sob.Proxy.rot(angle)
+	
 	def step(self,now):
 		if now<self.obj2.start or now>self.obj2.end:
 			pass
 		else:
 			relativ=1.00/(self.obj2.end-self.obj2.start+1)
 			angle2=self.obj2.angle*relativ
+			
+			self.stepsub(now,angle2)
+			
 			rotCenter=self.obj2.rotationCentre
 			
 			FreeCAD.ActiveDocument.recompute()
