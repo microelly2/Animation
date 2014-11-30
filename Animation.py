@@ -180,6 +180,131 @@ import Draft
 
 #-------------------------
 
+
+#---------------------------------------------------------------
+def createBounder(name='MyBounder'):
+	obj = FreeCAD.ActiveDocument.addObject("App::DocumentObjectGroupPython",name)
+	obj.addProperty("App::PropertyInteger","start","Base","start").start=10
+	obj.addProperty("App::PropertyInteger","end","Base","end").end=40
+	obj.addProperty("App::PropertyInteger","duration","Base","end")
+
+	obj.addProperty("App::PropertyLink","obj","Object","Objekt")
+#	obj.addProperty("App::PropertyInteger","nr","Object","nummer Datum").nr=1#
+#	obj.addProperty("App::PropertyEnumeration","unit","3D Param","einheit").unit=['deg','mm']
+#	# FreeCADGui.getDocument("Unnamed").getObject("Box").Transparency = 2
+
+	obj.addProperty("App::PropertyBool","x","intervall","start").x=False
+	obj.addProperty("App::PropertyFloat","xmin","intervall","va")
+	obj.addProperty("App::PropertyFloat","xmax","intervall","ve")
+	obj.addProperty("App::PropertyBool","y","intervall","start").y=False
+	obj.addProperty("App::PropertyFloat","ymin","intervall","va")
+	obj.addProperty("App::PropertyFloat","ymax","intervall","ve")
+
+	obj.addProperty("App::PropertyBool","z","intervall","start").z=False
+	obj.addProperty("App::PropertyFloat","zmin","intervall","va")
+	obj.addProperty("App::PropertyFloat","zmax","intervall","ve")
+
+
+	
+#	obj.addProperty("App::PropertyInteger","transpaStart","Transparency","start").transpaStart=0
+#	obj.addProperty("App::PropertyInteger","transpaEnd","Transparency","end").transpaEnd=40
+#	obj.addProperty("App::PropertyEnumeration","DisplayStyle","Transparency","end").DisplayStyle=['Flat Lines','Shaded','Wireframe']
+#	obj.addProperty("App::PropertyBool","visibility","Visibility","toggle visibility").visibility=False
+#	obj.addProperty("App::PropertyInteger","transpaStart","transparency","start").transpaStart=0
+#	obj.addProperty("App::PropertyInteger","transpaEnd","transparency","end").transpaEnd=40
+	
+	
+	_Bounder(obj)
+	_ViewProviderBounder(obj.ViewObject)
+	return obj
+
+class _CommandBounder(_CommandActor):
+	def GetResources(self): 
+		return {'Pixmap' : 'Mod/Animation/icons/Bounder.png', 'MenuText': 'Bounder', 'ToolTip': 'Bounder Dialog'} 
+
+	def Activated(self):
+		if FreeCADGui.ActiveDocument:
+			FreeCAD.ActiveDocument.openTransaction("create Bounder")
+			FreeCADGui.doCommand("import Animation")
+			FreeCADGui.doCommand("Animation.createBounder()")
+			FreeCAD.ActiveDocument.commitTransaction()
+			FreeCAD.ActiveDocument.recompute()
+		else:
+			say("Erst Arbeitsbereich oeffnen")
+		return
+	   
+class _Bounder(_Actor):
+	
+	def __init__(self,obj):
+		obj.Proxy = self
+		self.Type = "Bounder"
+		self.obj2 = obj 
+
+		
+	def step(self,now):
+		FreeCAD.tt=self
+		
+		
+		say("Bounder step!" + str(now))
+		if now<=self.obj2.start or now>self.obj2.end:
+			say("ausserhalb")
+			pass
+		else:
+			pass
+			gob=FreeCAD.ActiveDocument.getObject(self.obj2.obj.Name)
+			pm=gob.Placement.Base
+			say(pm)
+			x=pm.x
+			y=pm.y
+			z=pm.z
+			if self.obj2.x:
+				if self.obj2.xmin>x:
+					x=self.obj2.xmin
+					say("xmin")
+				if self.obj2.xmax<x:
+					x=self.obj2.xmax
+					say("xmax")
+
+			if self.obj2.y:
+				if self.obj2.ymin>y:
+					y=self.obj2.ymin
+				if self.obj2.ymax<y:
+					y=self.obj2.ymax
+
+			if self.obj2.z:
+				if self.obj2.zmin>z:
+					z=self.obj2.zmin
+				if self.obj2.zmax<z:
+					z=self.obj2.zmax
+			gob.Placement.Base=FreeCAD.Vector(x,y,z)
+			pm=gob.Placement.Base
+			say(pm)
+			FreeCADGui.updateGui() 
+			
+			
+
+	def setValues(self,va,ve):
+		self.obj2.va=va
+		self.obj2.ve=ve
+
+	def execute(self,obj):
+		sayd("execute _Bounder")
+		obj.setEditorMode("end", 1) #ro
+		obj.end=obj.start+obj.duration
+
+class _ViewProviderBounder(_ViewProviderActor):
+	
+	def getIcon(self):
+		return 'Mod/Animation/icons/Bounder.png'
+
+if FreeCAD.GuiUp:
+	FreeCADGui.addCommand('Anim_Bounder',_CommandBounder())
+
+#---------------------------------------------------------------
+
+
+
+
 #----------------------------------------------------------------------------------------------------------
 def createViewpoint(name='My_Viewpoint'):
 	say("creat movie screen")
@@ -681,9 +806,9 @@ class _Mover(_Actor):
 	
 	def rot(self,angle=0):
 		FreeCAD.uu=self
-		say("rotate " + str(self.obj2.Label) + " angle=" +str(angle))
+		#say("rotate " + str(self.obj2.Label) + " angle=" +str(angle))
 		if self.obj2.ModeMotion =='Vector':
-			say(self.obj2.vectorMotion)
+			#say(self.obj2.vectorMotion)
 			
 			a=FreeCAD.Placement()
 			a.Base=self.obj2.vectorMotion
@@ -696,7 +821,7 @@ class _Mover(_Actor):
 			FreeCAD.ActiveDocument.recompute()
 					
 			# self.obj2.vectorMotion=multiply(self.obj2.vectorMotion)
-			say(self.obj2.vectorMotion)
+			#say(self.obj2.vectorMotion)
 
 
 	def step(self,now):
@@ -711,7 +836,7 @@ class _Mover(_Actor):
 			raise Exception(' self.obj2 nicht definiert')
 		if self.obj2.obj2:
 			sayd("Move it ");
-			if now<self.obj2.start or now>self.obj2.end:
+			if now<=self.obj2.start or now>self.obj2.end:
 				pass
 			else:
 				sayd("move steps")
@@ -723,7 +848,7 @@ class _Mover(_Actor):
 					self.stepsub(now,v)
 					Draft.move(self.obj2.obj2,v,copy=False)
 				else:
-					relativ=1.00/(self.obj2.end-self.obj2.start+1)
+					relativ=1.00/(self.obj2.end-self.obj2.start)
 					v=FreeCAD.Vector(self.obj2.vectorMotion).multiply(relativ)
 					self.stepsub(now,v)
 					Draft.move(self.obj2.obj2,v,copy=False)
@@ -771,7 +896,8 @@ class _Mover(_Actor):
 				# x=FreeCAD.ActiveDocument.DWire001
 				x=obj.sourceMotion
 
-				steps=obj.duration+1+1
+				steps=obj.duration
+				
 				l=x.Shape.copy().discretize(steps)
 				ll=[]
 				for pp in range(len(l)-1):
@@ -884,10 +1010,10 @@ class _Rotator(_Actor):
 				sob.Proxy.rot(angle)
 	
 	def step(self,now):
-		if now<self.obj2.start or now>self.obj2.end:
+		if now<=self.obj2.start or now>self.obj2.end:
 			pass
 		else:
-			relativ=1.00/(self.obj2.end-self.obj2.start+1)
+			relativ=1.00/(self.obj2.end-self.obj2.start)
 			angle2=self.obj2.angle*relativ
 			
 			self.stepsub(now,angle2)
@@ -954,6 +1080,13 @@ def createPlugger(name='My_Plugger'):
 	obj.addProperty("App::PropertyInteger","status","Pin","intern").status=0
 	obj.addProperty("App::PropertyEnumeration","detail","Pin","art").detail=["Placement.Base","Vertex.Point","unklarmp"]
 	obj.addProperty("App::PropertyVector","offsetVector","Pin","offsetVector").offsetVector=FreeCAD.Vector(30,30,0)
+
+	obj.addProperty("App::PropertyEnumeration","mode","Base","start").mode=["always","intervall","signal"]
+
+	obj.addProperty("App::PropertyInteger","start","Base","start").start=0
+	obj.addProperty("App::PropertyInteger","end","Base","end").end=10
+	obj.addProperty("App::PropertyInteger","duration","Base","end").end=10
+
 
 #	obj.addProperty("App::PropertyLinkSub","subobj","3D Param1","Subobjekt")
 #	obj.addProperty("App::PropertyLinkSub","subobj","3D Param1","Subobjekt")
@@ -1029,45 +1162,47 @@ class _Plugger(_Actor):
 			raise Exception(' self.obj2.pin nicht definiert')
 		sayd(self.obj2.ix)
 		sayd(self.obj2.detail)
+		
+		if self.obj2.mode=="always" or ( self.obj2.mode=="intervall" and  self.obj2.start<=now and self.obj2.end>=now):
 
-		if self.obj2.detail=="Placement.Base":
-			sayd("Base")
-			if self.obj2.obj.TypeId=='App::Annotation':
-				p=FreeCAD.Vector(self.obj2.pin.Placement.Base)
-				p2=p.add(self.obj2.offsetVector)
-				self.obj2.obj.Position=p2
-			else:
-				p=FreeCAD.Vector(self.obj2.pin.Placement.Base)
-				p2=p.add(self.obj2.offsetVector)
-				self.obj2.obj.Placement.Base=p2
-				
-		elif self.obj2.detail=="Vertex.Point":
-			sayd("set vertex")
-			sayd("punkt index")
-			sayd(self.obj2.ix)
+			if self.obj2.detail=="Placement.Base":
+				sayd("Base")
+				if self.obj2.obj.TypeId=='App::Annotation':
+					p=FreeCAD.Vector(self.obj2.pin.Placement.Base)
+					p2=p.add(self.obj2.offsetVector)
+					self.obj2.obj.Position=p2
+				else:
+					p=FreeCAD.Vector(self.obj2.pin.Placement.Base)
+					p2=p.add(self.obj2.offsetVector)
+					self.obj2.obj.Placement.Base=p2
+					
+			elif self.obj2.detail=="Vertex.Point":
+				sayd("set vertex")
+				sayd("punkt index")
+				sayd(self.obj2.ix)
 
-			sayd("punkt alte koord")
-			say(self.obj2.obj.Placement.Base)
-			sayd("neue koords")
-			# say(self.obj2.pin.Shape.Vertexes[self.obj2.ix].Point)
-			if self.obj2.status>0:
-				ixok=self.obj2.ix
-			else:
-				ixok=findVertex(self.obj2.obj.Placement.Base,self.obj2.pin.Shape,self.obj2.offsetVector)
-			self.obj2.status += 1
-			
-			if ixok>=0:
-				self.obj2.obj.Placement.Base=self.obj2.pin.Shape.Vertexes[ixok].Point
+				sayd("punkt alte koord")
+				say(self.obj2.obj.Placement.Base)
+				sayd("neue koords")
+				# say(self.obj2.pin.Shape.Vertexes[self.obj2.ix].Point)
+				if self.obj2.status>0:
+					ixok=self.obj2.ix
+				else:
+					ixok=findVertex(self.obj2.obj.Placement.Base,self.obj2.pin.Shape,self.obj2.offsetVector)
+				self.obj2.status += 1
+				
+				if ixok>=0:
+					self.obj2.obj.Placement.Base=self.obj2.pin.Shape.Vertexes[ixok].Point
+					
+				else:
+					self.obj2.obj.Placement.Base=self.obj2.pin.Shape.Vertexes[self.obj2.ix].Point
+				sayd("offset addiert ...")
+				sayd(self.obj2.obj.Placement.Base)
+				self.obj2.obj.Placement.Base =FreeCAD.Vector(self.obj2.obj.Placement.Base).add(self.obj2.offsetVector)
+				sayd(self.obj2.obj.Placement.Base)
 				
 			else:
-				self.obj2.obj.Placement.Base=self.obj2.pin.Shape.Vertexes[self.obj2.ix].Point
-			sayd("offset addiert ...")
-			sayd(self.obj2.obj.Placement.Base)
-			self.obj2.obj.Placement.Base =FreeCAD.Vector(self.obj2.obj.Placement.Base).add(self.obj2.offsetVector)
-			sayd(self.obj2.obj.Placement.Base)
-			
-		else:
-			say("unerwartete zuordnung detail")
+				say("unerwartete zuordnung detail")
 
 	def setDetail(self,detailname,param1):
 			self.obj2.detail=detailname
@@ -1076,6 +1211,9 @@ class _Plugger(_Actor):
 	def execute(self,obj):
 		sayd("execute _Plugger")
 		self.obj2.status=0
+		obj.end=obj.start+obj.duration
+		obj.setEditorMode("end", 1) #ro
+
 
 class _ViewProviderPlugger(_ViewProviderActor):
 	def getIcon(self):
@@ -1180,7 +1318,7 @@ class _Adjuster(_Actor):
 	def step(self,now):
 		say("Adjustor step!" + str(now))
 
-		if now<self.obj2.start or now>self.obj2.end:
+		if now<=self.obj2.start or now>self.obj2.end:
 			sayd("ausserhalb")
 			pass
 		else:
@@ -1274,7 +1412,7 @@ class _Styler(_Actor):
 	def step(self,now):
 		sayd("Styler step!" + str(now))
 
-		if now<self.obj2.start or now>self.obj2.end:
+		if now<=self.obj2.start or now>self.obj2.end:
 			say("ausserhalb")
 			pass
 		else:
@@ -1285,11 +1423,12 @@ class _Styler(_Actor):
 			if self.obj2.transparency:
 
 				gob.Transparency=90
-				relativ=1.00/(self.obj2.end-self.obj2.start+1)
+				relativ=1.00/(self.obj2.end-self.obj2.start)
 				gob.Transparency=  int(relativ* (self.obj2.transpaEnd -self.obj2.transpaStart)*(now-self.obj2.start)) + self.obj2.transpaStart
-			if now==self.obj2.start or now==self.obj2.end:
-				if self.obj2.visibility:
-					gob.Visibility = not gob.Visibility
+		if now==self.obj2.start or now==self.obj2.end:
+			if self.obj2.visibility:
+				gob=FreeCADGui.ActiveDocument.getObject(self.obj2.obj.Name)
+				gob.Visibility = not gob.Visibility
 		FreeCADGui.updateGui() 
 			
 			
@@ -1359,7 +1498,7 @@ class _Photographer(_Actor):
 		obj.end=obj.start+obj.duration
 
 	def step(self,now):
-		if now<self.obj2.start or now>self.obj2.end:
+		if now<=self.obj2.start or now>self.obj2.end:
 			pass
 		else:
 			FreeCADGui.Selection.clearSelection()
@@ -2263,3 +2402,229 @@ if FreeCAD.GuiUp:
 	FreeCADGui.addCommand('TrueAction',_CommandTrueAction())
 	FreeCADGui.addCommand('CaseAction',_CommandCaseAction())
 	FreeCADGui.addCommand('QueryAction',_CommandQueryAction())
+
+
+
+#------------------------------------------------
+
+
+#-------------------------------------
+
+
+def createFiller(name='My_Filler'):
+	obj = FreeCAD.ActiveDocument.addObject("App::DocumentObjectGroupPython",name)
+	obj.addProperty("App::PropertyInteger","start","Base","start").start=10
+	obj.addProperty("App::PropertyInteger","end","Base","end").end=110
+	obj.addProperty("App::PropertyInteger","duration","Base","end").duration=100
+	obj.addProperty("App::PropertyLink","obj","Base","Sketch")
+	obj.addProperty("App::PropertyLink","objFiller","Base","Sketch")
+	obj.addProperty("App::PropertyLink","objCommon","Base","Sketch")
+
+	obj.addProperty("App::PropertyEnumeration","mode","Config","einheit").mode=['fill','slice']
+	obj.addProperty("App::PropertyEnumeration","direction","Config","einheit").direction=['+z','-z','+x','-x','+y','-y']
+	obj.addProperty("App::PropertyFloat","thickness","Config","ve").thickness=10.0
+	obj.addProperty("App::PropertyFloat","transparency","Config","ve").transparency=80
+	obj.addProperty("App::PropertyColor","color","Config","ve").color=(1.0,1.0,0.0)
+	_Filler(obj)
+	_ViewProviderMover(obj.ViewObject)
+	return obj
+
+class _CommandFiller(_CommandActor):
+	def GetResources(self): 
+		return {'Pixmap' : 'Mod/Animation/icons/filler.png', 'MenuText': 'Filler', 'ToolTip': 'Filler Dialog'} 
+
+	def Activated(self):
+		if FreeCADGui.ActiveDocument:
+			FreeCAD.ActiveDocument.openTransaction("create Filler")
+			FreeCADGui.doCommand("import Animation")
+			FreeCADGui.doCommand("Animation.createFiller()")
+			FreeCAD.ActiveDocument.commitTransaction()
+			FreeCAD.ActiveDocument.recompute()
+		else:
+			say("Erst Arbeitsbereich oeffnen")
+		return
+	   
+class _Filler(_Actor):
+	
+	def __init__(self,obj):
+		obj.Proxy = self
+		self.Type = "Filler"
+		self.obj2 = obj
+		self.ignore=False 
+
+		
+	def step_fill(self,now):
+		say("Filler step!" + str(now))
+		self.ignore=True
+		if now<=self.obj2.start:
+			self.obj2.objCommon.ViewObject.Visibility=False
+		if now<=self.obj2.start or now>self.obj2.end:
+			sayd("ausserhalb")
+			pass
+		else:
+			if not self.obj2.obj:
+				errorDialog("kein Sketch zugeordnet")
+				raise Exception(' self.obj2.obj nicht definiert')
+			f=self.obj2.objFiller
+#			maxz=12
+			b=self.obj2.obj
+			bb=b.Shape.BoundBox
+			pim=FreeCAD.Vector(bb.XMin,bb.YMin,bb.ZMin)
+			maxz=bb.ZMax-bb.ZMin
+
+			# relative=rel
+			say(now)
+			say(self.obj2.start)
+			say(self.obj2.duration)
+			relative=float(now-self.obj2.start)/self.obj2.duration
+			#if False:
+			say(relative)
+			f.Height= maxz*relative
+			say(f.Height)
+			FreeCAD.ActiveDocument.recompute()
+			obj=self.obj2.objCommon
+			if  f.Height<=0:
+				obj.ViewObject.Visibility=False
+			else:
+				obj.ViewObject.Visibility=True
+			#obj.ViewObject.ShapeColor=(1.0,.0,0.0)
+			obj.ViewObject.ShapeColor=obj=self.obj2.color
+			self.ignore=False
+
+	def step_slice(self,now):
+		say("Slicer step!" + str(now))
+		self.ignore=True
+		if now<=self.obj2.start:
+			self.obj2.objCommon.ViewObject.Visibility=False
+		if now<=self.obj2.start or now>self.obj2.end:
+			sayd("ausserhalb")
+			pass
+		else:
+			if not self.obj2.obj:
+				errorDialog("kein Sketch zugeordnet")
+				raise Exception(' self.obj2.obj nicht definiert')
+			f=self.obj2.objFiller
+			
+			maxz=12
+			# relative=rel
+			say(now)
+			say(self.obj2.start)
+			say(self.obj2.duration)
+			relative=float(now-self.obj2.start)/self.obj2.duration
+			#if False:
+			say(relative)
+			#f.Height= maxz*relative
+			#say(f.Height)
+			#---------------------------------------------
+			
+			maxz=10
+			minz=-2
+			# relative=rel
+			diff=1
+			ba=f.Placement.Base
+			f.Placement.Base=FreeCAD.Vector(ba.x,ba.y,minz+relative*(maxz-minz+diff)-diff)
+			f.Height=diff
+			FreeCAD.ActiveDocument.recompute()
+			# obj=FreeCAD.getDocument("Unnamed").getObject("Common")
+			obj=self.obj2.objCommon
+			if relative <=0 or relative>=1:
+				obj.ViewObject.Visibility=False
+			else:
+				obj.ViewObject.Visibility=True
+#			obj.ViewObject.ShapeColor=(1.0,.0,0.0)
+
+			#-------------------------
+			FreeCAD.ActiveDocument.recompute()
+			
+#			if  f.Height<=0:
+#				obj.ViewObject.Visibility=False
+#			else:
+#				obj.ViewObject.Visibility=True
+			#obj.ViewObject.ShapeColor=(1.0,.0,0.0)
+			obj.ViewObject.ShapeColor=obj=self.obj2.color
+			self.ignore=False
+
+
+
+
+
+	def step(self,now):
+		if (self.obj2.mode=="fill"):
+			self.step_fill(now)
+		else:
+			self.step_slice(now)
+
+
+	def setValues(self,va,ve):
+		self.obj2.va=va
+		self.obj2.ve=ve
+
+	def execute(self,obj):
+		obj.end=obj.start+obj.duration
+		obj.setEditorMode("end", 1) #ro
+		obj.setEditorMode("objFiller", 1) #ro
+		obj.setEditorMode("objCommon", 1) #ro
+		obj.setEditorMode("direction", 1) #ro
+		say("execute _Filler")
+		if self.ignore:
+			say("ignore")
+			return
+		
+		obj.end=obj.start+obj.duration
+		
+		# wenn noch keine zuordnung erfolgt ist
+		App=FreeCAD
+		#b=FreeCAD.getDocument("Unnamed").getObject("Fusion")
+		FreeCAD.ff=self
+		b=self.obj2.obj
+		bb=b.Shape.BoundBox
+		pim=FreeCAD.Vector(bb.XMin,bb.YMin,bb.ZMin)
+		if not self.obj2.objFiller:
+			say("erzeuge filler")
+			f=FreeCAD.ActiveDocument.addObject("Part::Box","Filler")
+			self.obj2.objFiller=f
+		else:
+			f=self.obj2.objFiller
+		f.Placement.Base=pim
+		f.Length=bb.XMax-bb.XMin
+		f.Width=bb.YMax-bb.YMin
+		f.Height=bb.ZMax-bb.ZMin
+		if not self.obj2.objCommon:
+			say("erzeuge common")
+			c=FreeCAD.activeDocument().addObject("Part::MultiCommon","Common")
+			self.obj2.objCommon=c
+		else:
+			c=self.obj2.objCommon
+
+		say("erzeugt")
+		c.Shapes = [b,f]
+		 
+		f.Height= 0.5*f.Height
+	
+		if False:
+			FreeCAD.ActiveDocument.recompute()
+
+			c.ViewObject.ShapeColor=(1.0,.0,0.0)
+			c.ViewObject.Transparency=20
+			b.ViewObject.Transparency=90
+			b.ViewObject.Visibility=True
+			c.ViewObject.DisplayMode = "Shaded"
+
+
+
+
+		
+		
+
+class _ViewProviderFiller(_ViewProviderActor):
+	
+	def getIcon(self):
+		return 'Mod/Animation/icons/filler.png'
+
+if FreeCAD.GuiUp:
+	FreeCADGui.addCommand('Anim_Filler',_CommandFiller())
+
+
+
+
+
