@@ -54,7 +54,8 @@ class AnimationWorkbench(Workbench):
 
 
 				"Anim_Manager",
-				
+				"Anim_Bounder",
+				"Anim_Filler",
 				
 				"A_Starter",
 				"A_Runner",
