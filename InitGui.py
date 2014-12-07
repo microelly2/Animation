@@ -27,9 +27,24 @@
 #  animation toolkit
 #
 
+import numpy, os
+import FreeCAD
+import FreeCADGui
+from PySide import QtGui
+import os
+
+# __dir__ = os.path.dirname(__file__)	
+
+
 class AnimationWorkbench(Workbench):
 	"Animation workbench object"
-	Icon=   '/home/tog/freecad_buch/b034_animation_wb/icons/animation.png'
+	import os
+	from animationlib import __dir__
+	Icon = os.path.join( __dir__ , 'icons/animation.png')
+
+	# Icon=  '.../icons/animation.png'
+	# Icon = os.getcwd() +  '/../Mod/Animation/icons/animation.png' 
+
 
 	MenuText = "Animation"
 	ToolTip = "Animation workbench"
