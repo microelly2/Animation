@@ -224,7 +224,7 @@ def createBounder(name='MyBounder'):
 
 class _CommandBounder(_CommandActor):
 	def GetResources(self): 
-		return {'Pixmap' : __dir__+ '/icons/Bounder.png', 'MenuText': 'Bounder', 'ToolTip': 'Bounder Dialog'} 
+		return {'Pixmap' : __dir__+ '/icons/bounder.png', 'MenuText': 'Bounder', 'ToolTip': 'Bounder Dialog'} 
 
 	def Activated(self):
 		if FreeCADGui.ActiveDocument:
@@ -299,7 +299,7 @@ class _Bounder(_Actor):
 class _ViewProviderBounder(_ViewProviderActor):
 	
 	def getIcon(self):
-		return __dir__ + '/icons/Bounder.png'
+		return __dir__ + '/icons/bounder.png'
 
 if FreeCAD.GuiUp:
 	FreeCADGui.addCommand('Anim_Bounder',_CommandBounder())
@@ -1856,6 +1856,7 @@ def reinit():
 					obj.addProperty("App::PropertyBool","rotCenterRelative","3D Param","Rotationsachse Zentrum relativ").rotCenterRelative=False
 			sayd(obj)
 	FreeCAD.animationLock=False
+	FreeCAD.animataionInit=False
 
 #---------------------------------
 
@@ -2953,7 +2954,7 @@ def createKartan(name='My_Kartan'):
 
 class _CommandKartan(_CommandActor):
 	def GetResources(self): 
-		return {'Pixmap' : __dir__ + '/icons/Kardan.png', 'MenuText': 'Kartan', 'ToolTip': 'Kartan Dialog'} 
+		return {'Pixmap' : __dir__ + '/icons/kardan.png', 'MenuText': 'Kartan', 'ToolTip': 'Kartan Dialog'} 
 
 	def Activated(self):
 		if FreeCADGui.ActiveDocument:
@@ -2966,26 +2967,7 @@ class _CommandKartan(_CommandActor):
 			say("Erst Arbeitsbereich oeffnen")
 		return
 
-def rotstep(s,day):
-	an=	s.Placement.Rotation.Angle
-	say("rotstep" + s.Label)
-	say(an*180/math.pi)
-	say("step" +str(360/day))
-	if s.Placement.Rotation.Axis.z==-1 :
-		an=	s.Placement.Rotation.Angle - math.pi * 2/day
-		say("minus")
-	else:
-		an=	s.Placement.Rotation.Angle + math.pi * 2/day
-		say("plus")
-	if an <0:
-		an += 2*math.pi
-		say("add 360")
-	if an > 2*math.pi:
-		an -= 2*math.pi
-		say("minus 360")
-		
-	s.Placement.Rotation.Angle = an
-	say(an*180/math.pi)
+
 
 import numpy
 from numpy import pi,cos,tan,arctan
@@ -3005,50 +2987,12 @@ def rotcross(part,alpha,phi):
 		alpha=-alpha
 	rotalpha=App.Rotation(App.Vector(0,1,0), alpha)
 	wx=rotalpha.multVec(wx1)
-
-	wz1=wx.cross(wy)
-	wz=wz1
-	
-	m=App.Matrix(
-	wx.x,wx.y,wx.z,0,
-	wy.x,wy.y,wy.z,0,
-	wz.x,wz.y,wz.z,0,
-	0,0,0,1
-	)
-	
-	print("# 1.axe")
-	print(wx1)
-	print(wx)
-	print("# 2.axe")
-	print(wy)
-	print("# hich")
-	print(wz)
-	
-	
 	
 	r=(wx.x**2+wx.y**2)**0.5
-	print("rad" , r)
 	beta=math.acos(r)*180/math.pi
-	print("beta",beta)
-	p=App.Placement(m)
-	#print(p.Rotation.Axis)
-	print(p.Rotation.Angle*180/3.14)
-	
-	
-	
-	#if False:
-	p=App.Placement(m)
-
-
-	base=p.Base
-	ax=p.Rotation.Axis
-	an=p.Rotation.Angle*180/pi
-	part.Placement=App.Placement(base,App.Rotation(ax,an))
 
 	p1=App.Placement()
 	phi2=phi
-	#if 180<phi and phi<360:
-	#		phi2=-phi
 	p1.Rotation=App.Rotation(App.Vector(0,0,1),phi2)
 	p2=App.Placement()
 	if 90<phi and phi<270:
@@ -3078,55 +3022,43 @@ class _Kartan(_Actor):
 				errorDialog("kein Sketch zugeordnet")
 				raise Exception(' self.obj2.obj nicht definiert')
 			
-			#say ("deltarot ... rot winkel, zenit winkel =")
-			#say(self.obj2.angleRotation)
-			#say(self.obj2.angleZenit)
-			alpha=60
+			# alpha=60
+			alpha=self.obj2.angleZenit
 			phi=1
 			
 			# testfall
 			phi=10
 
+			# achse 1
 			fa1=self.obj2.objAxis1
-			
 			p0=fa1.Placement
 			phi0=p0.Rotation.Angle/pi*180
-			
-			say("phi0 Basis " + str(phi0))
+			# say("phi0 Basis " + str(phi0))
 			p1=App.Placement(App.Vector(0,0,0),App.Rotation(App.Vector(0,0,1),phi))
 			r1=p1.multiply(p0)
 			fa1.Placement=r1
 
-			
-			#phi20=arctan(tan(phi0*pi/180)/cos(alpha*pi/180))*180/pi
-			#phi21=arctan(tan((phi0+phi)*pi/180)/cos(alpha*pi/180))*180/pi
 			
 			phi20=arctan(tan(phi0*pi/180)*cos(alpha*pi/180))*180/pi
 			phi21=arctan(tan((phi0+phi)*pi/180)*cos(alpha*pi/180))*180/pi
 			say("phi20 "+str(phi20))
 			say("phi21 "+str(phi21))
 			
+			# achse 2
 			timepos=now-self.obj2.start
-			
 			if 90/phi-1<=timepos and timepos<270/phi-1: 
 				phi21=180+phi21
 				say("*************** ! phi21 ="+str(phi21) + " now:" + str(now))
-			
-			
-			
 
 			fa2=self.obj2.objAxis2
-
-# ersatz 
 			p1=App.Placement(App.Vector(0,0,0),App.Rotation(App.Vector(0,0,1),phi21))
 			p2=App.Placement(App.Vector(0,0,0),App.Rotation(App.Vector(0,1,0),alpha))
 			r3=p2.multiply(p1)
 			fa2.Placement=r3
 
+			# kreuz
 			f=self.obj2.objCross
 			rotcross(f,alpha,phi0+phi)
-
-
 			FreeCAD.activeDocument().recompute()
 
 
@@ -3136,8 +3068,10 @@ class _Kartan(_Actor):
 		say("**	onChanged  " +str(obj.Label) + " " + prop)
 		if prop=="Proxy":
 				FreeCAD.animataionInit=True
+				say("animation Init start!!!!!!!!!!!!!!!")
 		if prop=="Label":
 				FreeCAD.animataionInit=False
+				say("Animation init beendet ---------------!!")
 		if FreeCAD.animataionInit:
 				say("erster Durchlauf - nix machen")
 				return
@@ -3158,7 +3092,6 @@ class _Kartan(_Actor):
 			say(prop + " old:" + str(oldval) + " new:" + str(val))
 
 			if prop=='obj':
-				say("obj-cahn ge")
 				obj.obj.Links=[obj.objAxis1,obj.objAxis2,obj.objCross]
 			if prop=='duration' or prop=='start':
 					obj.end=obj.start+obj.duration
@@ -3171,11 +3104,9 @@ class _Kartan(_Actor):
 
 	def onBeforeChange(self,obj,prop):
 		say("** on Before Changed " + str(obj.Label) + " " + prop)
-		#FreeCAD.animationLock=False
 		FreeCAD.animation={}
 		oldval=obj.getPropertyByName(prop)
 		FreeCAD.animation['changed'] =[obj,prop,oldval]
-		pass
 
 	def execute(self,obj):
 		say("execute _Kardan")
@@ -3184,7 +3115,7 @@ class _Kartan(_Actor):
 class _ViewProviderKartan(_ViewProviderActor):
 	
 	def getIcon(self):
-		return __dir__ + '/icons/Kardan.png'
+		return __dir__ + '/icons/kardan.png'
 
 if FreeCAD.GuiUp:
 	FreeCADGui.addCommand('Anim_Kartan',_CommandKartan())
