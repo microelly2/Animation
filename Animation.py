@@ -1082,8 +1082,10 @@ def createPlugger(name='My_Plugger'):
 	obj.addProperty("App::PropertyLink","obj","Object","objekt")
 	obj.addProperty("App::PropertyInteger","ix","Pin","index 1").ix=3
 	obj.addProperty("App::PropertyInteger","status","Pin","intern").status=0
-	obj.addProperty("App::PropertyEnumeration","detail","Pin","art").detail=["Placement.Base","Vertex.Point","unklarmp"]
+	obj.addProperty("App::PropertyEnumeration","detail","Pin","art").detail=["Placement.Base","Vertex.Point","Sketch.Object.StartPoint","Sketch.Object.EndPoint","unklarmp"]
+	obj.addProperty("App::PropertyEnumeration","trafoMode","Pin","start").trafoMode=["offset","yz","xz","matrix"]
 	obj.addProperty("App::PropertyVector","offsetVector","Pin","offsetVector").offsetVector=FreeCAD.Vector(30,30,0)
+	obj.addProperty("App::PropertyMatrix","trafoMatrix","Pin","offsetVector").trafoMatrix=FreeCAD.Matrix(1,0,0,0,1,0,0,0,0)
 
 	obj.addProperty("App::PropertyEnumeration","mode","Base","start").mode=["always","intervall","signal"]
 
@@ -1204,7 +1206,25 @@ class _Plugger(_Actor):
 				sayd(self.obj2.obj.Placement.Base)
 				self.obj2.obj.Placement.Base =FreeCAD.Vector(self.obj2.obj.Placement.Base).add(self.obj2.offsetVector)
 				sayd(self.obj2.obj.Placement.Base)
-				
+			elif self.obj2.detail=="Sketch.Object.StartPoint":
+				say( "Sketch.Object.StartPoint")
+				if self.obj2.trafoMode == "matrix" or self.obj2.trafoMode == "yz" or self.obj2.trafoMode == "xz":
+					FreeCAD.TT=self
+					self.obj2.obj.Placement.Base= self.obj2.trafoMatrix.multiply(self.obj2.pin.Geometry[self.obj2.ix].StartPoint)
+					say(self.obj2.obj.Placement.Base)
+				else:
+					self.obj2.obj.Placement.Base=self.obj2.pin.Geometry[self.obj2.ix].StartPoint
+				self.obj2.obj.Placement.Base =FreeCAD.Vector(self.obj2.obj.Placement.Base).add(self.obj2.offsetVector)
+			elif self.obj2.detail=="Sketch.Object.EndPoint":
+				say( "Sketch.Object.EndPoint !!!")
+				if self.obj2.trafoMode == "matrix" or self.obj2.trafoMode == "yz" or self.obj2.trafoMode == "xz":
+					FreeCAD.TT=self
+					self.obj2.obj.Placement.Base= self.obj2.trafoMatrix.multiply(self.obj2.pin.Geometry[self.obj2.ix].EndPoint)
+					say(self.obj2.pin.Geometry[self.obj2.ix].EndPoint)
+					say(self.obj2.obj.Placement.Base)
+				else:
+					self.obj2.obj.Placement.Base=self.obj2.pin.Geometry[self.obj2.ix].EndPoint
+				self.obj2.obj.Placement.Base =FreeCAD.Vector(self.obj2.obj.Placement.Base).add(self.obj2.offsetVector)
 			else:
 				say("unerwartete zuordnung detail")
 
@@ -1216,6 +1236,18 @@ class _Plugger(_Actor):
 		sayd("execute _Plugger")
 		self.obj2.status=0
 		obj.end=obj.start+obj.duration
+		if self.obj2.trafoMode == "yz":
+			self.obj2.trafoMatrix=FreeCAD.Matrix(
+				0,0,0,0,
+				1,0,0,0,
+				0,1,0,0,
+				0,0,0,1);
+		if self.obj2.trafoMode == "xz":
+			self.obj2.trafoMatrix=FreeCAD.Matrix(
+				1,0,0,0,
+				0,0,0,0,
+				0,1,0,0,
+				0,0,0,1);
 		obj.setEditorMode("end", 1) #ro
 
 
@@ -1330,7 +1362,8 @@ class _Adjuster(_Actor):
 				errorDialog("kein Sketch zugeordnet")
 				raise Exception(' self.obj2.obj nicht definiert')
 	 
-			FreeCADGui.ActiveDocument.setEdit(self.obj2.obj.Name)
+			###FreeCADGui.ActiveDocument.setEdit(self.obj2.obj.Name)
+			
 			#say(self.ve)
 			#say(self.va)
 			if 1:
@@ -1343,8 +1376,8 @@ class _Adjuster(_Actor):
 			except:
 				 say("ffehler") 
 			#say("sett")
-			FreeCAD.ActiveDocument.recompute()
-			FreeCADGui.ActiveDocument.resetEdit()
+			###FreeCAD.ActiveDocument.recompute()
+			###FreeCADGui.ActiveDocument.resetEdit()
 			#FreeCADGui.updateGui() 
 
 	def setValues(self,va,ve):
