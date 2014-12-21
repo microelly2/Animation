@@ -33,6 +33,7 @@ from math import sqrt, pi, sin, cos, asin
 from PySide import QtGui,QtCore
 from FreeCAD import Base
 
+import Inspector
 App=FreeCAD
 
 if FreeCAD.GuiUp:
@@ -1342,7 +1343,10 @@ class _CommandAdjuster(_CommandActor):
 		else:
 			say("Erst Arbeitsbereich oeffnen")
 		return
-	   
+
+
+		
+ 
 class _Adjuster(_Actor):
 	
 	def __init__(self,obj):
@@ -1617,7 +1621,8 @@ class _CommandManager(_CommandActor):
 		return
 	   
 import os.path
-	   
+import Inspector
+
 class _Manager(_Actor):
 
 	def __init__(self,obj):
@@ -1681,7 +1686,9 @@ class _Manager(_Actor):
 						say("fehler step 2")
 						raise Exception("step nicht ausfuerbar")
 					
-			FreeCADGui.updateGui() 
+			FreeCADGui.updateGui()
+			Inspector.step(now=0)
+			 
 		FreeCADGui.Selection.clearSelection()
 		FreeCADGui.Selection.addSelection(FreeCAD.ActiveDocument.getObject(self.obj2.Name))
 
@@ -3152,4 +3159,118 @@ class _ViewProviderKartan(_ViewProviderActor):
 
 if FreeCAD.GuiUp:
 	FreeCADGui.addCommand('Anim_Kartan',_CommandKartan())
+
+
+
+#-----------------------------
+
+
+
+
+
+def createScaler(name='My_Scaler'):
+	obj = FreeCAD.ActiveDocument.addObject("App::DocumentObjectGroupPython",name)
+	obj.addProperty("App::PropertyInteger","start","Base","start").start=0
+	obj.addProperty("App::PropertyInteger","end","Base","end").end=10
+	obj.addProperty("App::PropertyInteger","duration","Base","end").end=10
+#	obj.addProperty("App::PropertyPlacement","initPlace","Object","initPlace")
+#	obj.addProperty("App::PropertyVector","rotationCentre","Motion","Rotationszentrum")
+#	obj.addProperty("App::PropertyVector","rotationAxis","Motion","Rotationsachse").rotationAxis=FreeCAD.Vector(0,0,1)
+	obj.addProperty("App::PropertyFloat","xScale","Scale","Rotationsachse Zentrum relativ").xScale=0
+	obj.addProperty("App::PropertyFloat","xVa","Scale","Rotationsachse Zentrum relativ").xVa=1
+	obj.addProperty("App::PropertyFloat","xVe","Scale","Rotationsachse Zentrum relativ").xVe=2
+	
+
+	obj.addProperty("App::PropertyFloat","yScale","Scale","Rotationsachse Zentrum relativ").yScale=0
+	obj.addProperty("App::PropertyFloat","yVa","Scale","Rotationsachse Zentrum relativ").yVa=1
+	obj.addProperty("App::PropertyFloat","yVe","Scale","Rotationsachse Zentrum relativ").yVe=2
+
+	obj.addProperty("App::PropertyFloat","zScale","Scale","Rotationsachse Zentrum relativ").zScale=1
+	obj.addProperty("App::PropertyFloat","zVa","Scale","Rotationsachse Zentrum relativ").zVa=1
+	obj.addProperty("App::PropertyFloat","zVe","Scale","Rotationsachse Zentrum relativ").zVe=2
+
+
+
+
+
+
+
+
+	
+#	obj.addProperty("App::PropertyFloat","angle","Motion","Dreh Winkel").angle=360
+#	
+	obj.addProperty("App::PropertyLink","obj2","Object","rotating object ")
+
+	_Scaler(obj)
+	_ViewProviderScaler(obj.ViewObject)
+	return obj
+
+class _CommandScaler(_CommandActor):
+	def GetResources(self): 
+		return {'Pixmap' : __dir__ + '/icons/scaler.png', 'MenuText': 'Scaler', 'ToolTip': 'Scaler Dialog'} 
+
+	def Activated(self):
+		if FreeCADGui.ActiveDocument:
+			FreeCAD.ActiveDocument.openTransaction("create Scaler")
+			FreeCADGui.doCommand("import Animation")
+			FreeCADGui.doCommand("Animation.createScaler()")
+			FreeCAD.ActiveDocument.commitTransaction()
+			FreeCAD.ActiveDocument.recompute()
+		else:
+			say("Erst Arbeitsbereich oeffnen")
+		return
+	   
+class _Scaler(_Actor):
+
+	def __init__(self,obj):
+		obj.Proxy = self
+		self.Type = "_Scaler"
+		self.obj2=obj
+		
+	def execute(self,obj):
+		sayd("execute _Scaler")
+		if hasattr(obj,'obj2'):
+			#say(obj.obj2)
+			pass
+		obj.setEditorMode("end", 1) #ro
+		obj.end=obj.start+obj.duration
+
+		
+	
+	def step(self,now):
+		FreeCAD.yy=self
+
+		if now<=self.obj2.start or now>self.obj2.end:
+			pass
+		else:
+			relativ=1.00/(self.obj2.end-self.obj2.start)*(now-self.obj2.start)
+			sc=self.obj2.obj2.Scale
+			say(relativ)
+			relativbase=self.obj2.xVe/self.obj2.xVa*relativ
+			if relativ==0:
+				nwx=self.obj2.xVa
+				nwy=self.obj2.yVa
+				nwz=self.obj2.zVa
+			else:
+			
+				nwx=relativbase**self.obj2.xScale*self.obj2.xVe 
+				nwy=relativbase**self.obj2.yScale*self.obj2.yVe 
+				nwz=relativbase**self.obj2.zScale*self.obj2.zVe 
+			
+			newScale=(nwx,nwy,nwz)
+			say(newScale)
+			say(nwx*nwy*nwz)
+			self.obj2.obj2.Scale=newScale
+			FreeCAD.ActiveDocument.recompute()
+			FreeCADGui.Selection.clearSelection()
+		say("ende")
+
+
+
+class _ViewProviderScaler(_ViewProviderActor):
+	def getIcon(self):
+		return __dir__ + '/icons/scaler.png'
+
+if FreeCAD.GuiUp:
+	FreeCADGui.addCommand('Anim_Scaler',_CommandScaler())
 

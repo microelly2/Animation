@@ -219,6 +219,7 @@ static char * animation_xpm[] = {
 				"Anim_Filler",
 				"Anim_Gearing",
 				"Anim_Kartan",
+				"Anim_Scaler",
 				
 				"A_Starter",
 				"A_Runner",
