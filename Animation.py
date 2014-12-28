@@ -1094,6 +1094,20 @@ def createPlugger(name='My_Plugger'):
 	obj.addProperty("App::PropertyInteger","end","Base","end").end=10
 	obj.addProperty("App::PropertyInteger","duration","Base","end").end=10
 
+	obj.addProperty("App::PropertyEnumeration","pinMode","Base","start").pinMode=["none","2points"]
+	obj.addProperty("App::PropertyInteger","ix2","Pin2","index 1").ix2=3
+	obj.addProperty("App::PropertyEnumeration","detail2","Pin2","art").detail2=["Placement.Base","Vertex.Point","Sketch.Object.StartPoint","Sketch.Object.EndPoint","unklarmp"]
+	obj.addProperty("App::PropertyFloat","offsetArc2","Pin2","index 1")
+	obj.addProperty("App::PropertyFloat","factorArc2","Pin2","index 1")
+	obj.addProperty("App::PropertyEnumeration","trafoMode2","Pin2","start").trafoMode2=["offset","yz","xz","matrix"]
+	obj.addProperty("App::PropertyVector","offsetVector2","Pin2","offsetVector").offsetVector2=FreeCAD.Vector(30,30,0)
+	obj.addProperty("App::PropertyMatrix","trafoMatrix2","Pin2","offsetVector").trafoMatrix2=FreeCAD.Matrix(1,0,0,0,1,0,0,0,0)
+	
+	
+	obj.setEditorMode("trafoMode2", 2) #hide
+	obj.setEditorMode("offsetVector2", 2) #hide
+	obj.setEditorMode("trafoMatrix2", 2) #hide
+
 
 #	obj.addProperty("App::PropertyLinkSub","subobj","3D Param1","Subobjekt")
 #	obj.addProperty("App::PropertyLinkSub","subobj","3D Param1","Subobjekt")
@@ -1160,7 +1174,7 @@ class _Plugger(_Actor):
 		self.obj2 = obj 
 
 	def step(self,now):
-		sayd("Plugger step" + str(now))
+		sayd("Plugger step :" + str(now))
 		if not self.obj2.obj:
 			errorDialog("kein ziel zugeordnet")
 			raise Exception(' self.obj2.obj nicht definiert')
@@ -1215,19 +1229,52 @@ class _Plugger(_Actor):
 					say(self.obj2.obj.Placement.Base)
 				else:
 					self.obj2.obj.Placement.Base=self.obj2.pin.Geometry[self.obj2.ix].StartPoint
+				
+					
 				self.obj2.obj.Placement.Base =FreeCAD.Vector(self.obj2.obj.Placement.Base).add(self.obj2.offsetVector)
 			elif self.obj2.detail=="Sketch.Object.EndPoint":
 				say( "Sketch.Object.EndPoint !!!")
-				if self.obj2.trafoMode == "matrix" or self.obj2.trafoMode == "yz" or self.obj2.trafoMode == "xz":
-					FreeCAD.TT=self
-					self.obj2.obj.Placement.Base= self.obj2.trafoMatrix.multiply(self.obj2.pin.Geometry[self.obj2.ix].EndPoint)
-					say(self.obj2.pin.Geometry[self.obj2.ix].EndPoint)
-					say(self.obj2.obj.Placement.Base)
+				if self.obj2.obj.TypeId=='App::Annotation':
+					p=self.obj2.pin.Geometry[self.obj2.ix].EndPoint
+					p2=p.add(self.obj2.offsetVector)
+					self.obj2.obj.Position=p2
 				else:
-					self.obj2.obj.Placement.Base=self.obj2.pin.Geometry[self.obj2.ix].EndPoint
-				self.obj2.obj.Placement.Base =FreeCAD.Vector(self.obj2.obj.Placement.Base).add(self.obj2.offsetVector)
+					if self.obj2.trafoMode == "matrix" or self.obj2.trafoMode == "yz" or self.obj2.trafoMode == "xz":
+						FreeCAD.TT=self
+						self.obj2.obj.Placement.Base= self.obj2.trafoMatrix.multiply(self.obj2.pin.Geometry[self.obj2.ix].EndPoint)
+						say(self.obj2.pin.Geometry[self.obj2.ix].EndPoint)
+						say(self.obj2.obj.Placement.Base)
+					else:
+						self.obj2.obj.Placement.Base=self.obj2.pin.Geometry[self.obj2.ix].EndPoint
+					self.obj2.obj.Placement.Base =FreeCAD.Vector(self.obj2.obj.Placement.Base).add(self.obj2.offsetVector)
 			else:
 				say("unerwartete zuordnung detail")
+			if self.obj2.pinMode =="2points":
+				FreeCAD.ww=self.obj2
+				say("auswertung zwiter punkt")
+				sp=self.obj2.obj.Placement.Base
+				say(sp)
+				ep=FreeCAD.Vector()
+				if self.obj2.detail2=="Sketch.Object.EndPoint":
+					say("EP")
+					ep=self.obj2.pin.Geometry[self.obj2.ix2].EndPoint
+				elif self.obj2.detail2=="Sketch.Object.StartPoint":
+					say("SP")
+					ep=self.obj2.pin.Geometry[self.obj2.ix2].StartPoint
+				say(ep)
+				mdir=ep.sub(sp)
+				say(mdir)
+				mdir.normalize()
+				alpha=math.acos(mdir.x)
+				##say(180*alpha/math.pi)
+				beta=math.asin(mdir.y)
+				if beta<0:
+					alpha=2*math.pi-alpha 
+				say(0.00+180.00*alpha/math.pi)
+				r=FreeCAD.Rotation(FreeCAD.Vector(0,0,1),0.00+180.0/math.pi*alpha)
+				
+				self.obj2.obj.Placement.Rotation=r
+				
 
 	def setDetail(self,detailname,param1):
 			self.obj2.detail=detailname
@@ -1366,7 +1413,7 @@ class _Adjuster(_Actor):
 				errorDialog("kein Sketch zugeordnet")
 				raise Exception(' self.obj2.obj nicht definiert')
 	 
-			###FreeCADGui.ActiveDocument.setEdit(self.obj2.obj.Name)
+			##FreeCADGui.ActiveDocument.setEdit(self.obj2.obj.Name)
 			
 			#say(self.ve)
 			#say(self.va)
@@ -1381,8 +1428,8 @@ class _Adjuster(_Actor):
 				 say("ffehler") 
 			#say("sett")
 			###FreeCAD.ActiveDocument.recompute()
-			###FreeCADGui.ActiveDocument.resetEdit()
-			#FreeCADGui.updateGui() 
+			##FreeCADGui.ActiveDocument.resetEdit()
+			FreeCADGui.updateGui() 
 
 	def setValues(self,va,ve):
 		self.obj2.va=va
@@ -1565,6 +1612,8 @@ class _Photographer(_Actor):
 					FreeCADGui.ActiveDocument.ActiveView.viewAxometric()
 			if self.obj2.camDirection == 'Left':
 					FreeCADGui.ActiveDocument.ActiveView.viewLeft()
+			
+			FreeCAD.ActiveDocument.recompute()
 			FreeCADGui.updateGui() 
 			
 			kf= "%04.f"%now
