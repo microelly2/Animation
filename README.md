@@ -1,6 +1,4 @@
-
 Animation Toolkit for FreeCAD
-
 
 This Workbench can be used to create sequences of pictures.
 
@@ -25,10 +23,10 @@ Windows Installation Instructions
 
 Tested with 0.16.5005 Development Snapshot on a Windows 7 64bit-System (thanks BPLRFE )
 
-download the git repository as ZIP
-assuming FreeCAD is installed in "C:\PortableApps\FreeCAD 0_16", go to "C:\PortableApps\FreeCAD 0_16\Mod" within Windows Explorer
-create new directory named "Animation"
-unzip downloaded repository in "C:\PortableApps\FreeCAD 0_16\Mod\Animation"
+- download the git repository as ZIP
+- assuming FreeCAD is installed in "C:\PortableApps\FreeCAD 0_16", go to "C:\PortableApps\FreeCAD 0_16\Mod" within Windows Explorer
+- create new directory named "Animation"
+- unzip downloaded repository in "C:\PortableApps\FreeCAD 0_16\Mod\Animation"
 
 Within FreeCAD you will now have a new workbench-entry called "Animation".
 
