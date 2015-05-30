@@ -1,10 +1,10 @@
-Animation Toolkit for FreeCAD
+#Animation Toolkit for FreeCAD
 
 This Workbench can be used to create sequences of pictures.
 
-It is still under construction
+It is still under construction - all contributions welcomed ..
 
-Linux Installation Instructions
+#Linux Installation Instructions
 
 To use this workbench clone this git repository under your FreeCAD MyScripts directory. On a Linux Debian based system such as Ubuntu, installation can be done through BASH as follows
 
@@ -20,7 +20,7 @@ $ cd ~/.FreeCAD/Mod/FreeCAD_Animation
 
 $ git pull
 
-Windows Installation Instructions
+#Windows Installation Instructions
 
 Tested with 0.16.5005 Development Snapshot on a Windows 7 64bit-System (thanks BPLRFE )
 
@@ -31,7 +31,7 @@ Tested with 0.16.5005 Development Snapshot on a Windows 7 64bit-System (thanks B
 
 Within FreeCAD you will now have a new workbench-entry called "Animation".
 
-Mac Installation Instructions
+#Mac Installation Instructions
 
 Copy or unzip the drawing dimensioning folder to the directory FreeCAD.app/Contents/Mod
 
