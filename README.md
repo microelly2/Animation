@@ -19,6 +19,7 @@ Once installed, use git to easily update to the latest version:
 $ cd ~/.FreeCAD/Mod/FreeCAD_Animation
 
 $ git pull
+
 Windows Installation Instructions
 
 Tested with 0.16.5005 Development Snapshot on a Windows 7 64bit-System (thanks BPLRFE )
