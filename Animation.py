@@ -1668,9 +1668,34 @@ class _CommandManager(_CommandActor):
 		else:
 			say("Erst Arbeitsbereich oeffnen")
 		return
-	   
+
 import os.path
 import Inspector
+
+#--------------------------------------------
+
+def col(actor,obstacles):
+	
+	av=actor.Shape.BoundBox
+	for obl in obstacles:
+		ov=obl.Shape.BoundBox
+		if ov.XMin < av.XMax  and  ov.XMax > av.XMin and ov.YMin <= av.YMax and  ov.YMax >= av.YMin and  ov.ZMin <= av.ZMax and  ov.ZMax >= av.ZMin:
+			print obl.Label
+			obl.ViewObject.DiffuseColor=(1.0,0.0,0.0)
+		else:
+			obl.ViewObject.DiffuseColor=(1.0,1.0,0.0)  
+
+def checkCollision():
+
+	App=FreeCAD
+	cy=App.ActiveDocument.Cylinder
+	c=App.ActiveDocument.Cone
+	gd=App.ActiveDocument.GeodesicDome
+	b=App.ActiveDocument.Box
+	col(b,[cy,c,gd,App.ActiveDocument.Torus])
+
+
+#--------------------------------------------
 
 class _Manager(_Actor):
 
@@ -1716,6 +1741,11 @@ class _Manager(_Actor):
 			except:
 				say("Fehler touch")
 			
+			#-----------------------
+			# 
+			## checkCollision()
+			
+			#-----------------------
 			
 			if os.path.exists("/tmp/stop"):
 					say("notbremse gezogen")
