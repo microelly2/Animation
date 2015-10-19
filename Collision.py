@@ -86,6 +86,9 @@ class Detector():
 			sayexc()
 
 	def execute(self,obj):
+		#say(obj.Label)
+		#say(obj.ViewObject.Visibility)
+		if not obj.ViewObject.Visibility: return
 		if not self.Lock:
 			self.Lock=True
 			try:
