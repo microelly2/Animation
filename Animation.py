@@ -1744,7 +1744,8 @@ class _Manager(_Actor):
 			#-----------------------
 			# 
 			## checkCollision()
-			
+			#
+			#
 			#-----------------------
 			
 			if os.path.exists("/tmp/stop"):
@@ -1764,6 +1765,10 @@ class _Manager(_Actor):
 					except:
 						say("fehler step 2")
 						raise Exception("step nicht ausfuerbar")
+
+			#------
+			import assembly2solver;assembly2solver.solveConstraints(App.ActiveDocument)
+			#------
 					
 			FreeCADGui.updateGui()
 			Inspector.step(now=0)
@@ -1945,35 +1950,39 @@ def reinitxx():
 def reinit():
 	''' zum re initialisieren beim dateiload und bei alten dateien'''
 	for obj in FreeCAD.ActiveDocument.Objects:
-		if hasattr(obj,'Proxy'):
-			say ("re init Proxy " + str(obj.Name))
-			if hasattr(obj.Proxy,'Type'):
-				##say("we")
-				##say(obj.Proxy.Type)
-				pass
-			else:
-				##say("reinit")
-				obj.Proxy.__init__(obj)
-				##say(obj.Proxy.Type)
-			
-			# print("init " +obj.Name)
-			if obj.Proxy.Type=='Plugger':
-				if not hasattr(obj,'status'):
-					obj.addProperty("App::PropertyInteger","status","nummer","intern").status=0
-				if not hasattr(obj,'offsetVector'):
-					obj.addProperty("App::PropertyVector","offsetVector","3D Param","offsetVector").offsetVector=FreeCAD.Vector(0,0,0)
-			if obj.Proxy.Type=='Adjustor':
-				if not hasattr(obj,'unit'):
-					obj.addProperty("App::PropertyEnumeration","unit","3D Param","einheit").unit=['deg','mm']
-			if obj.Proxy.Type=='Photographer':
-				if not hasattr(obj,'camDirection'):
-					obj.addProperty("App::PropertyEnumeration","camDirection","Camera","Sichtrichtung").camDirection=["Front","Top","Axometric","Left"]
-				if not hasattr(obj,'camHeight'):
-					obj.addProperty("App::PropertyInteger","camHeight","Camera","Ausschnitt Hoehe").camHeight=100
-			if obj.Proxy.Type=='Rotator':
-				if not hasattr(obj,'rotCenterRelative'):
-					obj.addProperty("App::PropertyBool","rotCenterRelative","3D Param","Rotationsachse Zentrum relativ").rotCenterRelative=False
-			sayd(obj)
+		try:
+			if hasattr(obj,'Proxy'):
+				say ("re init Proxy " + str(obj.Name))
+				if hasattr(obj.Proxy,'Type'):
+					##say("we")
+					##say(obj.Proxy.Type)
+					pass
+				else:
+					##say("reinit")
+						obj.Proxy.__init__(obj)
+					##say(obj.Proxy.Type)
+				
+				# print("init " +obj.Name)
+				if obj.Proxy.Type=='Plugger':
+					if not hasattr(obj,'status'):
+						obj.addProperty("App::PropertyInteger","status","nummer","intern").status=0
+					if not hasattr(obj,'offsetVector'):
+						obj.addProperty("App::PropertyVector","offsetVector","3D Param","offsetVector").offsetVector=FreeCAD.Vector(0,0,0)
+				if obj.Proxy.Type=='Adjustor':
+					if not hasattr(obj,'unit'):
+						obj.addProperty("App::PropertyEnumeration","unit","3D Param","einheit").unit=['deg','mm']
+				if obj.Proxy.Type=='Photographer':
+					if not hasattr(obj,'camDirection'):
+						obj.addProperty("App::PropertyEnumeration","camDirection","Camera","Sichtrichtung").camDirection=["Front","Top","Axometric","Left"]
+					if not hasattr(obj,'camHeight'):
+						obj.addProperty("App::PropertyInteger","camHeight","Camera","Ausschnitt Hoehe").camHeight=100
+				if obj.Proxy.Type=='Rotator':
+					if not hasattr(obj,'rotCenterRelative'):
+						obj.addProperty("App::PropertyBool","rotCenterRelative","3D Param","Rotationsachse Zentrum relativ").rotCenterRelative=False
+				sayd(obj)
+		except:
+			pass
+
 	FreeCAD.animationLock=False
 	FreeCAD.animataionInit=False
 
