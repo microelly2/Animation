@@ -563,15 +563,13 @@ def createTelescope(name='MyTelescope', targets=[],src=None):
 
 # vertexPlugger
 
- 
+App=FreeCAD
 
 def createVertexPlugger(name='VertexPlugger', src=None, target=None, point=0):
 	obj = FreeCAD.ActiveDocument.addObject("App::DocumentObjectGroupPython",name)
-	_VertexPlugger(obj)
-	_ViewProviderVertexPlugger(obj.ViewObject)
 	
 	c3=obj
-	c3.Proxy.updater=True
+	
 
 	#c3.addProperty("App::PropertyLinkList","_targets","3 MyCTL","")
 	#c3._targets=targets
@@ -581,7 +579,7 @@ def createVertexPlugger(name='VertexPlugger', src=None, target=None, point=0):
 	c3.addProperty("App::PropertyLink","src","2 MyCTL","")
 	c3.src=src
 	c3.addProperty("App::PropertyInteger","point","2 MyCTL","")
-	c3.src=src
+	c3.point=point
 	c3.addProperty("App::PropertyPlacement","plOld","2 MyCTL","")
 	c3.plOld=FreeCAD.Placement()
 	if src:
@@ -590,10 +588,16 @@ def createVertexPlugger(name='VertexPlugger', src=None, target=None, point=0):
 	c3.refOld=FreeCAD.Vector()
 	if src:
 		c3.refOld=FreeCAD.Vector(src.Shape.Vertexes[point].Point)
+	print "position kugel"
+	print c3.refOld
 	
 	for p in ['point','src','target','plOld','refOld']:
 		obj.setEditorMode(p, 1) #ro
-	
+	print "init 123"
+	print App.ActiveDocument.Sphere003.Placement.Base
+	_VertexPlugger(obj)
+	_ViewProviderVertexPlugger(obj.ViewObject)
+	c3.Proxy.updater=True
 	return obj
 
 class _VertexPlugger():
@@ -612,15 +616,23 @@ class _VertexPlugger():
 			self.Changed=False
 			return
 		if not self.Lock:
-			say("exec self=" +str(self))
+#			say("exec self=" +str(self))
 			
 			say("set Lock ----- " +str(obj.Label))
 			self.obj2=obj
+			print "vor update"
+			print App.ActiveDocument.Sphere003.Placement.Base
 
 			self.Lock=True
-			self.update()
+			try:
+				self.update()
+			except:
+				say("fehler update")
+				pass
 			self.Lock=False
-
+			
+			print "nach update++"
+			print App.ActiveDocument.Sphere003.Placement.Base
 			say("unset Lock +++ " +str(self.obj2.Label))
 
 	def update(self):
@@ -632,6 +644,17 @@ class _VertexPlugger():
 		
 		refalt2=FreeCAD.Placement()
 		refalt2.Base=refalt
+		print "update ---"
+		print "neue position"
+		print koopalt
+		print refalt
+		print self.obj2.src.Shape.Vertexes[self.obj2.point].Point
+		print self.obj2.point
+		print "gemerkte position"
+		print self.obj2.plOld
+		print lastrefalt
+		print 
+		
 		
 		oldobinv=self.obj2.plOld.inverse()
 		oldrelref=oldobinv.multiply(lastrefalt)

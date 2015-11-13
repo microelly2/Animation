@@ -1767,15 +1767,16 @@ class _Manager(_Actor):
 						raise Exception("step nicht ausfuerbar")
 
 			#------
-			try:
-				import assembly2solver
+			if False:
 				try:
-					assembly2solver.solveConstraints(App.ActiveDocument)
+					import assembly2solver
+					try:
+						assembly2solver.solveConstraints(App.ActiveDocument)
+					except:
+						say("problem assembly2solver.solveConstraints(App.ActiveDocument)")
 				except:
-					say("problem assembly2solver.solveConstraints(App.ActiveDocument)")
-			except:
-				# no assembly available
-				pass
+					# no assembly available
+					pass
 			#------
 					
 			FreeCADGui.updateGui()
