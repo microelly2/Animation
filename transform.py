@@ -593,8 +593,6 @@ def createVertexPlugger(name='VertexPlugger', src=None, target=None, point=0):
 	
 	for p in ['point','src','target','plOld','refOld']:
 		obj.setEditorMode(p, 1) #ro
-	print "init 123"
-	print App.ActiveDocument.Sphere003.Placement.Base
 	_VertexPlugger(obj)
 	_ViewProviderVertexPlugger(obj.ViewObject)
 	c3.Proxy.updater=True
@@ -620,8 +618,6 @@ class _VertexPlugger():
 			
 			say("set Lock ----- " +str(obj.Label))
 			self.obj2=obj
-			print "vor update"
-			print App.ActiveDocument.Sphere003.Placement.Base
 
 			self.Lock=True
 			try:
@@ -630,9 +626,6 @@ class _VertexPlugger():
 				say("fehler update")
 				pass
 			self.Lock=False
-			
-			print "nach update++"
-			print App.ActiveDocument.Sphere003.Placement.Base
 			say("unset Lock +++ " +str(self.obj2.Label))
 
 	def update(self):
