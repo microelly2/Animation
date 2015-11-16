@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #-------------------------------------------------
-#-- plugin loader
+#-- 
 #--
 #-- microelly 2015
 #--
@@ -48,6 +48,10 @@ def create(name,target,src=None):
 	c3.src=src
 	c3.addProperty("App::PropertyFloat","time","Base","")
 	c3.time=0.3
+
+	c3.addProperty("App::PropertyPlacement","Placement","Results","")
+	c3.Placement=FreeCAD.Placement()
+
 
 	# parameter
 	c3.addProperty("App::PropertyFloat","x0","Parameter","")
@@ -101,6 +105,9 @@ class _AnimPlacement():
 		self.Changed=False
 
 	def execute(self,obj):
+		if self.obj2.ViewObject.Visibility == False:
+			return
+			
 		if self.Changed:
 			say("self changed")
 			# ignore self changes
@@ -131,6 +138,18 @@ class _AnimPlacement():
 		arc0=self.obj2.arc0
 		arc1=self.obj2.arc1
 
+		try:
+			sx=self.obj2.src.Placement.Base.x
+			sy=self.obj2.src.Placement.Base.y
+			sz=self.obj2.src.Placement.Base.z
+			
+			srx=self.obj2.src.Placement.Rotation.Axis.x
+			sry=self.obj2.src.Placement.Rotation.Axis.y
+			srz=self.obj2.src.Placement.Rotation.Axis.z
+			sarc=self.obj2.src.Placement.Rotation.Angle
+		except:
+			saye("keine src festgelegt")
+
 		xv=eval(self.obj2.x)
 		yv=eval(self.obj2.y)
 		zv=eval(self.obj2.z)
@@ -139,7 +158,11 @@ class _AnimPlacement():
 		rot=FreeCAD.Rotation(self.obj2.RotAxis,arcv)
 		pl=FreeCAD.Placement(FreeCAD.Vector(xv,yv,zv),rot,self.obj2.RotCenter)
 		say(pl)
-		self.obj2.target.Placement=pl
+		if str(self.obj2.target.TypeId) == 'App::Annotation':
+			self.obj2.target.Position=(xv,yv,zv)
+		else:
+			self.obj2.target.Placement=pl
+		self.obj2.Placement=pl
 
 	def __getstate__(self):
 		say("getstate " + str(self))
@@ -273,10 +296,10 @@ if __name__ == "__main__":
 
 	# All examples from top view to the xy-plane
 
-
 	# Example 1
 	box=App.ActiveDocument.addObject("Part::Box","Bax")
 	t=create("Anim "+box.Label,box)
+	box.ViewObject.ShapeColor=(.0,1.0,.0)
 	print t
 	# linear function - left upper corner to right bottom 
 	t.x0=-150
@@ -284,12 +307,13 @@ if __name__ == "__main__":
 	t.y0=150
 	t.y1=-150
 	t.y="y0+(y1-y0)*time"
-
+	t.z="100 - 400 * (0.5-time)**2"
 
 
 
 	# Example 2
-	box1=App.ActiveDocument.addObject("Part::Box","Bux")
+	box1=App.ActiveDocument.addObject("Part::Cone","Bux")
+	box1.ViewObject.ShapeColor=(1.0,.0,.0)
 	t1=create("Anim "+box1.Label,box1)
 	print t1
 	t1.x0=-150
@@ -304,16 +328,64 @@ if __name__ == "__main__":
 
 
 	# Example 3
-	box1=App.ActiveDocument.addObject("Part::Box","Circler")
-	t1=create("Anim "+box1.Label,box1)
+	box3=App.ActiveDocument.addObject("Part::Cylinder","Circler")
+	box3.ViewObject.ShapeColor=(1.0,.0,1.0)
+	t3=create("Anim "+box3.Label,box3)
+	print t3
+	# ellipse
+	t3.y="80 * math.sin(math.pi*2*time)"
+	t3.x="80 * math.cos(math.pi*2*time)"
+	# t3.z="400 * (0.5-time)**2"
+	t3.z="0"
+
+
+	box3=App.ActiveDocument.addObject("Part::Sphere","Circler-helper")
+	box3.ViewObject.ShapeColor=(1.0,.0,1.0)
+	tt3=create("Anim "+box3.Label,box3,t3)
+	print t3
+	# ellipse
+	tt3.y="sx"
+	tt3.x="sx"
+	tt3.z="sz"
+
+	# Example 4
+	box4=App.ActiveDocument.addObject("Part::Cylinder","T1")
+	box4.ViewObject.ShapeColor=(1.0,1.0,.0)
+	t1=create("Anim "+box4.Label,box4,t3)
 	print t1
 	# ellipse
-	t1.y="100 * math.sin(math.pi*2*time)"
-	t1.x="150 * math.cos(math.pi*2*time)"
+	t1.y="87"
+	t1.x="-50"
+	t1.z="math.sqrt(195**2 - (sx+50)**2  - (sy-87)**2-5)"
+
+	# Example 4
+	box4=App.ActiveDocument.addObject("Part::Cylinder","T2")
+	box4.ViewObject.ShapeColor=(1.0,1.0,.0)
+	t1=create("Anim "+box4.Label,box4,t3)
+	print t1
+	# ellipse
+	t1.y="-87"
+	t1.x="-50"
+	t1.z="math.sqrt(195**2 - (sx+50)**2  - (sy+87)**2)-5"
+
+	# Example 4
+	box4=App.ActiveDocument.addObject("Part::Cylinder","T3")
+	box4.ViewObject.ShapeColor=(1.0,1.0,.0)
+	t1=create("Anim "+box4.Label,box4,t3)
+	print t1
+	# ellipse
+	t1.y="0"
+	t1.x="100"
+	t1.z="math.sqrt(195**2 - (sx-100)**2  - (sy)**2)-5"
+
+
+#math.sqrt(195**2 - (sx-100)**2  - (sy)**2)
+#math.sqrt(195**2 - (sx+50)**2  - (sy-87)**2)
+#math.sqrt(195**2 - (sx+50)**2  - (sy+87)**2)
 
 
 
-
+		
 
 '''
 # to use 
@@ -331,6 +403,10 @@ animator.x ="time *100 + math.pi "  # formula as string with math support
 # and change time value with the dialer from 0 to 1
 
 '''
+
+
+
+
 
 
 
