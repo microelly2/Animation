@@ -1647,7 +1647,8 @@ if FreeCAD.GuiUp:
 def createManager(name='My_Manager'):
 	obj = FreeCAD.ActiveDocument.addObject("App::DocumentObjectGroupPython",name)
 	obj.addProperty("App::PropertyInteger","start","Base","start").start=0
-	obj.addProperty("App::PropertyInteger","intervall","Base","intervall").intervall=10
+	obj.addProperty("App::PropertyInteger","intervall","Base","intervall").intervall=100
+	obj.addProperty("App::PropertyInteger","step","Base","step").step=0
 	obj.addProperty("App::PropertyString","text","params","text").text="NO"
 	_Manager(obj)
 	_ViewProviderManager(obj.ViewObject)
@@ -1703,6 +1704,8 @@ class _Manager(_Actor):
 		obj.Proxy = self
 		self.Type = "_Manager"
 		self.obj2=obj
+		try: obj.step
+		except: obj.addProperty("App::PropertyInteger","step","Base","step").step=0
 
 
 	def execute(self,obj):
@@ -1713,6 +1716,7 @@ class _Manager(_Actor):
 
 	def run(self,intervall=-1):
 		sayd("run  intervall=" + str(intervall))
+		FreeCADGui.ActiveDocument.ActiveView.setAnimationEnabled(False)
 		
 		if (intervall<0):
 			intervall=self.obj2.intervall
@@ -1728,58 +1732,65 @@ class _Manager(_Actor):
 			ob.Proxy.initialize()
 			ob.Proxy.execute(ob)
 		
-		
-		for nw in range(intervall):	
-			say("************************* manager run loop:" + str(nw) + "/" + str(intervall));
-			
-			try:
-				st=FreeCAD.ActiveDocument.getObject('Common')
-				## st.touch()
-				FreeCADGui.Selection.clearSelection()
-				
-				FreeCAD.ActiveDocument.recompute()
-			except:
-				say("Fehler touch")
-			
-			#-----------------------
-			# 
-			## checkCollision()
-			#
-			#
-			#-----------------------
-			
-			if os.path.exists("/tmp/stop"):
-					say("notbremse gezogen")
-					raise Exception("Notbremse Manager main loop")
-			for ob in t.OutList:
-				if 1: # fehler analysieren
-					sayd("step fuer ")
-					sayd(ob.Label)
-					if ob.ViewObject.Visibility:
-							ob.Proxy.step(nw)
-				else:
-					try:
-						sayd(ob.Proxy)
-						if ob.ViewObject.Visibility:
-							ob.Proxy.step(nw)
-					except:
-						say("fehler step 2")
-						raise Exception("step nicht ausfuerbar")
-
-			#------
-			if False:
+		firstRun=True
+		bigloop=0
+		while firstRun or os.path.exists("/tmp/loop"):
+			say("manager infinite loop #################################")
+			firstRun=False
+			bigloop += 1 
+			for nw in range(intervall):	
+				say("************************* manager run loop:" + str(nw) + "/" + str(intervall)+ '  ' + str(bigloop))
+				self.obj2.step=nw
 				try:
-					import assembly2solver
-					try:
-						assembly2solver.solveConstraints(App.ActiveDocument)
-					except:
-						say("problem assembly2solver.solveConstraints(App.ActiveDocument)")
-				except:
-					# no assembly available
-					pass
-			#------
+					st=FreeCAD.ActiveDocument.getObject('Common')
+					## st.touch()
+					FreeCADGui.Selection.clearSelection()
 					
-			FreeCADGui.updateGui()
+					FreeCAD.ActiveDocument.recompute()
+				except:
+					say("Fehler touch")
+				
+				#-----------------------
+				# 
+				## checkCollision()
+				#
+				#
+				#-----------------------
+				
+				if os.path.exists("/tmp/stop"):
+						say("notbremse gezogen")
+						raise Exception("Notbremse Manager main loop")
+				for ob in t.OutList:
+					if 1: # fehler analysieren
+						sayd("step fuer ")
+						sayd(ob.Label)
+						if ob.ViewObject.Visibility:
+								ob.Proxy.step(nw)
+					else:
+						try:
+							sayd(ob.Proxy)
+							if ob.ViewObject.Visibility:
+								ob.Proxy.step(nw)
+						except:
+							say("fehler step 2")
+							raise Exception("step nicht ausfuerbar")
+
+				#------
+				if False:
+					try:
+						import assembly2solver
+						try:
+							assembly2solver.solveConstraints(App.ActiveDocument)
+						except:
+							say("problem assembly2solver.solveConstraints(App.ActiveDocument)")
+					except:
+						# no assembly available
+						pass
+				#------
+					
+				FreeCAD.ActiveDocument.recompute()
+				FreeCADGui.updateGui() 
+
 			Inspector.step(now=0)
 			 
 		FreeCADGui.Selection.clearSelection()
@@ -1808,12 +1819,13 @@ from PySide import QtGui, QtCore
 
 
 class AddMyWidget(QtGui.QWidget):
-	def __init__(self,vobj,fun,fun2=None,fun3=None, *args):
+	def __init__(self,vobj,fun,fun2,fun4,fun5, *args):
 		QtGui.QWidget.__init__(self, *args)
 		self.vobj=vobj
 		self.fun=fun
 		self.fun2=fun2
-		self.fun3=fun3
+		self.fun4=fun4
+		self.fun5=fun5
 		self.vollabel = QtGui.QLabel('Volume')
 		self.volvalue = QtGui.QLineEdit()
 		self.checkBox = QtGui.QCheckBox()
@@ -1831,10 +1843,20 @@ class AddMyWidget(QtGui.QWidget):
 			self.pushButton2 = QtGui.QPushButton()
 			self.pushButton2.clicked.connect(self.on_pushButton_clicked2)
 			layout.addWidget(self.pushButton2, 2,1)
-		if fun3:
+		if False:
 			self.pushButton3 = QtGui.QPushButton()
 			self.pushButton3.clicked.connect(self.on_pushButton_clicked3)
 			layout.addWidget(self.pushButton3, 3,1)
+
+		if True:
+			self.pushButton4 = QtGui.QPushButton()
+			self.pushButton4.clicked.connect(self.on_pushButton_clicked4)
+			layout.addWidget(self.pushButton4, 4,1)
+
+			self.pushButton5 = QtGui.QPushButton()
+			self.pushButton5.clicked.connect(self.on_pushButton_clicked5)
+			layout.addWidget(self.pushButton5, 5,1)
+
 
 		if 0:
 			# close control dialog
@@ -1863,15 +1885,31 @@ class AddMyWidget(QtGui.QWidget):
 		#FreeCAD.Console.PrintMessage("rt")
 		#FreeCAD.zx=self
 		#say(self)
-		self.fun3(self.vobj)
+		#self.fun3(self.vobj)
 		FreeCADGui.Control.closeDialog()
+
+	def on_pushButton_clicked4(self):
+		#FreeCAD.Console.PrintMessage("rt")
+		#FreeCAD.zx=self
+		#say(self)
+		self.fun4(self.vobj)
+		#FreeCADGui.Control.closeDialog()
+
+	def on_pushButton_clicked5(self):
+		#FreeCAD.Console.PrintMessage("rt")
+		#FreeCAD.zx=self
+		#say(self)
+		self.fun5(self.vobj)
+		#FreeCADGui.Control.closeDialog()
+
+
 	
 		
 
 class AddMyTask():
-	def __init__(self,vobj,fun,fun2=None,fun3=None):
+	def __init__(self,vobj,fun,fun2,fun4,fun5):
 		reinit()
-		self.form = AddMyWidget(vobj,fun,fun2,fun3)
+		self.form = AddMyWidget(vobj,fun,fun2,fun4,fun5)
 		#FreeCAD.zz=vobj
 		#FreeCAD.zy=self
 		#say("Admm my task")
@@ -1921,6 +1959,7 @@ def stopManager(vobj=None):
 	fhandle = open(fname, 'a')
 	fhandle.close()
 
+
 def unlockManager(vobj=None):
 	import os
 	from os import remove
@@ -1929,6 +1968,24 @@ def unlockManager(vobj=None):
 		os.remove(fname)
 	except:
 		pass
+
+
+def loopManager(vobj=None):
+	fname='/tmp/loop'
+	fhandle = open(fname, 'a')
+	fhandle.close()
+
+
+def unloopManager(vobj=None):
+	import os
+	from os import remove
+	fname='/tmp/loop'
+	try:
+		os.remove(fname)
+	except:
+		pass
+
+
 
 class _ViewProviderManager(_ViewProviderActor):
 	
@@ -1939,12 +1996,14 @@ class _ViewProviderManager(_ViewProviderActor):
 		FreeCAD.tt=self
 		#say(self)
 		#panel = AddMyTask(runManager,stopManager,unlockManager)
-		panel = AddMyTask(self,runManager,stopManager)
+		panel = AddMyTask(self,runManager,stopManager,loopManager,unloopManager)
 #		panel.form.volvalue.setText("VOL-VALUE")
 #		panel.form.vollabel.setText("VOL-LABELLO")
 		panel.form.pushButton.setText("Run ")
 		panel.form.pushButton2.setText("Stop")
-#		panel.form.pushButton3.setText("Unlock ")
+		panel.form.pushButton4.setText("Loop")
+		panel.form.pushButton5.setText("Unloop")
+
 		FreeCADGui.Control.showDialog(panel)
 
 if FreeCAD.GuiUp:
@@ -2183,7 +2242,8 @@ class _ViewProviderScriptAction(object):
 		panel.form.vollabel.setText("VOL-LABELLO")
 		panel.form.pushButton.setText("Run ")
 		panel.form.pushButton2.setText("Stop")
-		panel.form.pushButton3.setText("Unlock ")
+		panel.form.pushButton3.setText("Unlock")
+		
 		FreeCADGui.Control.showDialog(panel)
 		
 def createScriptAction(name='My_ScriptAction'):
