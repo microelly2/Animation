@@ -135,7 +135,12 @@ class _Actor(object):
 		return None
 
 
-class _CommandActor:
+class _CommandActor():
+
+	def __init__(self,name='Actor'):
+		say("create Actor Command")
+		self.name=name
+
 	def GetResources(self): 
 		return {'Pixmap' : __dir__+ '/icons/mover.png', 'MenuText': 'Mover', 'ToolTip': 'Mover Dialog'} 
 
@@ -148,9 +153,9 @@ class _CommandActor:
 
 	def Activated(self):
 		if FreeCADGui.ActiveDocument:
-			FreeCAD.ActiveDocument.openTransaction("create Mover")
+			FreeCAD.ActiveDocument.openTransaction("create " + self.name)
 			FreeCADGui.doCommand("import Animation")
-			FreeCADGui.doCommand("Animation.createMover()")
+			FreeCADGui.doCommand("Animation.create"+self.name+"()")
 			FreeCAD.ActiveDocument.commitTransaction()
 			FreeCAD.ActiveDocument.recompute()
 		else:
@@ -158,49 +163,49 @@ class _CommandActor:
 		return
 
 
-class _ViewProviderActor(object):
+class _ViewProviderActor():
+ 
+	def __init__(self,vobj,icon='/icons/mover.png'):
+		self.iconpath = __dir__ + icon
+		vobj.Proxy = self
  
 	def getIcon(self):
 		return __dir__ + '/icons/mover.png'
-   
-	def __init__(self,vobj):
-		vobj.Proxy = self
-
+		return self.iconpath
 
 	def attach(self,vobj):
 		self.Object = vobj.Object
 		return	
 	
 	def claimChildren(self):
-		return self.Object.Group
+		try:
+			return self.Object.Group
+		except:
+			return None
 
 	def __getstate__(self):
 		return None
 
 	def __setstate__(self,state):
 		return None
-#--------------------------------------
-
-import Draft
-
-#-------------------------
-
 
 #---------------------------------------------------------------
+# Bounder 
+#---------------------------------------------------------------
+
 def createBounder(name='MyBounder'):
 	obj = FreeCAD.ActiveDocument.addObject("App::DocumentObjectGroupPython",name)
+
 	obj.addProperty("App::PropertyInteger","start","Base","start").start=10
 	obj.addProperty("App::PropertyInteger","end","Base","end").end=40
 	obj.addProperty("App::PropertyInteger","duration","Base","end")
 
 	obj.addProperty("App::PropertyLink","obj","Object","Objekt")
-#	obj.addProperty("App::PropertyInteger","nr","Object","nummer Datum").nr=1#
-#	obj.addProperty("App::PropertyEnumeration","unit","3D Param","einheit").unit=['deg','mm']
-#	# FreeCADGui.getDocument("Unnamed").getObject("Box").Transparency = 2
 
 	obj.addProperty("App::PropertyBool","x","intervall","start").x=False
 	obj.addProperty("App::PropertyFloat","xmin","intervall","va")
 	obj.addProperty("App::PropertyFloat","xmax","intervall","ve")
+
 	obj.addProperty("App::PropertyBool","y","intervall","start").y=False
 	obj.addProperty("App::PropertyFloat","ymin","intervall","va")
 	obj.addProperty("App::PropertyFloat","ymax","intervall","ve")
@@ -209,18 +214,7 @@ def createBounder(name='MyBounder'):
 	obj.addProperty("App::PropertyFloat","zmin","intervall","va")
 	obj.addProperty("App::PropertyFloat","zmax","intervall","ve")
 
-
-	
-#	obj.addProperty("App::PropertyInteger","transpaStart","Transparency","start").transpaStart=0
-#	obj.addProperty("App::PropertyInteger","transpaEnd","Transparency","end").transpaEnd=40
-#	obj.addProperty("App::PropertyEnumeration","DisplayStyle","Transparency","end").DisplayStyle=['Flat Lines','Shaded','Wireframe']
-#	obj.addProperty("App::PropertyBool","visibility","Visibility","toggle visibility").visibility=False
-#	obj.addProperty("App::PropertyInteger","transpaStart","transparency","start").transpaStart=0
-#	obj.addProperty("App::PropertyInteger","transpaEnd","transparency","end").transpaEnd=40
-	
-	
 	_Bounder(obj)
-	_ViewProviderBounder(obj.ViewObject)
 	return obj
 
 class _CommandBounder(_CommandActor):
@@ -228,40 +222,28 @@ class _CommandBounder(_CommandActor):
 		return {'Pixmap' : __dir__+ '/icons/bounder.png', 'MenuText': 'Bounder', 'ToolTip': 'Bounder Dialog'} 
 
 	def Activated(self):
-		if FreeCADGui.ActiveDocument:
-			FreeCAD.ActiveDocument.openTransaction("create Bounder")
-			FreeCADGui.doCommand("import Animation")
-			FreeCADGui.doCommand("Animation.createBounder()")
-			FreeCAD.ActiveDocument.commitTransaction()
-			FreeCAD.ActiveDocument.recompute()
-		else:
-			say("Erst Arbeitsbereich oeffnen")
-		return
-	   
+		self.name='Bounder'
+		_CommandActor.Activated(self)
+
 class _Bounder(_Actor):
-	
+
 	def __init__(self,obj):
 		obj.Proxy = self
 		self.Type = "Bounder"
-		self.obj2 = obj 
+		self.obj2 = obj
+		_ViewProviderActor(obj.ViewObject,'/icons/bounder.png') 
 
-		
 	def step(self,now):
-		FreeCAD.tt=self
-		
-		
 		say("Bounder step!" + str(now))
 		if now<=self.obj2.start or now>self.obj2.end:
-			say("ausserhalb")
 			pass
 		else:
-			pass
 			gob=FreeCAD.ActiveDocument.getObject(self.obj2.obj.Name)
 			pm=gob.Placement.Base
-			say(pm)
 			x=pm.x
 			y=pm.y
 			z=pm.z
+
 			if self.obj2.x:
 				if self.obj2.xmin>x:
 					x=self.obj2.xmin
@@ -281,12 +263,10 @@ class _Bounder(_Actor):
 					z=self.obj2.zmin
 				if self.obj2.zmax<z:
 					z=self.obj2.zmax
+
 			gob.Placement.Base=FreeCAD.Vector(x,y,z)
 			pm=gob.Placement.Base
-			say(pm)
 			FreeCADGui.updateGui() 
-			
-			
 
 	def setValues(self,va,ve):
 		self.obj2.va=va
@@ -297,67 +277,52 @@ class _Bounder(_Actor):
 		obj.setEditorMode("end", 1) #ro
 		obj.end=obj.start+obj.duration
 
-class _ViewProviderBounder(_ViewProviderActor):
-	
-	def getIcon(self):
-		return __dir__ + '/icons/bounder.png'
-
 if FreeCAD.GuiUp:
 	FreeCADGui.addCommand('Anim_Bounder',_CommandBounder())
 
-#---------------------------------------------------------------
-
-
-
-
 #----------------------------------------------------------------------------------------------------------
+# Viewpoint
+#----------------------------------------------------------------------------------------------------------
+
 def createViewpoint(name='My_Viewpoint'):
-	say("creat movie screen")
-	
+
 	obj = FreeCAD.ActiveDocument.addObject("App::DocumentObjectGroupPython",name)
+
 	obj.addProperty("App::PropertyInteger","start","Base","start").start=0
 	obj.addProperty("App::PropertyInteger","duration","Base","start").duration=10
-
 	obj.addProperty("App::PropertyInteger","end","Base","end")
 
 	obj.addProperty("App::PropertyVector","posCamera","Camera","sweep").posCamera=FreeCAD.Vector(10,50,30)
 	obj.addProperty("App::PropertyLink","pathCamera","Camera","sweep")
-	obj.addProperty("App::PropertyInteger","indexCamera","Camera","sweep")
+	obj.addProperty("App::PropertyInteger","indexCamera","Camera","sweep").indexCamera=1
 	obj.addProperty("App::PropertyEnumeration","modeCamera","Camera","Rotationsachse Zentrum relativ").modeCamera=['Vector','Path']
-	
+	obj.addProperty("App::PropertyEnumeration","typeCamera","Camera","extrusion").typeCamera=["Orthographic","Perspective"]
+	obj.typeCamera="Orthographic"
+	obj.modeCamera='Vector'
 
 	obj.addProperty("App::PropertyEnumeration","dirMode","Direction","Rotationsachse Zentrum relativ").dirMode=['None','Vector','Object']
 	obj.addProperty("App::PropertyVector","dirVector","Direction","richutng ")
 	obj.addProperty("App::PropertyLink","dirTarget","Direction","richutng ")
-	
+
 	obj.addProperty("App::PropertyEnumeration","posMode","Position","Rotationsachse Zentrum relativ").posMode=['None','Vector','Object']
 	obj.addProperty("App::PropertyVector","posVector","Position","sweep").posVector=FreeCAD.Vector(0,0,0)
 	obj.addProperty("App::PropertyLink","posObject","Position","sweep")
+
 	obj.addProperty("App::PropertyFloat","zoom","lens geometry","extrusion").zoom=1
-	obj.addProperty("App::PropertyEnumeration","typeCamera","Camera","extrusion").typeCamera=["Orthographic","Perspective"]
-	obj.typeCamera="Orthographic"
-	obj.modeCamera='Vector'
-	obj.indexCamera=1
-	
+
 	_Viewpoint(obj)
 	_ViewProviderViewpoint(obj.ViewObject)
 	return obj
 
+
 class _CommandViewpoint(_CommandActor):
+
 	def GetResources(self): 
 		return {'Pixmap' : __dir__ + '/icons/viewpoint.png', 'MenuText': 'Viewpoint', 'ToolTip': 'Viewpoint Dialog'} 
 
 	def Activated(self):
-		if FreeCADGui.ActiveDocument:
-			FreeCAD.ActiveDocument.openTransaction("create BB")
-			FreeCADGui.doCommand("import Animation")
-			FreeCADGui.doCommand("Animation.createViewpoint()")
-			FreeCAD.ActiveDocument.commitTransaction()
-			FreeCAD.ActiveDocument.recompute()
-		else:
-			say("Erst Arbeitsbereich oeffnen")
-		return
-
+		self.name='Viewpoint'
+		_CommandActor.Activated(self)
 
 
 class _Viewpoint(_Actor):
@@ -366,41 +331,30 @@ class _Viewpoint(_Actor):
 		self.obj2=obj
 		obj.Proxy = self
 		self.Type = "_Viewpoint"
+		_ViewProviderActor(obj.ViewObject,'/icons/viewpoint.png') 
 
 	def step(self,now):
-		App=FreeCAD
-		say("step " +str(now))
-		
 		from pivy import coin
 		camera = FreeCADGui.ActiveDocument.ActiveView.getCameraNode()
-
-		Gui=FreeCADGui
 		if self.obj2.typeCamera=="Orthographic":
-			Gui.activeDocument().activeView().setCameraType("Orthographic")
+			FreeCADGui.activeDocument().activeView().setCameraType("Orthographic")
 		else:
-			Gui.activeDocument().activeView().setCameraType("Perspective")
+			FreeCADGui.activeDocument().activeView().setCameraType("Perspective")
 
-
-# ziel, aufrichtung - wo ist oben bei der kamera
-
-		# camera.pointAt(coin.SbVec3f(0,0,0),coin.SbVec3f(0,0,1))
 		campos=Base.Vector( 100, 50, 30)
 		campos=self.obj2.posCamera
-		# position neu bestimmen
+
 		if self.obj2.modeCamera == 'Path' :
 			pos=-self.obj2.indexCamera
 			t=FreeCAD.animCamera[pos]
 			campos=t.pop()
 
-		say("camera pos")
-		say(campos)
+		say("camera pos" + str(campos))
 		camera.position.setValue( campos) 
-		
-	
 
 		if now==self.obj2.start:
 			pass
-			
+
 		if self.obj2.zoom <>1:
 			if self.obj2.zoom <=0:
 				sayErr("Zoom darf nicht <= NULL seinn")
@@ -419,63 +373,36 @@ class _Viewpoint(_Actor):
 			say(target.Placement.Base)
 			pos3=target.Placement.Base
 			pos3.sub(campos)
-			
-			
-			#pos=FreeCAD.Vector(campos)
-			#pos2=pos.sub(target.Placement.Base)
-			#say(pos)
-			#say(pos3)
 			camera.pointAt(coin.SbVec3f(pos3),coin.SbVec3f(0,0,1))
-			say("redirected")
-		
-		App.ActiveDocument.recompute()
+
+		FreeCAD.ActiveDocument.recompute()
 		FreeCADGui.updateGui() 
 
 	def execute(self,obj):
-		FreeCAD.ts=self
-		FreeCAD.to=obj
 		say("execute Viewpoint")
-		say(self)
-		say(obj)
 		obj.setEditorMode("end", 1) #ro
 		obj.end=obj.start+obj.duration
 		if obj.modeCamera == 'Path':
-			say("drin 1")
 			if 1  or obj.indexCamera >= 0:
-				say("drin")
 				obj.indexCamera=-1
-				##obj.vectorMotion=FreeCAD.Vector(0,0,0)
-				# x=FreeCAD.ActiveDocument.DWire001
 				x=obj.pathCamera
-
 				steps=obj.duration+1+1
 				l=x.Shape.copy().discretize(steps)
 				ll=[]
 				for pp in range(len(l)):
-					print(pp)
 					v=l[pp]
 					ll.append(v)
-					
-					say(v)
 				ll.reverse()
-
 
 				if not hasattr(FreeCAD,'animCamera'):
 					FreeCAD.animCamera=[]
 					say ("FreeCAD.animCamera neu")
 
-				# print (FreeCAD.animMover)
-
-				#FreeCAD.animMover.append("start")
-				#FreeCAD.animMover.append("start")
 				pos=len(FreeCAD.animCamera)
 				obj.indexCamera=-pos
 				FreeCAD.animCamera.append(ll)
 				say("!!!!!!!!!!!!!!!!!  haenge an pos:"+ str(pos))
-				#FreeCAD.animMover.append("end")
 				say(FreeCAD.animCamera)
-
-
 
 
 class _ViewProviderViewpoint(_ViewProviderActor):
@@ -486,34 +413,22 @@ class _ViewProviderViewpoint(_ViewProviderActor):
 if FreeCAD.GuiUp:
 	FreeCADGui.addCommand('Anim_Viewpoint',_CommandViewpoint())
 
-#----------------------
-
-
-
-
-
-
-
 #----------------------------------------------------------------------------------------------------------
+# Extruder
+#----------------------------------------------------------------------------------------------------------
+
 def createExtruder(name='My_Extruder'):
-	say("creat movie screen")
-	
+
 	obj = FreeCAD.ActiveDocument.addObject("App::DocumentObjectGroupPython",name)
+
 	obj.addProperty("App::PropertyInteger","start","Base","start").start=0
 	obj.addProperty("App::PropertyInteger","duration","Base","start").duration=10
-
-#	obj.addProperty("App::PropertyInteger","end","intervall","end").end=10
-#	obj.addProperty("App::PropertyPlacement","initPlace","3D Param","initPlace")
-#	obj.addProperty("App::PropertyBool","showFrame","info","Rotationsachse Zentrum relativ").showFrame=False
-#	obj.addProperty("App::PropertyBool","showFile","info","Rotationsachse Zentrum relativ").showFile=False
-#	obj.addProperty("App::PropertyString","movie","info","Rotationsachse Zentrum relativ").movie="/tmp/movie/"
 
 	obj.addProperty("App::PropertyLink","path","Extrusion","path ")
 	obj.addProperty("App::PropertyLink","sweep","Extrusion","sweep")
 	obj.addProperty("App::PropertyLink","ext","Extrusion","extrusion")
 	
 	_Extruder(obj)
-	_ViewProviderExtruder(obj.ViewObject)
 	return obj
 
 class _CommandExtruder(_CommandActor):
@@ -521,17 +436,8 @@ class _CommandExtruder(_CommandActor):
 		return {'Pixmap' : __dir__ + '/icons/extruder.png', 'MenuText': 'Extruder', 'ToolTip': 'Extruder Dialog'} 
 
 	def Activated(self):
-		if FreeCADGui.ActiveDocument:
-			FreeCAD.ActiveDocument.openTransaction("create BB")
-			FreeCADGui.doCommand("import Animation")
-			FreeCADGui.doCommand("Animation.createExtruder()")
-			FreeCAD.ActiveDocument.commitTransaction()
-			FreeCAD.ActiveDocument.recompute()
-		else:
-			say("Erst Arbeitsbereich oeffnen")
-		return
-
-
+		self.name='Extruder'
+		_CommandActor.Activated(self)
 
 class _Extruder(_Actor):
 
@@ -539,6 +445,7 @@ class _Extruder(_Actor):
 		self.obj2=obj
 		obj.Proxy = self
 		self.Type = "_Extruder"
+		_ViewProviderActor(obj.ViewObject,'/icons/extruder.png') 
 
 	def step(self,now):
 		App=FreeCAD
@@ -561,27 +468,11 @@ class _Extruder(_Actor):
 		else: 
 			self.obj2.ext.ViewObject.Visibility=True
 		self.obj2.ext.Spine=(ss,kk)
-		App.ActiveDocument.recompute()
+		FreeCAD.ActiveDocument.recompute()
 		FreeCADGui.updateGui() 
-
-
-class _ViewProviderExtruder(_ViewProviderActor):
-
-	def getIcon(self):
-		return __dir__ + '/icons/extruder.png'
 
 if FreeCAD.GuiUp:
 	FreeCADGui.addCommand('Anim_Extruder',_CommandExtruder())
-
-#----------------------
-
-
-
-#--------------------------
-
-
-
-
 
 
 #----------------------------------------------------------------------------------------------------------
@@ -3409,7 +3300,6 @@ class _Scaler(_Actor):
 				nwy=self.obj2.yVa
 				nwz=self.obj2.zVa
 			else:
-			
 				nwx=relativbase**self.obj2.xScale*self.obj2.xVe 
 				nwy=relativbase**self.obj2.yScale*self.obj2.yVe 
 				nwz=relativbase**self.obj2.zScale*self.obj2.zVe 
@@ -3422,12 +3312,9 @@ class _Scaler(_Actor):
 			FreeCADGui.Selection.clearSelection()
 		say("ende")
 
-
-
 class _ViewProviderScaler(_ViewProviderActor):
 	def getIcon(self):
 		return __dir__ + '/icons/scaler.png'
 
 if FreeCAD.GuiUp:
 	FreeCADGui.addCommand('Anim_Scaler',_CommandScaler())
-
