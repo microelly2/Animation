@@ -1463,7 +1463,8 @@ def createManager(name='My_Manager'):
 	obj = FreeCAD.ActiveDocument.addObject("App::DocumentObjectGroupPython",name)
 	obj.addProperty("App::PropertyInteger","start","Base","start").start=0
 	obj.addProperty("App::PropertyInteger","intervall","Base","intervall").intervall=100
-	obj.addProperty("App::PropertyFloat","step","Base","step").step=0.4
+	obj.addProperty("App::PropertyFloat","step","Base","step").step=0.0
+	obj.addProperty("App::PropertyFloat","sleeptime","params","sleep time between steps").sleeptime=0.02
 	obj.addProperty("App::PropertyString","text","params","text").text="NO"
 	_Manager(obj)
 	_ViewProviderManager(obj.ViewObject)
@@ -1604,7 +1605,8 @@ class _Manager(_Actor):
 				#------
 					
 				FreeCAD.ActiveDocument.recompute()
-				FreeCADGui.updateGui() 
+				FreeCADGui.updateGui()
+				time.sleep(self.obj2.sleeptime)
 
 			Inspector.step(now=0)
 			 
