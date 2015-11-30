@@ -58,6 +58,17 @@ def errorDialog(msg):
     diag.setWindowFlags(PySide.QtCore.Qt.WindowStaysOnTopHint)
     diag.exec_()
 
+import FreeCAD,os,time,sys,traceback
+
+def sayexc(mess=''):
+	exc_type, exc_value, exc_traceback = sys.exc_info()
+	ttt=repr(traceback.format_exception(exc_type, exc_value,exc_traceback))
+	lls=eval(ttt)
+	l=len(lls)
+	l2=lls[(l-3):]
+	FreeCAD.Console.PrintError(mess + "\n" +"-->  ".join(l2))
+
+
 __dir__ = os.path.dirname(__file__)	
 
 #---------------------------------------------------------------
@@ -66,11 +77,13 @@ __dir__ = os.path.dirname(__file__)
 
 class _Actor(object):
 
-	def __init__(self,obj,icon):
+	def __init__(self,obj,icon='/icons/animation.png'):
 		obj.Proxy = self
 		self.Type = self.__class__.__name__
 		self.obj2 = obj
-		_ViewProviderActor(obj.ViewObject,icon) 
+		self.Lock=False
+		self.Changed=False
+		# _ViewProviderActor(obj.ViewObject,icon) 
 
 
 	def initPlacement(self,tp):
@@ -117,11 +130,29 @@ class _Actor(object):
 		FreeCAD.uu=self
 		say("rotate " + str(self.obj2.Label) + " angle=" +str(angle))
 
+
 	def execute(self,obj):
-		pass
+		self.obj2=obj
+		if self.obj2.ViewObject.Visibility == False:
+			return
+			
+		if self.Changed:
+			# ignore self changes
+			self.Changed=False
+			return
+		if not self.Lock:
+			self.obj2=obj
+			self.Lock=True
+			try:
+				self.update()
+			except:
+				sayexc('update error')
+			self.Lock=False
+
 
 	def attach(self,vobj):
 		self.Object = vobj.Object
+
 
 	def claimChildren(self):
 		return self.Object.Group
@@ -135,15 +166,14 @@ class _Actor(object):
 class _CommandActor():
 
 	def __init__(self,name='Actor',icon='/icons/mover.png'):
-		say("create Actor Command")
-		say(name)
+#		say("create Actor Command")
+#		say(name)
 		self.name=name
 		self.icon=  __dir__+ icon
-		say(self.icon)
+#		say(self.icon)
 
 	def GetResources(self): 
 		return {'Pixmap' : self.icon, 'MenuText': self.name, 'ToolTip': self.name +' Dialog'} 
-		# return {'Pixmap' : __dir__+ '/icons/sun.png', 'MenuText': 'YYMover', 'ToolTip': 'YYY Dialog'} 
 
 
 	def IsActive(self):
@@ -167,15 +197,45 @@ class _ViewProviderActor():
  
 	def __init__(self,vobj,icon='/icons/mover.png'):
 		self.iconpath = __dir__ + icon
+		self.Object = vobj.Object
 		vobj.Proxy = self
  
 	def getIcon(self):
 		return self.iconpath
 
 	def attach(self,vobj):
+		self.cmenu=[]
+		self.emenu=[]
 		self.Object = vobj.Object
-		return	
-	
+		icon='/icons/animation.png'
+		self.iconpath = __dir__ + icon
+
+	def setupContextMenu(self, obj, menu):
+		cl=self.Object.Proxy.__class__.__name__
+		action = menu.addAction("About " + cl)
+		action.triggered.connect(self.showVersion)
+
+		action = menu.addAction("Edit ...")
+		action.triggered.connect(self.edit)
+
+		for m in self.cmenu:
+			action = menu.addAction(m[0])
+			action.triggered.connect(m[1])
+
+
+	def edit(self):
+		pass
+
+	def setEdit(self,vobj,mode=0):
+		self.edit()
+		return True
+
+	def unsetEdit(self,vobj,mode=0):
+		return False
+
+	def doubleClicked(self,vobj):
+		self.setEdit(vobj,1)
+
 	def claimChildren(self):
 		try:
 			return self.Object.Group
@@ -215,6 +275,7 @@ def createBounder(name='MyBounder'):
 
 ## mod
 	_Bounder(obj,'/icons/bounder.png')
+	_ViewProviderActor(obj.ViewObject,'/icons/bounder.png') 
 	return obj
 
 #class _CommandBounder(_CommandActor):  - kann weg 
@@ -1674,6 +1735,14 @@ class AddMyWidget(QtGui.QWidget):
 			self.pushButton5.clicked.connect(self.on_pushButton_clicked5)
 			layout.addWidget(self.pushButton5, 5,1)
 
+		dial = QtGui.QDial()
+		dial.setNotchesVisible(True)
+		self.dial=dial
+		dial.setMaximum(100)
+		dial.valueChanged.connect(self.dialer);
+		layout.addWidget(dial,7,1)
+
+
 
 		if 0:
 			# close control dialog
@@ -1683,6 +1752,16 @@ class AddMyWidget(QtGui.QWidget):
 		
 		self.setLayout(layout)
 		self.setWindowTitle("Animation Manager Control Panel")
+
+	def dialer(self):
+		time=float(self.dial.value())/100
+		nw=self.dial.value()
+		t=self.vobj.Object
+		for ob in t.OutList:
+			say("step " +  str(nw) + "fuer " + ob.Label)
+			if ob.ViewObject.Visibility:
+				ob.Proxy.step(nw)
+		FreeCAD.ActiveDocument.recompute()
 
 	def on_pushButton_clicked(self):
 		#FreeCAD.Console.PrintMessage("rt")
@@ -1843,9 +1922,9 @@ def reinit():
 					##say(obj.Proxy.Type)
 					pass
 				else:
-					##say("reinit")
-						obj.Proxy.__init__(obj)
-					##say(obj.Proxy.Type)
+					say("reinit __init__")
+					obj.Proxy.__init__(obj)
+					say(obj.Proxy.Type)
 				
 				# print("init " +obj.Name)
 				if obj.Proxy.Type=='_Plugger':
