@@ -22,6 +22,9 @@ def createPlacer(name='My_Placer',target=None,src=None):
 
 	c3.addProperty("App::PropertyLink","target","Base","")
 	c3.target=target
+	c3.addProperty("App::PropertyLinkList","followers","Base","")
+
+	
 	c3.addProperty("App::PropertyLink","src","Base","")
 	c3.src=src
 	c3.addProperty("App::PropertyFloat","time","Base","")
@@ -91,7 +94,15 @@ class _Placer(Animation._Actor):
 		z1=self.obj2.z1
 		arc0=self.obj2.arc0
 		arc1=self.obj2.arc1
-
+		
+		if True:
+			x=self.obj2.target.Placement.Base.x
+			y=self.obj2.target.Placement.Base.y
+			z=self.obj2.target.Placement.Base.z
+			rx=self.obj2.target.Placement.Rotation.Axis.x
+			ry=self.obj2.target.Placement.Rotation.Axis.y
+			rz=self.obj2.target.Placement.Rotation.Axis.z
+			arc=self.obj2.target.Placement.Rotation.Angle
 		try:
 			sx=self.obj2.src.Placement.Base.x
 			sy=self.obj2.src.Placement.Base.y
@@ -118,7 +129,10 @@ class _Placer(Animation._Actor):
 		else:
 			self.obj2.target.Placement=pl
 		self.obj2.Placement=pl
-
+		if self.obj2.followers:
+			for f in self.obj2.followers:
+		#	FreeCAD.ActiveDocument.Ergebnis.Proxy.execute(FreeCAD.ActiveDocument.Ergebnis)
+				f.Proxy.execute(f)
 	def step(self,now):
 			say("step "+str(now) + str(self))
 			self.obj2.time=float(now)/100
