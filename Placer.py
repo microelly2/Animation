@@ -133,6 +133,7 @@ class _Placer(Animation._Actor):
 			for f in self.obj2.followers:
 		#	FreeCAD.ActiveDocument.Ergebnis.Proxy.execute(FreeCAD.ActiveDocument.Ergebnis)
 				f.Proxy.execute(f)
+
 	def step(self,now):
 			say("step "+str(now) + str(self))
 			self.obj2.time=float(now)/100

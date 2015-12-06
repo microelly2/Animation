@@ -14,6 +14,9 @@ __dir__ = os.path.dirname(__file__)
 class _Toucher(Animation._Actor):
 	''' to touch object during animation '''
 
+	def update(self):
+		pass
+
 	def step(self,now):
 		self.obj2.target.touch()
 		for t in self.obj2.targets:
@@ -35,5 +38,5 @@ def createToucher(name='My_Toucher',target=None,targets=None):
 	if targets:
 		obj.targets=targets
 	_Toucher(obj)
-	 _ViewProviderToucher(obj.ViewObject)
+	_ViewProviderToucher(obj.ViewObject)
 	return obj
