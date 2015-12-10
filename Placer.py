@@ -183,9 +183,16 @@ class _ViewProviderPlacer(Animation._ViewProviderActor):
 	def dialer(self):
 		self.obj2.time=float(self.widget.dial.value())/100
 		FreeCAD.ActiveDocument.recompute()
+		self.obj2.target.touch()
+		FreeCAD.ActiveDocument.recompute()
 
 	def funA(self):
-		say("ich bin FunA")
+		say("ich bin FunA touch target")
+		FreeCAD.ActiveDocument.recompute()
+		self.obj2.target.touch()
+		FreeCAD.ActiveDocument.recompute()
+		say("ich war  FunA")
+		
 
 	def funB(self):
 		say("ich bin FunB")
