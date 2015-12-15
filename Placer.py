@@ -56,7 +56,7 @@ def createPlacer(name='My_Placer',target=None,src=None):
 	c3.arc1=90
 
 	c3.addProperty("App::PropertyVector","RotCenter","Parameter","")
-	c3.RotCenter=FreeCAD.Vector(5,5,0)
+	c3.RotCenter=FreeCAD.Vector(0,0,0)
 
 	c3.addProperty("App::PropertyVector","RotAxis","Parameter","")
 	c3.RotAxis=FreeCAD.Vector(0,0,1)
@@ -122,6 +122,8 @@ class _Placer(Animation._Actor):
 		arcv=eval(self.obj2.arc)
 
 		rot=FreeCAD.Rotation(self.obj2.RotAxis,arcv)
+		say(self.obj2.target.Label)
+		say("Vorgabe arcv " + str(arcv) +" ->Rotation ..." + str(rot.Axis) + "winkel " + str(rot.Angle))
 		pl=FreeCAD.Placement(FreeCAD.Vector(xv,yv,zv),rot,self.obj2.RotCenter)
 		#say(pl)
 		if str(self.obj2.target.TypeId) == 'App::Annotation':
@@ -135,7 +137,7 @@ class _Placer(Animation._Actor):
 				f.Proxy.execute(f)
 
 	def step(self,now):
-			say("step "+str(now) + str(self))
+#			say("step "+str(now) + str(self))
 			self.obj2.time=float(now)/100
 
 class _ViewProviderPlacer(Animation._ViewProviderActor):
@@ -156,6 +158,7 @@ class _ViewProviderPlacer(Animation._ViewProviderActor):
 		self.obj2=self.Object
 		self.Object.Proxy.Lock=False
 		self.Object.Proxy.Changed=False
+		self.touchTarget=True
 		icon='/icons/animation.png'
 		self.iconpath = __dir__ + icon
 		return
@@ -172,19 +175,30 @@ class _ViewProviderPlacer(Animation._ViewProviderActor):
 			action = menu.addAction(m[0])
 			action.triggered.connect(m[1])
 
-	def edit(self):
-		self.dialog=EditWidget(self,self.emenu)
-		self.dialog.show()
+
+#	def edit(self):
+#		self.dialog=EditWidget(self,self.emenu)
+#		self.dialog.show()
 
 	def showVersion(self):
 		cl=self.Object.Proxy.__class__.__name__
 		PySide.QtGui.QMessageBox.information(None, "About ", "Animation" + cl +" Node\nVersion " + __vers__ )
 
 	def dialer(self):
+		inlist=self.obj2.InList
+		vlist=[]
+		for v in inlist:
+			vlist.append(v.ViewObject.Visibility)
+			v.ViewObject.Visibility=False
 		self.obj2.time=float(self.widget.dial.value())/100
 		FreeCAD.ActiveDocument.recompute()
 		self.obj2.target.touch()
 		FreeCAD.ActiveDocument.recompute()
+		n=0
+		for v in inlist:
+			v.ViewObject.Visibility=vlist[n]
+			n +=1 
+
 
 	def funA(self):
 		say("ich bin FunA touch target")
@@ -195,4 +209,6 @@ class _ViewProviderPlacer(Animation._ViewProviderActor):
 		
 
 	def funB(self):
-		say("ich bin FunB")
+		say("ich bin FunB tozch target")
+		self.touchTarget=not self.touchTarget
+		say(self.touchTarget)

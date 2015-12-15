@@ -31,6 +31,8 @@ import math, os, sys
 from math import sqrt, pi, sin, cos, asin
 from PySide import QtGui,QtCore
 
+from EditWidget import EditWidget
+
 from time import *
 
 
@@ -136,10 +138,13 @@ class _Actor(object):
 		if self.obj2.ViewObject.Visibility == False:
 			return
 			
-		if self.Changed:
-			# ignore self changes
-			self.Changed=False
-			return
+		try:
+			if self.Changed:
+				# ignore self changes
+				self.Changed=False
+				return
+		except:
+			pass
 		if not self.Lock:
 			self.obj2=obj
 			self.Lock=True
@@ -199,6 +204,7 @@ class _ViewProviderActor():
 		self.iconpath = __dir__ + icon
 		self.Object = vobj.Object
 		vobj.Proxy = self
+		
  
 	def getIcon(self):
 		return self.iconpath
@@ -210,6 +216,14 @@ class _ViewProviderActor():
 		icon='/icons/animation.png'
 		self.iconpath = __dir__ + icon
 
+	def anims(self):
+		return [['forward',self.animforward],['backward',self.animbackward],['ping pong',self.animpingpong]]
+
+	def showVersion(self):
+		cl=self.Object.Proxy.__class__.__name__
+		PySide.QtGui.QMessageBox.information(None, "About ", "Animation" + cl +" Node\nVersion " + self.vers)
+
+
 	def setupContextMenu(self, obj, menu):
 		cl=self.Object.Proxy.__class__.__name__
 		action = menu.addAction("About " + cl)
@@ -218,13 +232,17 @@ class _ViewProviderActor():
 		action = menu.addAction("Edit ...")
 		action.triggered.connect(self.edit)
 
-		for m in self.cmenu:
+		for m in self.cmenu + self.anims():
 			action = menu.addAction(m[0])
 			action.triggered.connect(m[1])
 
 
 	def edit(self):
-		pass
+		anims=self.anims()
+		print anims
+		
+		self.dialog=EditWidget(self,self.emenu + anims,False)
+		self.dialog.show()
 
 	def setEdit(self,vobj,mode=0):
 		self.edit()
@@ -232,6 +250,7 @@ class _ViewProviderActor():
 
 	def unsetEdit(self,vobj,mode=0):
 		return False
+
 
 	def doubleClicked(self,vobj):
 		self.setEdit(vobj,1)
@@ -247,6 +266,31 @@ class _ViewProviderActor():
 
 	def __setstate__(self,state):
 		return None
+
+
+	def dialog(self,noclose=False):
+		return EditWidget(self,self.emenu + self.anims(),noclose)
+
+	def animforward(self):
+		FreeCADGui.ActiveDocument.ActiveView.setAnimationEnabled(False)
+		for i in range(101):
+			self.obj2.time=float(i)/100
+			FreeCAD.ActiveDocument.recompute()
+			FreeCADGui.updateGui() 
+			time.sleep(0.02)
+
+	def animbackward(self):
+		FreeCADGui.ActiveDocument.ActiveView.setAnimationEnabled(False)
+		for i in range(101):
+			self.obj2.time=float(100-i)/100
+			FreeCAD.ActiveDocument.recompute()
+			FreeCADGui.updateGui() 
+			time.sleep(0.02)
+
+	def animpingpong(self):
+		self.animforward()
+		self.animbackward()
+
 
 #---------------------------------------------------------------
 # Bounder 
@@ -1699,19 +1743,20 @@ from PySide import QtGui, QtCore
 class AddMyWidget(QtGui.QWidget):
 	def __init__(self,vobj,fun,fun2,fun4,fun5, *args):
 		QtGui.QWidget.__init__(self, *args)
+		self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
 		self.vobj=vobj
 		self.fun=fun
 		self.fun2=fun2
 		self.fun4=fun4
 		self.fun5=fun5
-		self.vollabel = QtGui.QLabel('Volume')
+		self.vollabel = QtGui.QLabel(self.vobj.Object.Label)
 		self.volvalue = QtGui.QLineEdit()
 		self.checkBox = QtGui.QCheckBox()
 		self.radioButton = QtGui.QRadioButton()
 		self.pushButton = QtGui.QPushButton()
 		self.pushButton.clicked.connect(self.on_pushButton_clicked)
 		layout = QtGui.QGridLayout()
-		#layout.addWidget(self.vollabel, 0, 0)
+		layout.addWidget(self.vollabel, 0, 1)
 		#layout.addWidget(self.volvalue, 0, 1)
 		#layout.addWidget(self.checkBox, 1, 2)
 		#layout.addWidget(self.radioButton, 1, 0)
@@ -1900,7 +1945,12 @@ class _ViewProviderManager(_ViewProviderActor):
 		panel.form.pushButton4.setText("Loop")
 		panel.form.pushButton5.setText("Unloop")
 
-		FreeCADGui.Control.showDialog(panel)
+		# FreeCADGui.Control.showDialog(panel)
+		
+		self.dialog=panel.form
+		self.dialog.show()
+
+		
 
 if FreeCAD.GuiUp:
 	FreeCADGui.addCommand('Anim_Manager',_CommandManager())
