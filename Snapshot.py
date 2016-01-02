@@ -22,11 +22,14 @@ class _Snapshot(Animation._Actor):
 		ss.ViewObject.ShapeColor=(1.0,0.0,0.0)
 		ss.ViewObject.Visibility=False
 		self.g.addObject(ss)
+	
+	def update(self):
+		pass
 
 class _ViewProviderSnapshot(Animation._ViewProviderActor):
 
 	def getIcon(self):
-		icon='/icons/mover.png'
+		icon='/icons/snapshot.png'
 		return __dir__ + icon
 
 def createSnapshot(name='My_Snapshot',seqname='S',target=None,targets=[]):
@@ -71,7 +74,7 @@ class _ViewSequence(Animation._Actor):
 class _ViewProviderViewSequence(Animation._ViewProviderActor):
 
 	def getIcon(self):
-		return __dir__ + '/icons/rotator.png'
+		return __dir__ + '/icons/snapshotviewer.png'
 
 def createViewSequence(name='My_ViewSequence',seqname='S'):
 	''' createViewSequence(name,sequencename) returns an animation node for a sequence list'''

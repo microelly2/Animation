@@ -9,7 +9,7 @@
 
 import math,os
 
-import FreeCAD, Animation, PySide
+import FreeCAD, FreeCADGui, Animation, PySide
 from Animation import say,sayErr,sayexc
 from  EditWidget import EditWidget
 
@@ -95,7 +95,7 @@ class _Placer(Animation._Actor):
 		arc0=self.obj2.arc0
 		arc1=self.obj2.arc1
 		
-		if True:
+		if self.obj2.target:
 			x=self.obj2.target.Placement.Base.x
 			y=self.obj2.target.Placement.Base.y
 			z=self.obj2.target.Placement.Base.z
@@ -159,7 +159,7 @@ class _ViewProviderPlacer(Animation._ViewProviderActor):
 		self.Object.Proxy.Lock=False
 		self.Object.Proxy.Changed=False
 		self.touchTarget=True
-		icon='/icons/animation.png'
+		icon='/icons/placer.png'
 		self.iconpath = __dir__ + icon
 		return
 
@@ -174,11 +174,6 @@ class _ViewProviderPlacer(Animation._ViewProviderActor):
 		for m in self.cmenu:
 			action = menu.addAction(m[0])
 			action.triggered.connect(m[1])
-
-
-#	def edit(self):
-#		self.dialog=EditWidget(self,self.emenu)
-#		self.dialog.show()
 
 	def showVersion(self):
 		cl=self.Object.Proxy.__class__.__name__
@@ -212,3 +207,5 @@ class _ViewProviderPlacer(Animation._ViewProviderActor):
 		say("ich bin FunB tozch target")
 		self.touchTarget=not self.touchTarget
 		say(self.touchTarget)
+
+

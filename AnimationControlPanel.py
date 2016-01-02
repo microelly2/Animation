@@ -103,7 +103,7 @@ class _ViewProviderAnimationControlPanel(Animation._ViewProviderActor):
 		self.obj2=self.Object
 		self.Object.Proxy.Lock=False
 		self.Object.Proxy.Changed=False
-		icon='/icons/animation.png'
+		icon='/icons/controlpanel.png'
 		self.iconpath = __dir__ + icon
 		self.vers=__vers__
 		return

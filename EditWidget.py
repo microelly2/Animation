@@ -10,11 +10,11 @@ from PySide import QtCore, QtGui
 
 class _EditWidget(QtGui.QWidget):
 	'''double clicked dialog''' 
-	def __init__(self, dialer,obj,menu,*args):
+	def __init__(self, dialer,obj,menu,noclose,*args):
 		QtGui.QWidget.__init__(self, *args)
 		obj.widget=self
 		self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
-		self.vollabel = QtGui.QLabel(obj.Object.Label)
+		self.vollabel =QtGui.QLabel( "<b>"+obj.Object.Label+"</b>") 
 
 		if dialer:
 			dial = QtGui.QDial()
@@ -34,9 +34,10 @@ class _EditWidget(QtGui.QWidget):
 		if dialer:
 			layout.addWidget(dial)
 
-		self.pushButton02 = QtGui.QPushButton("close")
-		self.pushButton02.clicked.connect(self.hide)
-		layout.addWidget(self.pushButton02)
+		if not noclose:
+			self.pushButton02 = QtGui.QPushButton("close")
+			self.pushButton02.clicked.connect(self.hide)
+			layout.addWidget(self.pushButton02)
 
 		self.setLayout(layout)
 		try:
@@ -46,9 +47,9 @@ class _EditWidget(QtGui.QWidget):
 
 
 class EditWidget(_EditWidget):
-	def __init__(self, obj,menu,*args):
-		_EditWidget.__init__(self, True, obj,menu,*args)
+	def __init__(self, obj,menu,noclose,*args):
+		_EditWidget.__init__(self, True, obj,menu,noclose,*args)
 
 class EditNoDialWidget(_EditWidget):
-	def __init__(self, obj,menu,*args):
-		_EditWidget.__init__(self, False, obj,menu,*args)
+	def __init__(self, obj,menu,noclose,*args):
+		_EditWidget.__init__(self, False, obj,menu,noclose,*args)

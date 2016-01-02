@@ -74,7 +74,7 @@ def _creategraphs(obj):
 
 
 
-def createDiagram(name='My_Diagram',trafo=None,trafo2=None,trafo3=None,trafo4=None,trafo5=None,trafo6=None):
+def createDiagram(name='My_Diagram',trafo='',trafo2='',trafo3='',trafo4='',trafo5='',trafo6=''):
 	obj = FreeCAD.ActiveDocument.addObject("App::DocumentObjectGroupPython",name)
 	obj.addProperty("App::PropertyLink","source","Base","")
 	obj.addProperty("App::PropertyLink","source2","Base","")
@@ -250,7 +250,7 @@ class _ViewProviderDiagram(Animation._ViewProviderActor):
 		self.Object.Proxy.Lock=False
 		self.Object.Proxy.Changed=False
 		_creategraphs(self.Object)
-		icon='/icons/animation.png'
+		icon='/icons/diagram.png'
 		self.iconpath = __dir__ + icon
 		self.vers=__vers__
 		return
