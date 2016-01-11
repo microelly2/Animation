@@ -168,6 +168,10 @@ class _Actor(object):
 	def __setstate__(self,state):
 		return None
 
+
+	def onDocumentRestored(self, fp):
+		say(["onDocumentRestored",fp])
+
 class _ViewProviderActor():
  
 	def __init__(self,vobj,icon='/icons/mover.png'):
@@ -1424,6 +1428,41 @@ class _Manager(_Actor):
 
 	def register(self,obj):
 		self.obj2.targets.append(obj)
+		
+	def step(self,nw):
+		if self.obj2.start<=nw and   nw<=self.obj2.start + self.obj2.intervall:
+			say("step  " + self.obj2.Label + "  " + str(nw))
+			t=FreeCAD.ActiveDocument.getObject(self.obj2.Name)
+			intervall=self.obj2.intervall
+			if self.obj2.Label == self.obj2.Name:
+				s= s=self.obj2.Label
+			else:
+				s=self.obj2.Label + ' ('+ self.obj2.Name +")"
+			say(s +" ************************* manager run loop:" + str(nw-self.obj2.start) + "/" + str(intervall))
+			
+			self.obj2.step=nw
+			if os.path.exists("/tmp/stop"):
+					say("notbremse gezogen")
+					raise Exception("Notbremse Manager main loop")
+			for ob in t.OutList:
+				if 1: # fehler analysieren
+					sayd("step fuer ")
+					sayd(ob.Label)
+					if ob.ViewObject.Visibility:
+							ob.Proxy.step(nw)
+				else:
+					try:
+						sayd(ob.Proxy)
+						if ob.ViewObject.Visibility:
+							ob.Proxy.step(nw)
+					except:
+						say("fehler step 2")
+						raise Exception("step nicht ausfuerbar")
+			FreeCAD.ActiveDocument.recompute()
+			FreeCADGui.updateGui()
+			time.sleep(self.obj2.sleeptime)
+
+
 
 	def run(self,intervall=-1):
 		sayd("run  intervall=" + str(intervall))
@@ -1449,25 +1488,15 @@ class _Manager(_Actor):
 			say("manager infinite loop #################################")
 			firstRun=False
 			bigloop += 1 
-			for nw in range(intervall):	
+			for nw in range(self.obj2.start):
+				say("---- manager before" + str(nw))
+			
+			for nw in range(intervall+1):
+				self.step(nw)
+			
+			if False:
 				say("************************* manager run loop:" + str(nw) + "/" + str(intervall)+ '  ' + str(bigloop))
 				self.obj2.step=nw
-				try:
-					st=FreeCAD.ActiveDocument.getObject('Common')
-					## st.touch()
-					FreeCADGui.Selection.clearSelection()
-					
-					FreeCAD.ActiveDocument.recompute()
-				except:
-					say("Fehler touch")
-				
-				#-----------------------
-				# 
-				## checkCollision()
-				#
-				#
-				#-----------------------
-				
 				if os.path.exists("/tmp/stop"):
 						say("notbremse gezogen")
 						raise Exception("Notbremse Manager main loop")
@@ -1486,25 +1515,12 @@ class _Manager(_Actor):
 							say("fehler step 2")
 							raise Exception("step nicht ausfuerbar")
 
-				#------
-				if False:
-					try:
-						import assembly2solver
-						try:
-							assembly2solver.solveConstraints(App.ActiveDocument)
-						except:
-							say("problem assembly2solver.solveConstraints(App.ActiveDocument)")
-					except:
-						# no assembly available
-						pass
-				#------
-					
 				FreeCAD.ActiveDocument.recompute()
 				FreeCADGui.updateGui()
 				time.sleep(self.obj2.sleeptime)
 
-			Inspector.step(now=0)
-			 
+
+			Inspector.step(nw)
 		FreeCADGui.Selection.clearSelection()
 		FreeCADGui.Selection.addSelection(FreeCAD.ActiveDocument.getObject(self.obj2.Name))
 
