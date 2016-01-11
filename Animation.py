@@ -36,7 +36,7 @@ from EditWidget import EditWidget
 from time import *
 
 
-import Inspector
+
 App=FreeCAD
 
 if FreeCAD.GuiUp:
@@ -1386,32 +1386,8 @@ def createManager(name='My_Manager'):
 
 
 import os.path
-import Inspector
-
-#--------------------------------------------
-
-def col(actor,obstacles):
-	
-	av=actor.Shape.BoundBox
-	for obl in obstacles:
-		ov=obl.Shape.BoundBox
-		if ov.XMin < av.XMax  and  ov.XMax > av.XMin and ov.YMin <= av.YMax and  ov.YMax >= av.YMin and  ov.ZMin <= av.ZMax and  ov.ZMax >= av.ZMin:
-			print obl.Label
-			obl.ViewObject.DiffuseColor=(1.0,0.0,0.0)
-		else:
-			obl.ViewObject.DiffuseColor=(1.0,1.0,0.0)  
-
-def checkCollision():
-
-	App=FreeCAD
-	cy=App.ActiveDocument.Cylinder
-	c=App.ActiveDocument.Cone
-	gd=App.ActiveDocument.GeodesicDome
-	b=App.ActiveDocument.Box
-	col(b,[cy,c,gd,App.ActiveDocument.Torus])
 
 
-#--------------------------------------------
 
 class _Manager(_Actor):
 
@@ -1470,57 +1446,33 @@ class _Manager(_Actor):
 		
 		if (intervall<0):
 			intervall=self.obj2.intervall
-		sayd("x1")
-		# else:
+
 		if hasattr(self,'obj2'):
 			t=FreeCAD.ActiveDocument.getObject(self.obj2.Name)
 		else:
 			raise Exception("obj2 not found --> reinit the file!")
-		sayd("x2")
+
 		for ob in t.OutList:
 			say(ob.Label)
 			ob.Proxy.initialize()
 			ob.Proxy.execute(ob)
-		
+
 		firstRun=True
 		bigloop=0
 		while firstRun or os.path.exists("/tmp/loop"):
 			say("manager infinite loop #################################")
 			firstRun=False
 			bigloop += 1 
+
 			for nw in range(self.obj2.start):
 				say("---- manager before" + str(nw))
-			
+
 			for nw in range(intervall+1):
 				self.step(nw)
-			
-			if False:
-				say("************************* manager run loop:" + str(nw) + "/" + str(intervall)+ '  ' + str(bigloop))
-				self.obj2.step=nw
-				if os.path.exists("/tmp/stop"):
-						say("notbremse gezogen")
-						raise Exception("Notbremse Manager main loop")
-				for ob in t.OutList:
-					if 1: # fehler analysieren
-						sayd("step fuer ")
-						sayd(ob.Label)
-						if ob.ViewObject.Visibility:
-								ob.Proxy.step(nw)
-					else:
-						try:
-							sayd(ob.Proxy)
-							if ob.ViewObject.Visibility:
-								ob.Proxy.step(nw)
-						except:
-							say("fehler step 2")
-							raise Exception("step nicht ausfuerbar")
-
 				FreeCAD.ActiveDocument.recompute()
 				FreeCADGui.updateGui()
 				time.sleep(self.obj2.sleeptime)
 
-
-			Inspector.step(nw)
 		FreeCADGui.Selection.clearSelection()
 		FreeCADGui.Selection.addSelection(FreeCAD.ActiveDocument.getObject(self.obj2.Name))
 
