@@ -3,6 +3,22 @@ print "Module Collision started.!"
 
 #-----------------------------------------
 
+#--------------------------------------------
+
+def col(actor,obstacles):
+	
+	av=actor.Shape.BoundBox
+	for obl in obstacles:
+		ov=obl.Shape.BoundBox
+		if ov.XMin < av.XMax  and  ov.XMax > av.XMin and ov.YMin <= av.YMax and  ov.YMax >= av.YMin and  ov.ZMin <= av.ZMax and  ov.ZMax >= av.ZMin:
+			print obl.Label
+			obl.ViewObject.DiffuseColor=(1.0,0.0,0.0)
+		else:
+			obl.ViewObject.DiffuseColor=(1.0,1.0,0.0)  
+
+#--------------------------------------------
+
+
 
 import Part
 

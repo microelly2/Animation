@@ -2541,8 +2541,6 @@ def createGearing(name='My_Gearing'):
 	obj.addProperty("App::PropertyLink","objPlanet","Base","Sketch")
 	obj.addProperty("App::PropertyLink","objMoon","Base","Sketch")
 
-#	obj.addProperty("App::PropertyEnumeration","mode","Config","einheit").mode=['fill','slice']
-#	obj.addProperty("App::PropertyEnumeration","direction","Config","einheit").direction=['+z','-z','+x','-x','+y','-y']
 	obj.addProperty("App::PropertyFloat","dayStar","Config","ve").dayStar=100
 	obj.addProperty("App::PropertyFloat","dayPlanet","Config","ve").dayPlanet=-50
 	obj.addProperty("App::PropertyFloat","dayMoon","Config","ve").dayMoon=10
