@@ -24,7 +24,7 @@ __vers__='0.1 3.12.2015'
 __dir__ = os.path.dirname(__file__)	
 
 
-def createPather(name,src=None):
+def createPather(name='My Pather',src=None):
 	obj = FreeCAD.ActiveDocument.addObject("App::DocumentObjectGroupPython",name)
 	obj.addProperty("App::PropertyLink","src","Base","").src=src
 	obj.addProperty("App::PropertyFloat","time","Base","").time=0
@@ -71,7 +71,7 @@ class _Pather(Animation._Actor):
 class _ViewProviderPather(Animation._ViewProviderActor):
  
 	def getIcon(self):
-		return __dir__ +'/icons/icon2.svg'
+		return __dir__ +'/icons/pather.png'
 
 	def attach(self,vobj):
 		self.emenu=[]
@@ -81,6 +81,9 @@ class _ViewProviderPather(Animation._ViewProviderActor):
 		self.obj2=self.Object
 		self.Object.Proxy.Lock=False
 		self.Object.Proxy.Changed=False
+		icon='/icons/combiner.png'
+		self.iconpath = __dir__ + icon
+		self.vers=__vers__
 		return
 
 	def edit(self):

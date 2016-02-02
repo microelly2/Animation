@@ -36,7 +36,7 @@ from EditWidget import EditWidget
 from time import *
 
 
-import Inspector
+
 App=FreeCAD
 
 if FreeCAD.GuiUp:
@@ -168,35 +168,9 @@ class _Actor(object):
 	def __setstate__(self,state):
 		return None
 
-class _CommandActor():
 
-	def __init__(self,name='Actor',icon='/icons/mover.png'):
-#		say("create Actor Command")
-#		say(name)
-		self.name=name
-		self.icon=  __dir__+ icon
-#		say(self.icon)
-
-	def GetResources(self): 
-		return {'Pixmap' : self.icon, 'MenuText': self.name, 'ToolTip': self.name +' Dialog'} 
-
-
-	def IsActive(self):
-		if FreeCADGui.ActiveDocument:
-			return True
-		else:
-			return False
-
-	def Activated(self):
-		if FreeCADGui.ActiveDocument:
-			FreeCAD.ActiveDocument.openTransaction("create " + self.name)
-			FreeCADGui.doCommand("import Animation")
-			FreeCADGui.doCommand("Animation.create"+self.name+"()")
-			FreeCAD.ActiveDocument.commitTransaction()
-			FreeCAD.ActiveDocument.recompute()
-		else:
-			say("Erst Arbeitsbereich oeffnen")
-		return
+	def onDocumentRestored(self, fp):
+		say(["onDocumentRestored",fp])
 
 class _ViewProviderActor():
  
@@ -322,7 +296,6 @@ def createBounder(name='MyBounder'):
 	_ViewProviderActor(obj.ViewObject,'/icons/bounder.png') 
 	return obj
 
-#class _CommandBounder(_CommandActor):  - kann weg 
 
 class _Bounder(_Actor):
 
@@ -368,8 +341,6 @@ class _Bounder(_Actor):
 		obj.setEditorMode("end", 1) #ro
 		obj.end=obj.start+obj.duration
 
-if FreeCAD.GuiUp:
-	FreeCADGui.addCommand('Anim_Bounder',_CommandActor("Bounder",'/icons/bounder.png'))
 
 #----------------------------------------------------------------------------------------------------------
 # Viewpoint
@@ -403,16 +374,6 @@ def createViewpoint(name='My_Viewpoint'):
 
 	_Viewpoint(obj)
 	return obj
-
-
-class _CommandViewpoint(_CommandActor):
-
-	def GetResources(self): 
-		return {'Pixmap' : __dir__ + '/icons/viewpoint.png', 'MenuText': 'Viewpoint', 'ToolTip': 'Viewpoint Dialog'} 
-
-	def Activated(self):
-		self.name='Viewpoint'
-		_CommandActor.Activated(self)
 
 
 class _Viewpoint(_Actor):
@@ -494,9 +455,6 @@ class _Viewpoint(_Actor):
 				say("!!!!!!!!!!!!!!!!!  haenge an pos:"+ str(pos))
 				say(FreeCAD.animCamera)
 
-if FreeCAD.GuiUp:
-	FreeCADGui.addCommand('Anim_Viewpoint',_CommandViewpoint())
-
 #----------------------------------------------------------------------------------------------------------
 # Extruder
 #----------------------------------------------------------------------------------------------------------
@@ -515,13 +473,6 @@ def createExtruder(name='My_Extruder'):
 	_Extruder(obj)
 	return obj
 
-class _CommandExtruder(_CommandActor):
-	def GetResources(self): 
-		return {'Pixmap' : __dir__ + '/icons/extruder.png', 'MenuText': 'Extruder', 'ToolTip': 'Extruder Dialog'} 
-
-	def Activated(self):
-		self.name='Extruder'
-		_CommandActor.Activated(self)
 
 class _Extruder(_Actor):
 
@@ -555,9 +506,6 @@ class _Extruder(_Actor):
 		FreeCAD.ActiveDocument.recompute()
 		FreeCADGui.updateGui() 
 
-if FreeCAD.GuiUp:
-	FreeCADGui.addCommand('Anim_Extruder',_CommandExtruder())
-
 #----------------------------------------------------------------------------------------------------------
 #  Movie Screen
 #----------------------------------------------------------------------------------------------------------
@@ -581,13 +529,6 @@ def createMoviescreen(name='My_Moviescreen'):
 	_Moviescreen(obj)
 	return obj
 
-class _CommandMoviescreen(_CommandActor):
-	def GetResources(self): 
-		return {'Pixmap' : __dir__ + '/icons/moviescreen.png', 'MenuText': 'Moviescreen', 'ToolTip': 'Moviescreen Dialog'} 
-
-	def Activated(self):
-		self.name='Moviescreen'
-		_CommandActor.Activated(self)
 
 class _Moviescreen(_Actor):
 
@@ -609,9 +550,6 @@ class _Moviescreen(_Actor):
 		self.obj2.rectangle.Placement.Rotation=r3
 		FreeCAD.ActiveDocument.recompute()
 
-if FreeCAD.GuiUp:
-	FreeCADGui.addCommand('Anim_Moviescreen',_CommandMoviescreen())
-
 #----------------------------------------------------------------------------------------------------------
 
 def createBillboard(name='My_Billboard'):
@@ -628,14 +566,6 @@ def createBillboard(name='My_Billboard'):
 	_Billboard(obj)
 	_ViewProviderBillboard(obj.ViewObject)
 	return obj
-
-class _CommandBillboard(_CommandActor):
-	def GetResources(self): 
-		return {'Pixmap' : __dir__ + '/icons/billboard.png', 'MenuText': 'Billboard', 'ToolTip': 'Billboard Dialog'} 
-
-	def Activated(self):
-		self.name='Billboard'
-		_CommandActor.Activated(self)
 
 class _Billboard(_Actor):
 
@@ -671,9 +601,6 @@ class _Billboard(_Actor):
 		self.obj2.textObj.LabelText=k
 		FreeCAD.ActiveDocument.recompute()
 
-if FreeCAD.GuiUp:
-	FreeCADGui.addCommand('Anim_Billboard',_CommandBillboard())
-
 #----------------------
 # Mover
 #----------------------
@@ -694,21 +621,7 @@ def createMover(name='My_Mover'):
 	_ViewProviderMover(obj.ViewObject)
 	return obj
 
-class _CommandMover(_CommandActor):
-	def GetResources(self): 
-		return {'Pixmap' : __dir__ + '/icons/mover.png', 'MenuText': 'Mover', 'ToolTip': 'Mover Dialog'} 
 
-	def Activated(self):
-		if FreeCADGui.ActiveDocument:
-			FreeCAD.ActiveDocument.openTransaction("create Mover")
-			FreeCADGui.doCommand("import Animation")
-			FreeCADGui.doCommand("Animation.createMover()")
-			say("I create a mover")
-			FreeCAD.ActiveDocument.commitTransaction()
-			FreeCAD.ActiveDocument.recompute()
-		else:
-			say("Erst Arbeitsbereich oeffnen")
-		return
 
 class _Mover(_Actor):
 		
@@ -865,9 +778,6 @@ class _ViewProviderMover(_ViewProviderActor):
 	def getIcon(self):
 		return __dir__ + '/icons/mover.png'
 
-if FreeCAD.GuiUp:
-	FreeCADGui.addCommand('Anim_Mover',_CommandMover())
-
 #-------------------------------------
 
 
@@ -889,21 +799,8 @@ def createRotator(name='My_Rotator'):
 	_ViewProviderRotator(obj.ViewObject)
 	return obj
 
-class _CommandRotator(_CommandActor):
-	def GetResources(self): 
-		return {'Pixmap' : __dir__ + '/icons/rotator.png', 'MenuText': 'Rotator', 'ToolTip': 'Rotator Dialog'} 
 
-	def Activated(self):
-		if FreeCADGui.ActiveDocument:
-			FreeCAD.ActiveDocument.openTransaction("create Rotator")
-			FreeCADGui.doCommand("import Animation")
-			FreeCADGui.doCommand("Animation.createRotator()")
-			FreeCAD.ActiveDocument.commitTransaction()
-			FreeCAD.ActiveDocument.recompute()
-		else:
-			say("Erst Arbeitsbereich oeffnen")
-		return
-	   
+
 class _Rotator(_Actor):
 
 	def __init__(self,obj):
@@ -993,9 +890,6 @@ class _ViewProviderRotator(_ViewProviderActor):
 	def getIcon(self):
 		return __dir__ + '/icons/rotator.png'
 
-if FreeCAD.GuiUp:
-	FreeCADGui.addCommand('Anim_Rotator',_CommandRotator())
-
 
 def createPlugger(name='My_Plugger'):
 	obj = FreeCAD.ActiveDocument.addObject("App::DocumentObjectGroupPython",name)
@@ -1040,22 +934,7 @@ def createPlugger(name='My_Plugger'):
 	_Plugger(obj)
 	_ViewProviderPlugger(obj.ViewObject)
 	return obj
-
-class _CommandPlugger(_CommandActor):
-	def GetResources(self): 
-		return {'Pixmap' : __dir__ + '/icons/plugger.png', 'MenuText': 'Plugger', 'ToolTip': 'Plugger Dialog'} 
-
-	def Activated(self):
-		if FreeCADGui.ActiveDocument:
-			FreeCAD.ActiveDocument.openTransaction("create Plugger")
-			FreeCADGui.doCommand("import Animation")
-			FreeCADGui.doCommand("Animation.createPlugger()")
-			FreeCAD.ActiveDocument.commitTransaction()
-			FreeCAD.ActiveDocument.recompute()
-		else:
-			say("Erst Arbeitsbereich oeffnen")
-		return
-	   
+  
 
 def findVertex(oldpos,sketch,offset):
 	sayd("find Vertex")
@@ -1223,9 +1102,6 @@ class _ViewProviderPlugger(_ViewProviderActor):
 	def getIcon(self):
 		return __dir__ + '/icons/plugger.png'
 
-if FreeCAD.GuiUp:
-	FreeCADGui.addCommand('Anim_Plugger',_CommandPlugger())
-
 #---------------------------------------------------------------
 
 def createTranquillizer(name='My_Tranquillizer'):
@@ -1235,20 +1111,6 @@ def createTranquillizer(name='My_Tranquillizer'):
 	_ViewProviderTranquillizer(obj.ViewObject)
 	return obj
 
-class _CommandTranquillizer(_CommandActor):
-	def GetResources(self): 
-		return {'Pixmap' : __dir__ + '/icons/tranq.png', 'MenuText': 'Tranquillizer', 'ToolTip': 'Tranquillizer Dialog'} 
-
-	def Activated(self):
-		if FreeCADGui.ActiveDocument:
-			FreeCAD.ActiveDocument.openTransaction("create Tranquillizer")
-			FreeCADGui.doCommand("import Animation")
-			FreeCADGui.doCommand("Animation.createTranquillizer()")
-			FreeCAD.ActiveDocument.commitTransaction()
-			FreeCAD.ActiveDocument.recompute()
-		else:
-			say("Erst Arbeitsbereich oeffnen")
-		return
 
 import time
 from time import sleep
@@ -1276,8 +1138,6 @@ class _ViewProviderTranquillizer(_ViewProviderActor):
 	def getIcon(self):
 		return __dir__ + '/icons/tranq.png'
 
-if FreeCAD.GuiUp:
-	FreeCADGui.addCommand('Anim_Tranquillizer',_CommandTranquillizer())
 
 #-------------------------------------
 
@@ -1296,23 +1156,6 @@ def createAdjuster(name='My_Adjuster'):
 	_ViewProviderMover(obj.ViewObject)
 	return obj
 
-class _CommandAdjuster(_CommandActor):
-	def GetResources(self): 
-		return {'Pixmap' : __dir__ + '/icons/adjuster.png', 'MenuText': 'Adjuster', 'ToolTip': 'Adjuster Dialog'} 
-
-	def Activated(self):
-		if FreeCADGui.ActiveDocument:
-			FreeCAD.ActiveDocument.openTransaction("create Adjuster")
-			FreeCADGui.doCommand("import Animation")
-			FreeCADGui.doCommand("Animation.createAdjuster()")
-			FreeCAD.ActiveDocument.commitTransaction()
-			FreeCAD.ActiveDocument.recompute()
-		else:
-			say("Erst Arbeitsbereich oeffnen")
-		return
-
-
-		
  
 class _Adjuster(_Actor):
 	
@@ -1365,9 +1208,6 @@ class _ViewProviderAdjuster(_ViewProviderActor):
 	def getIcon(self):
 		return __dir__ + '/icons/adjuster.png'
 
-if FreeCAD.GuiUp:
-	FreeCADGui.addCommand('Anim_Adjuster',_CommandAdjuster())
-
 #---------------------------------------------------------------
 def createStyler(name='MyStyler'):
 	obj = FreeCAD.ActiveDocument.addObject("App::DocumentObjectGroupPython",name)
@@ -1394,21 +1234,7 @@ def createStyler(name='MyStyler'):
 	_ViewProviderStyler(obj.ViewObject)
 	return obj
 
-class _CommandStyler(_CommandActor):
-	def GetResources(self): 
-		return {'Pixmap' : __dir__ + '/icons/styler.png', 'MenuText': 'Styler', 'ToolTip': 'Styler Dialog'} 
 
-	def Activated(self):
-		if FreeCADGui.ActiveDocument:
-			FreeCAD.ActiveDocument.openTransaction("create Adjuster")
-			FreeCADGui.doCommand("import Animation")
-			FreeCADGui.doCommand("Animation.createStyler()")
-			FreeCAD.ActiveDocument.commitTransaction()
-			FreeCAD.ActiveDocument.recompute()
-		else:
-			say("Erst Arbeitsbereich oeffnen")
-		return
-	   
 class _Styler(_Actor):
 	
 	def __init__(self,obj):
@@ -1455,8 +1281,6 @@ class _ViewProviderStyler(_ViewProviderActor):
 	def getIcon(self):
 		return __dir__ + '/icons/styler.png'
 
-if FreeCAD.GuiUp:
-	FreeCADGui.addCommand('Anim_Styler',_CommandStyler())
 
 #---------------------------------------------------------------
 
@@ -1474,21 +1298,6 @@ def createPhotographer(name='My_Photographer'):
 	_Photographer(obj)
 	_ViewProviderPhotographer(obj.ViewObject)
 	return obj
-
-class _CommandPhotographer:
-	def GetResources(self): 
-		return {'Pixmap' : __dir__ + '/icons/photographer.png', 'MenuText': 'Photographer', 'ToolTip': 'Photographer Dialog'} 
-
-	def Activated(self):
-		if FreeCADGui.ActiveDocument:
-			FreeCAD.ActiveDocument.openTransaction("create Photographer")
-			FreeCADGui.doCommand("import Animation")
-			FreeCADGui.doCommand("Animation.createPhotographer()")
-			FreeCAD.ActiveDocument.commitTransaction()
-			FreeCAD.ActiveDocument.recompute()
-		else:
-			say("Erst Arbeitsbereich oeffnen")
-		return
 
 
 
@@ -1559,8 +1368,7 @@ class _ViewProviderPhotographer(_ViewProviderActor):
 	def getIcon(self):
 		return __dir__ + '/icons/photographer.png'
 
-if FreeCAD.GuiUp:
-	FreeCADGui.addCommand('Anim_Photographer',_CommandPhotographer())
+
 
 #---------------------------------------------------------------
 
@@ -1575,49 +1383,11 @@ def createManager(name='My_Manager'):
 	_ViewProviderManager(obj.ViewObject)
 	return obj
 
-class _CommandManager(_CommandActor):
-	def GetResources(self): 
-		return {'Pixmap' : __dir__ + '/icons/manager.png', 'MenuText': 'Manager', 'ToolTip': 'Manager Dialog'} 
 
-	def Activated(self):
-		if FreeCADGui.ActiveDocument:
-			FreeCAD.ActiveDocument.openTransaction("create Manager")
-			FreeCADGui.doCommand("import Animation")
-			FreeCADGui.doCommand("Animation.createManager()")
-			say("I create a Manager")
-			FreeCAD.ActiveDocument.commitTransaction()
-			FreeCAD.ActiveDocument.recompute()
-		else:
-			say("Erst Arbeitsbereich oeffnen")
-		return
 
 import os.path
-import Inspector
-
-#--------------------------------------------
-
-def col(actor,obstacles):
-	
-	av=actor.Shape.BoundBox
-	for obl in obstacles:
-		ov=obl.Shape.BoundBox
-		if ov.XMin < av.XMax  and  ov.XMax > av.XMin and ov.YMin <= av.YMax and  ov.YMax >= av.YMin and  ov.ZMin <= av.ZMax and  ov.ZMax >= av.ZMin:
-			print obl.Label
-			obl.ViewObject.DiffuseColor=(1.0,0.0,0.0)
-		else:
-			obl.ViewObject.DiffuseColor=(1.0,1.0,0.0)  
-
-def checkCollision():
-
-	App=FreeCAD
-	cy=App.ActiveDocument.Cylinder
-	c=App.ActiveDocument.Cone
-	gd=App.ActiveDocument.GeodesicDome
-	b=App.ActiveDocument.Box
-	col(b,[cy,c,gd,App.ActiveDocument.Torus])
 
 
-#--------------------------------------------
 
 class _Manager(_Actor):
 
@@ -1634,6 +1404,41 @@ class _Manager(_Actor):
 
 	def register(self,obj):
 		self.obj2.targets.append(obj)
+		
+	def step(self,nw):
+		if self.obj2.start<=nw and   nw<=self.obj2.start + self.obj2.intervall:
+			say("step  " + self.obj2.Label + "  " + str(nw))
+			t=FreeCAD.ActiveDocument.getObject(self.obj2.Name)
+			intervall=self.obj2.intervall
+			if self.obj2.Label == self.obj2.Name:
+				s= s=self.obj2.Label
+			else:
+				s=self.obj2.Label + ' ('+ self.obj2.Name +")"
+			say(s +" ************************* manager run loop:" + str(nw-self.obj2.start) + "/" + str(intervall))
+			
+			self.obj2.step=nw
+			if os.path.exists("/tmp/stop"):
+					say("notbremse gezogen")
+					raise Exception("Notbremse Manager main loop")
+			for ob in t.OutList:
+				if 1: # fehler analysieren
+					sayd("step fuer ")
+					sayd(ob.Label)
+					if ob.ViewObject.Visibility:
+							ob.Proxy.step(nw)
+				else:
+					try:
+						sayd(ob.Proxy)
+						if ob.ViewObject.Visibility:
+							ob.Proxy.step(nw)
+					except:
+						say("fehler step 2")
+						raise Exception("step nicht ausfuerbar")
+			FreeCAD.ActiveDocument.recompute()
+			FreeCADGui.updateGui()
+			time.sleep(self.obj2.sleeptime)
+
+
 
 	def run(self,intervall=-1):
 		sayd("run  intervall=" + str(intervall))
@@ -1641,82 +1446,37 @@ class _Manager(_Actor):
 		
 		if (intervall<0):
 			intervall=self.obj2.intervall
-		sayd("x1")
-		# else:
+
 		if hasattr(self,'obj2'):
 			t=FreeCAD.ActiveDocument.getObject(self.obj2.Name)
 		else:
 			raise Exception("obj2 not found --> reinit the file!")
-		sayd("x2")
+
 		for ob in t.OutList:
 			say(ob.Label)
 			ob.Proxy.initialize()
 			ob.Proxy.execute(ob)
-		
+
 		firstRun=True
 		bigloop=0
 		while firstRun or os.path.exists("/tmp/loop"):
 			say("manager infinite loop #################################")
 			firstRun=False
 			bigloop += 1 
-			for nw in range(intervall):	
-				say("************************* manager run loop:" + str(nw) + "/" + str(intervall)+ '  ' + str(bigloop))
-				self.obj2.step=nw
-				try:
-					st=FreeCAD.ActiveDocument.getObject('Common')
-					## st.touch()
-					FreeCADGui.Selection.clearSelection()
-					
-					FreeCAD.ActiveDocument.recompute()
-				except:
-					say("Fehler touch")
-				
-				#-----------------------
-				# 
-				## checkCollision()
-				#
-				#
-				#-----------------------
-				
-				if os.path.exists("/tmp/stop"):
-						say("notbremse gezogen")
-						raise Exception("Notbremse Manager main loop")
-				for ob in t.OutList:
-					if 1: # fehler analysieren
-						sayd("step fuer ")
-						sayd(ob.Label)
-						if ob.ViewObject.Visibility:
-								ob.Proxy.step(nw)
-					else:
-						try:
-							sayd(ob.Proxy)
-							if ob.ViewObject.Visibility:
-								ob.Proxy.step(nw)
-						except:
-							say("fehler step 2")
-							raise Exception("step nicht ausfuerbar")
 
-				#------
-				if False:
-					try:
-						import assembly2solver
-						try:
-							assembly2solver.solveConstraints(App.ActiveDocument)
-						except:
-							say("problem assembly2solver.solveConstraints(App.ActiveDocument)")
-					except:
-						# no assembly available
-						pass
-				#------
-					
+			for nw in range(self.obj2.start):
+				say("---- manager before" + str(nw))
+
+			for nw in range(intervall+1):
+				self.step(nw)
 				FreeCAD.ActiveDocument.recompute()
 				FreeCADGui.updateGui()
 				time.sleep(self.obj2.sleeptime)
 
-			Inspector.step(now=0)
-			 
 		FreeCADGui.Selection.clearSelection()
 		FreeCADGui.Selection.addSelection(FreeCAD.ActiveDocument.getObject(self.obj2.Name))
+
+
 
 	def setShowTime(self,texter):
 		self.obj.text=texter
@@ -1950,16 +1710,9 @@ class _ViewProviderManager(_ViewProviderActor):
 		self.dialog=panel.form
 		self.dialog.show()
 
-		
-
-if FreeCAD.GuiUp:
-	FreeCADGui.addCommand('Anim_Manager',_CommandManager())
 
 #---------------------------------------------------------------
 
-def reinitxx():
-	say("reinit deaktiverit")
-	pass
 
 def reinit():
 	''' zum re initialisieren beim dateiload und bei alten dateien'''
@@ -2582,20 +2335,6 @@ def createFiller(name='My_Filler'):
 	_ViewProviderMover(obj.ViewObject)
 	return obj
 
-class _CommandFiller(_CommandActor):
-	def GetResources(self): 
-		return {'Pixmap' : __dir__ + '/icons/filler.png', 'MenuText': 'Filler', 'ToolTip': 'Filler Dialog'} 
-
-	def Activated(self):
-		if FreeCADGui.ActiveDocument:
-			FreeCAD.ActiveDocument.openTransaction("create Filler")
-			FreeCADGui.doCommand("import Animation")
-			FreeCADGui.doCommand("Animation.createFiller()")
-			FreeCAD.ActiveDocument.commitTransaction()
-			FreeCAD.ActiveDocument.recompute()
-		else:
-			say("Erst Arbeitsbereich oeffnen")
-		return
 	   
 class _Filler(_Actor):
 	
@@ -2789,587 +2528,4 @@ class _ViewProviderFiller(_ViewProviderActor):
 	def getIcon(self):
 		return __dir__ + '/icons/filler.png'
 
-if FreeCAD.GuiUp:
-	FreeCADGui.addCommand('Anim_Filler',_CommandFiller())
 
-
-
-
-def createGearing(name='My_Gearing'):
-	obj = FreeCAD.ActiveDocument.addObject("App::DocumentObjectGroupPython",name)
-	obj.addProperty("App::PropertyInteger","start","Base","start").start=10
-	obj.addProperty("App::PropertyInteger","end","Base","end").end=110
-	obj.addProperty("App::PropertyInteger","duration","Base","end").duration=100
-	obj.addProperty("App::PropertyLink","obj","Base","Sketch")
-	obj.addProperty("App::PropertyLink","objStar","Base","Sketch")
-	obj.addProperty("App::PropertyLink","objPlanet","Base","Sketch")
-	obj.addProperty("App::PropertyLink","objMoon","Base","Sketch")
-
-#	obj.addProperty("App::PropertyEnumeration","mode","Config","einheit").mode=['fill','slice']
-#	obj.addProperty("App::PropertyEnumeration","direction","Config","einheit").direction=['+z','-z','+x','-x','+y','-y']
-	obj.addProperty("App::PropertyFloat","dayStar","Config","ve").dayStar=100
-	obj.addProperty("App::PropertyFloat","dayPlanet","Config","ve").dayPlanet=-50
-	obj.addProperty("App::PropertyFloat","dayMoon","Config","ve").dayMoon=10
-	obj.addProperty("App::PropertyFloat","distStarPlanet","Config","ve").distStarPlanet=60
-	obj.addProperty("App::PropertyFloat","distPlanetMoon","Config","ve").distPlanetMoon=30
-	
-	obj.addProperty("App::PropertyColor","color","Config","ve").color=(1.0,1.0,0.0)
-	
-	
-	App=FreeCAD
-	sp=App.activeDocument().addObject("Part::Compound","Ge_sp")
-	s=App.activeDocument().addObject("Part::Compound","Ge_s")
-	pm=App.activeDocument().addObject("Part::Compound","Ge_pm")
-	p=App.activeDocument().addObject("Part::Compound","Ge_p")
-	m=App.activeDocument().addObject("Part::Compound","Ge_m")
-	b=App.ActiveDocument.addObject("Part::Box","Box")
-	b1=App.ActiveDocument.addObject("Part::Box","Box")
-	b2=App.ActiveDocument.addObject("Part::Box","Box")
-	b.Placement.Base=FreeCAD.Vector(-5.0,-5.0,0.0)
-	b1.Placement.Base=FreeCAD.Vector(-5.0,-5.0,0.0)
-	b2.Placement.Base=FreeCAD.Vector(-5.0,-5.0,0.0)
-	m.Placement.Base=FreeCAD.Vector(30,0,0.0)
-	pm.Placement.Base=FreeCAD.Vector(60,0,0.0)
-	p.Links=[b]
-	s.Links=[b1]
-	m.Links=[b2]
-	pm.Links=[p,m]
-	sp.Links=[s,pm]
-	obj.obj=sp
-	obj.objStar=b1
-	obj.objPlanet=b
-	obj.objMoon=b2
-	
-	
-	
-	_Gearing(obj)
-	_ViewProviderMover(obj.ViewObject)
-	return obj
-
-class _CommandGearing(_CommandActor):
-	def GetResources(self): 
-		return {'Pixmap' : __dir__ + '/icons/gearing.png', 'MenuText': 'Gearing', 'ToolTip': 'Gearing Dialog'} 
-
-	def Activated(self):
-		if FreeCADGui.ActiveDocument:
-			FreeCAD.ActiveDocument.openTransaction("create Gearing")
-			FreeCADGui.doCommand("import Animation")
-			FreeCADGui.doCommand("Animation.createGearing()")
-			FreeCAD.ActiveDocument.commitTransaction()
-			FreeCAD.ActiveDocument.recompute()
-		else:
-			say("Erst Arbeitsbereich oeffnen")
-		return
-
-def rotstep(s,day):
-	an=	s.Placement.Rotation.Angle
-	say("rotstep" + s.Label)
-	say(an*180/math.pi)
-	say("step" +str(360/day))
-	if s.Placement.Rotation.Axis.z==-1 :
-		an=	s.Placement.Rotation.Angle - math.pi * 2/day
-		say("minus")
-	else:
-		an=	s.Placement.Rotation.Angle + math.pi * 2/day
-		say("plus")
-	if an <0:
-		an += 2*math.pi
-		say("add 360")
-	if an > 2*math.pi:
-		an -= 2*math.pi
-		say("minus 360")
-		
-	s.Placement.Rotation.Angle = an
-	say(an*180/math.pi)
-
-	 
-class _Gearing(_Actor):
-	
-	def __init__(self,obj):
-		obj.Proxy = self
-		self.Type = "Gearing"
-		self.obj2 = obj
-		# for the recursive execute problem 
-		# - see http://forum.freecadweb.org/viewtopic.php?f=3&t=1894
-		self.ignore=False 
-
-		
-	def step(self,now):
-		say("Gearing step!" + str(now))
-		FreeCAD.R=self
-		self.ignore=True
-#		if now<=self.obj2.start:
-#			self.obj2.objCommon.ViewObject.Visibility=False
-		
-			
-		if now<self.obj2.start or now>self.obj2.end:
-			sayd("ausserhalb")
-			pass
-		else:
-			if not self.obj2.obj:
-				errorDialog("kein Sketch zugeordnet")
-				raise Exception(' self.obj2.obj nicht definiert')
-			sys=self.obj2.obj
-			s=sys.Links[0]
-			pm=sys.Links[1]
-			p=pm.Links[0]
-			m=pm.Links[1]
-			#say("sonne "+ s.Label)
-			#say("planet "+ p.Label)
-			#say("moinde" + m.Label)
-			
-			if now==self.obj2.start:
-				s.Placement.Rotation.Axis=FreeCAD.Vector(0,0,1)
-				p.Placement.Rotation.Axis=FreeCAD.Vector(0,0,1)
-				m.Placement.Rotation.Axis=FreeCAD.Vector(0,0,1)
-				
-			# Eigenachsen Rotationen
-			print (s.Placement.Rotation.Angle)
-			an=s.Placement.Rotation.Angle
-			ax=s.Placement.Rotation.Axis
-			day_star=self.obj2.dayStar
-			day_planet=self.obj2.dayPlanet
-			day_moon=self.obj2.dayMoon
-
-			rotstep(s,day_star)
-			rotstep(p,day_planet)
-			rotstep(m,day_moon)
-			#p.Placement.Rotation.Angle += math.pi * 2/day_planet
-			#m.Placement.Rotation.Angle += math.pi * 2/day_moon
-			
-			# Schenkel Rotationen
-			sys.Placement.Rotation.Angle += 0
-			pm.Placement.Rotation.Angle += 0
-			
-			FreeCAD.activeDocument().recompute()
-
-
-		self.ignore=False
-
-
-
-	def onChanged(self,obj,prop):
-		say("**	onChanged ")
-		if hasattr(FreeCAD,"animationLock"):
-			if FreeCAD.animationLock:
-				return
-			
-		FreeCAD.animationLock=True
-		say("------------------------------***Lock EIN")
-#		say(obj)
-		say(obj.Label + " "  + prop)
-		FreeCAD.mytoc=[self,obj,prop]
-		oldval=FreeCAD.animation['changed'][2]
-		val=obj.getPropertyByName(prop)
-		say("old:" + str(oldval) + " new:" + str(val))
-
-		
-		# g=FreeCAD.getDocument("getriebe").getObject("My_Gearing")
-		g=obj
-		
-			
-		sys=g.obj
-		
-		s=sys.Links[0]
-		pm=sys.Links[1]
-		p=pm.Links[0]
-		m=pm.Links[1]
-
-		# lage planet-stern
-		if prop=='distStarPlanet':
-			pm.Placement.Base.x=obj.distStarPlanet
-
-		# age moond stren
-		if prop=='distPlanetMoon':
-			m.Placement.Base.x=obj.distPlanetMoon
-			
-		if prop=='end':
-			obj.end=obj.start+obj.duration
-		
-		say("begonnen")
-		if prop=='objMoon':
-			m.Links=[obj.objMoon]
-		if prop=='objStar':
-			s.Links=[obj.objStar]
-		if prop=='objPlanet':
-			p.Links=[obj.objPlanet]
-		FreeCAD.animationLock=False
-		FreeCAD.activeDocument().recompute()
-		say("******************************Lock aus")
-		say("fertig")
-			
-		
-		
-	def onBeforeChange(self,obj,prop):
-		say("** on Before Changed " )
-		FreeCAD.animationLock=False
-#		say(obj)
-		say(prop)
-		FreeCAD.animation={}
-		oldval=obj.getPropertyByName(prop)
-		FreeCAD.animation['changed'] =[obj,prop,oldval]
-		pass
-		
-
-	def execute(self,obj):
-# 		obj.end=obj.start+obj.duration
-		obj.setEditorMode("end", 1) #ro
-		# obj.setEditorMode("obj", 1) #ro
-		obj.setEditorMode("color", 2) #hidden
-		say("execute _Gearing")
-		if hasattr(self,'ignore'):
-			if self.ignore:
-				say("ignore")
-				return
-		
-		
-		# wenn noch keine zuordnung erfolgt ist
-		App=FreeCAD
-		
-		
-
-class _ViewProviderGearing(_ViewProviderActor):
-	
-	def getIcon(self):
-		return __dir__ + '/icons/gearing.png'
-
-if FreeCAD.GuiUp:
-	FreeCADGui.addCommand('Anim_Gearing',_CommandGearing())
-
-
-
-#---------------------
-
-
-
-
-def createKartan(name='My_Kartan'):
-	obj = FreeCAD.ActiveDocument.addObject("App::DocumentObjectGroupPython",name)
-	obj.addProperty("App::PropertyInteger","start","Base","start").start=10
-	obj.addProperty("App::PropertyInteger","end","Base","end").end=110
-	obj.addProperty("App::PropertyInteger","duration","Base","end").duration=100
-	obj.addProperty("App::PropertyLink","obj","Base","Sketch")
-	obj.addProperty("App::PropertyLink","objAxis1","Base","Sketch")
-	obj.addProperty("App::PropertyLink","objAxis2","Base","Sketch")
-	obj.addProperty("App::PropertyLink","objCross","Base","Sketch")
-
-	obj.addProperty("App::PropertyEnumeration","mode","Config","einheit").mode=['none','parallel','arc']
-	obj.addProperty("App::PropertyLink","objAxis3","Base","Sketch")
-	obj.addProperty("App::PropertyLink","objCross2","Base","Sketch")
-	
-	obj.addProperty("App::PropertyFloat","angleRotation","Config","ve").angleRotation=360
-	obj.addProperty("App::PropertyFloat","angleZenit","Config","ve").angleZenit=30
-	obj.addProperty("App::PropertyFloat","distance","Config","ve").distance=100
-	
-#	obj.addProperty("App::PropertyBool","_Z","Config","_Z")._Z=True
-	#obj.addProperty("App::PropertyBool","_z","Config","_z")._z=True
-#	obj.addProperty("App::PropertyBool","z","Config","z").z=True
-	
-	
-	App=FreeCAD
-	kart=App.activeDocument().addObject("Part::Compound","Kartan")
-	k1=App.activeDocument().addObject("Part::Compound","Ka_x1")
-	k2=App.activeDocument().addObject("Part::Compound","Ka_x2")
-	c1=App.activeDocument().addObject("Part::Compound","Ka_c1")
-	k3=App.activeDocument().addObject("Part::Compound","Ka_x3")
-	c2=App.activeDocument().addObject("Part::Compound","Ka_c2")
-	b=App.ActiveDocument.addObject("Part::Box","Box")
-	b1=App.ActiveDocument.addObject("Part::Box","Box")
-	b2=App.ActiveDocument.addObject("Part::Box","Box")
-	b.Placement.Base=FreeCAD.Vector(-5.0,-5.0,0.0)
-	b1.Placement.Base=FreeCAD.Vector(-5.0,-5.0,0.0)
-	b2.Placement.Base=FreeCAD.Vector(-5.0,-5.0,0.0)
-	# m.Placement.Base=FreeCAD.Vector(30,0,0.0)
-	#pm.Placement.Base=FreeCAD.Vector(60,0,0.0)
-	k1.Links=[b]
-	k2.Links=[b1]
-	c1.Links=[b2]
-	obj.obj=kart
-	obj.objAxis1=k1
-	obj.objAxis2=k2
-	obj.objCross=c1
-	
-	
-	
-	_Kartan(obj)
-	_ViewProviderMover(obj.ViewObject)
-	return obj
-
-class _CommandKartan(_CommandActor):
-	def GetResources(self): 
-		return {'Pixmap' : __dir__ + '/icons/kardan.png', 'MenuText': 'Kartan', 'ToolTip': 'Kartan Dialog'} 
-
-	def Activated(self):
-		if FreeCADGui.ActiveDocument:
-			FreeCAD.ActiveDocument.openTransaction("create Kartan")
-			FreeCADGui.doCommand("import Animation")
-			FreeCADGui.doCommand("Animation.createKartan()")
-			FreeCAD.ActiveDocument.commitTransaction()
-			FreeCAD.ActiveDocument.recompute()
-		else:
-			say("Erst Arbeitsbereich oeffnen")
-		return
-
-
-
-import numpy
-from numpy import pi,cos,tan,arctan
-
-
-
-def rotcross(part,alpha,phi):
-	phi2=math.atan(math.cos(alpha*math.pi/180)*math.tan(phi*math.pi/180))*180/math.pi
-	print (phi,phi2)
-
-	rot = App.Rotation(App.Vector(0,0,1), phi)
-	wy=rot.multVec(App.Vector(0,1,0))
-
-	rot2 = App.Rotation(App.Vector(0,0,1), phi2)
-	wx1=rot2.multVec(App.Vector(1,0,0))
-	if phi <90 or phi>270:
-		alpha=-alpha
-	rotalpha=App.Rotation(App.Vector(0,1,0), alpha)
-	wx=rotalpha.multVec(wx1)
-	
-	r=(wx.x**2+wx.y**2)**0.5
-	beta=math.acos(r)*180/math.pi
-
-	p1=App.Placement()
-	phi2=phi
-	p1.Rotation=App.Rotation(App.Vector(0,0,1),phi2)
-	p2=App.Placement()
-	if 90<phi and phi<270:
-		beta=-beta
-	p2.Rotation=App.Rotation(wy,beta)
-	part.Placement=p2.multiply(p1)
-	App.ActiveDocument.recompute()
-
-	 
-class _Kartan(_Actor):
-	
-	def __init__(self,obj):
-		obj.Proxy = self
-		self.Type = "Kartan"
-		self.obj2 = obj
-		say(" kardan init called")
-
-	def step(self,now):
-		say("Kardan step!" + str(now))
-		FreeCAD.R=self
-		
-		if now<self.obj2.start or now>=self.obj2.end:
-			say("ausserhalb")
-			pass
-		else:
-			if not self.obj2.obj:
-				errorDialog("kein Sketch zugeordnet")
-				raise Exception(' self.obj2.obj nicht definiert')
-			
-			# alpha=60
-			alpha=self.obj2.angleZenit
-			phi=1
-			
-			# testfall
-			phi=10
-
-			# achse 1
-			fa1=self.obj2.objAxis1
-			p0=fa1.Placement
-			phi0=p0.Rotation.Angle/pi*180
-			# say("phi0 Basis " + str(phi0))
-			p1=App.Placement(App.Vector(0,0,0),App.Rotation(App.Vector(0,0,1),phi))
-			r1=p1.multiply(p0)
-			fa1.Placement=r1
-
-			
-			phi20=arctan(tan(phi0*pi/180)*cos(alpha*pi/180))*180/pi
-			phi21=arctan(tan((phi0+phi)*pi/180)*cos(alpha*pi/180))*180/pi
-			say("phi20 "+str(phi20))
-			say("phi21 "+str(phi21))
-			
-			# achse 2
-			timepos=now-self.obj2.start
-			if 90/phi-1<=timepos and timepos<270/phi-1: 
-				phi21=180+phi21
-				say("*************** ! phi21 ="+str(phi21) + " now:" + str(now))
-
-			fa2=self.obj2.objAxis2
-			p1=App.Placement(App.Vector(0,0,0),App.Rotation(App.Vector(0,0,1),phi21))
-			p2=App.Placement(App.Vector(0,0,0),App.Rotation(App.Vector(0,1,0),alpha))
-			r3=p2.multiply(p1)
-			fa2.Placement=r3
-
-			# kreuz
-			f=self.obj2.objCross
-			rotcross(f,alpha,phi0+phi)
-			FreeCAD.activeDocument().recompute()
-
-
-
-
-	def onChanged(self,obj,prop):
-		say("**	onChanged  " +str(obj.Label) + " " + prop)
-		if prop=="Proxy":
-				FreeCAD.animataionInit=True
-				say("animation Init start!!!!!!!!!!!!!!!")
-		if prop=="Label":
-				FreeCAD.animataionInit=False
-				say("Animation init beendet ---------------!!")
-		if FreeCAD.animataionInit:
-				say("erster Durchlauf - nix machen")
-				return
-		if hasattr(FreeCAD,"animationLock"):
-			say(FreeCAD.animationLock)
-			if FreeCAD.animationLock:
-				say("Ende wegen Lock")
-				return
-		else:
-			say("noch kein animation Lock")
-			
-		FreeCAD.animationLock=True
-		say("------------------------------***Lock EIN")
-		FreeCAD.mytoc=[self,obj,prop]
-		if hasattr(FreeCAD,"animation"):
-			oldval=FreeCAD.animation['changed'][2]
-			val=obj.getPropertyByName(prop)
-			say(prop + " old:" + str(oldval) + " new:" + str(val))
-
-			if prop=='obj':
-				obj.obj.Links=[obj.objAxis1,obj.objAxis2,obj.objCross]
-			if prop=='duration' or prop=='start':
-					obj.end=obj.start+obj.duration
-			if prop=='angleZenit':
-				obj.objAxis2.Placement.Rotation.Angle=obj.angleZenit/180*math.pi
-
-		FreeCAD.animationLock=False
-		FreeCAD.activeDocument().recompute()
-		say("******************************Lock aus")
-
-	def onBeforeChange(self,obj,prop):
-		say("** on Before Changed " + str(obj.Label) + " " + prop)
-		FreeCAD.animation={}
-		oldval=obj.getPropertyByName(prop)
-		FreeCAD.animation['changed'] =[obj,prop,oldval]
-
-	def execute(self,obj):
-		say("execute _Kardan")
-		
-
-class _ViewProviderKartan(_ViewProviderActor):
-	
-	def getIcon(self):
-		return __dir__ + '/icons/kardan.png'
-
-if FreeCAD.GuiUp:
-	FreeCADGui.addCommand('Anim_Kartan',_CommandKartan())
-
-
-
-#-----------------------------
-
-
-
-
-
-def createScaler(name='My_Scaler'):
-	obj = FreeCAD.ActiveDocument.addObject("App::DocumentObjectGroupPython",name)
-	obj.addProperty("App::PropertyInteger","start","Base","start").start=0
-	obj.addProperty("App::PropertyInteger","end","Base","end").end=10
-	obj.addProperty("App::PropertyInteger","duration","Base","end").end=10
-#	obj.addProperty("App::PropertyPlacement","initPlace","Object","initPlace")
-#	obj.addProperty("App::PropertyVector","rotationCentre","Motion","Rotationszentrum")
-#	obj.addProperty("App::PropertyVector","rotationAxis","Motion","Rotationsachse").rotationAxis=FreeCAD.Vector(0,0,1)
-	obj.addProperty("App::PropertyFloat","xScale","Scale","Rotationsachse Zentrum relativ").xScale=0
-	obj.addProperty("App::PropertyFloat","xVa","Scale","Rotationsachse Zentrum relativ").xVa=1
-	obj.addProperty("App::PropertyFloat","xVe","Scale","Rotationsachse Zentrum relativ").xVe=2
-	
-
-	obj.addProperty("App::PropertyFloat","yScale","Scale","Rotationsachse Zentrum relativ").yScale=0
-	obj.addProperty("App::PropertyFloat","yVa","Scale","Rotationsachse Zentrum relativ").yVa=1
-	obj.addProperty("App::PropertyFloat","yVe","Scale","Rotationsachse Zentrum relativ").yVe=2
-
-	obj.addProperty("App::PropertyFloat","zScale","Scale","Rotationsachse Zentrum relativ").zScale=1
-	obj.addProperty("App::PropertyFloat","zVa","Scale","Rotationsachse Zentrum relativ").zVa=1
-	obj.addProperty("App::PropertyFloat","zVe","Scale","Rotationsachse Zentrum relativ").zVe=2
-
-
-
-
-
-
-
-
-	
-#	obj.addProperty("App::PropertyFloat","angle","Motion","Dreh Winkel").angle=360
-#	
-	obj.addProperty("App::PropertyLink","obj2","Object","rotating object ")
-
-	_Scaler(obj)
-	_ViewProviderScaler(obj.ViewObject)
-	return obj
-
-class _CommandScaler(_CommandActor):
-	def GetResources(self): 
-		return {'Pixmap' : __dir__ + '/icons/scaler.png', 'MenuText': 'Scaler', 'ToolTip': 'Scaler Dialog'} 
-
-	def Activated(self):
-		if FreeCADGui.ActiveDocument:
-			FreeCAD.ActiveDocument.openTransaction("create Scaler")
-			FreeCADGui.doCommand("import Animation")
-			FreeCADGui.doCommand("Animation.createScaler()")
-			FreeCAD.ActiveDocument.commitTransaction()
-			FreeCAD.ActiveDocument.recompute()
-		else:
-			say("Erst Arbeitsbereich oeffnen")
-		return
-	   
-class _Scaler(_Actor):
-
-	def __init__(self,obj):
-		obj.Proxy = self
-		self.Type = "_Scaler"
-		self.obj2=obj
-		
-	def execute(self,obj):
-		sayd("execute _Scaler")
-		if hasattr(obj,'obj2'):
-			#say(obj.obj2)
-			pass
-		obj.setEditorMode("end", 1) #ro
-		obj.end=obj.start+obj.duration
-
-		
-	
-	def step(self,now):
-		FreeCAD.yy=self
-
-		if now<=self.obj2.start or now>self.obj2.end:
-			pass
-		else:
-			relativ=1.00/(self.obj2.end-self.obj2.start)*(now-self.obj2.start)
-			sc=self.obj2.obj2.Scale
-			say(relativ)
-			relativbase=self.obj2.xVe/self.obj2.xVa*relativ
-			if relativ==0:
-				nwx=self.obj2.xVa
-				nwy=self.obj2.yVa
-				nwz=self.obj2.zVa
-			else:
-				nwx=relativbase**self.obj2.xScale*self.obj2.xVe 
-				nwy=relativbase**self.obj2.yScale*self.obj2.yVe 
-				nwz=relativbase**self.obj2.zScale*self.obj2.zVe 
-			
-			newScale=(nwx,nwy,nwz)
-			say(newScale)
-			say(nwx*nwy*nwz)
-			self.obj2.obj2.Scale=newScale
-			FreeCAD.ActiveDocument.recompute()
-			FreeCADGui.Selection.clearSelection()
-		say("ende")
-
-class _ViewProviderScaler(_ViewProviderActor):
-	def getIcon(self):
-		return __dir__ + '/icons/scaler.png'
-
-if FreeCAD.GuiUp:
-	FreeCADGui.addCommand('Anim_Scaler',_CommandScaler())

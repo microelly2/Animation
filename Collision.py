@@ -3,6 +3,22 @@ print "Module Collision started.!"
 
 #-----------------------------------------
 
+#--------------------------------------------
+
+def col(actor,obstacles):
+	
+	av=actor.Shape.BoundBox
+	for obl in obstacles:
+		ov=obl.Shape.BoundBox
+		if ov.XMin < av.XMax  and  ov.XMax > av.XMin and ov.YMin <= av.YMax and  ov.YMax >= av.YMin and  ov.ZMin <= av.ZMax and  ov.ZMax >= av.ZMin:
+			print obl.Label
+			obl.ViewObject.DiffuseColor=(1.0,0.0,0.0)
+		else:
+			obl.ViewObject.DiffuseColor=(1.0,1.0,0.0)  
+
+#--------------------------------------------
+
+
 
 import Part
 
@@ -22,7 +38,7 @@ def sayexc(mess=''):
 class _ViewProvider(object):
  
 	def getIcon(self):
-		return  '/usr/lib/freecad/Mod/plugins/icons/master.png'
+		return  '/home/thomas/.FreeCAD/Mod/Animation/icons/collider.png'
    
 	def __init__(self,vobj):
 		vobj.Proxy = self
@@ -153,7 +169,7 @@ class Detector():
 	#		wire.ViewObject.Visibility=False
 		return
 
-def createColli(stator,traveller,name='MyCollisionDetector'):
+def createCollision(name='MyCollisionDetector',stator=None,traveller=None):
 	obj = FreeCAD.ActiveDocument.addObject("App::DocumentObjectGroupPython",name)
 	obj.addProperty("App::PropertyLink","stator","Base","stator").stator=stator
 	obj.addProperty("App::PropertyLink","traveller","Base","traveller").traveller=traveller
@@ -161,8 +177,9 @@ def createColli(stator,traveller,name='MyCollisionDetector'):
 	obj.addProperty("App::PropertyFloat","near2","Base","nearDistance green").near2=5
 	obj.addProperty("App::PropertyFloat","offset","Base","Tickness of the Colliosion offset").offset=1
 	
-	t=Detector(obj)
 	_ViewProvider(obj.ViewObject)
+	t=Detector(obj)
+	
 	return t
 
 
@@ -170,10 +187,9 @@ def createColli(stator,traveller,name='MyCollisionDetector'):
 if __name__ == '__main__' and True:
 	C=App.ActiveDocument.Cone
 	B=App.ActiveDocument.Box
-	t=createColli(B,C)
+	t=createCollision("My Col",B,C)
 	t.Proxy.Lock=False
 	App.activeDocument().recompute()
-	# t.Proxy.die()
 
 
 
