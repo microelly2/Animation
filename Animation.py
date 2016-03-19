@@ -2517,15 +2517,7 @@ class _Filler(_Actor):
 			b.ViewObject.Visibility=True
 			c.ViewObject.DisplayMode = "Shaded"
 
-
-
-
-		
-		
-
 class _ViewProviderFiller(_ViewProviderActor):
-	
+
 	def getIcon(self):
 		return __dir__ + '/icons/filler.png'
-
-
