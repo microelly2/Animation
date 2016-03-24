@@ -32,12 +32,11 @@ import FreeCAD
 import FreeCADGui
 import PySide
 from PySide import QtGui
-#import os
 
-# __dir__ = os.path.dirname(__file__)	
-
+import os
 global __dir__
-__dir__='/home/thomas/.FreeCAD/Mod/Animation'
+import Animation
+__dir__ = os.path.dirname(Animation.__file__)
 
 
 
