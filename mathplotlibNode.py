@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #-------------------------------------------------
-#-- reconstruction workbench
+#-- animation workbench
 #--
 #-- microelly 2016 v 0.1
 #--
@@ -8,7 +8,7 @@
 #-------------------------------------------------
 from __future__ import unicode_literals
 
-__vers__="13.03.2016  0.0"
+__vers__="04.04.2016  0.2"
 __dir__='/home/thomas/.FreeCAD/Mod/reconstruction'
 
 
@@ -67,10 +67,10 @@ class _MPL(object):
 		self.Changed=False
 		
 		self.vals={}
-		self.vals1={}
-		self.vals2={}
-		self.vals3={}
-		
+#		self.vals1={}
+#		self.vals2={}
+#		self.vals3={}
+#		
 		_ViewProviderMPL(obj.ViewObject,icon) 
 
 
@@ -78,16 +78,32 @@ class _MPL(object):
 		say("initialize ...")
 
 	def onChanged(self,obj,prop):
-		say("onChanged " + str(self))
-		say(obj)
-		say(prop)
-		say (obj.getPropertyByName(prop))
+#		say(["onChanged " + str(self),obj,prop,obj.getPropertyByName(prop)])
+		if prop == 'countSources':
+			for i in range(obj.countSources):
+				try:
+					obj.getPropertyByName('source'+str(i+1)+'Object')
+				except:
+					obj.addProperty('App::PropertyLink','source'+str(i+1)+'Object',"Source " + str(i+1))
+					obj.addProperty('App::PropertyString','source'+str(i+1)+'Data',"Source " + str(i+1))
+					obj.addProperty('App::PropertyFloatList','source'+str(i+1)+'Values',"Source " + str(i+1))
+					obj.addProperty('App::PropertyBool','source'+str(i+1)+'Off',"Source " + str(i+1))
+					exec("self.vals"+str(i+1)+"={}")
+			for i in range(10):
+				if i<obj.countSources: mode=0
+				else: mode=2
+				try:
+					obj.setEditorMode("source"+str(i+1)+"Object", mode)
+					obj.setEditorMode("source"+str(i+1)+"Data", mode)
+					obj.setEditorMode("source"+str(i+1)+"Values", mode)
+					obj.setEditorMode("source"+str(i+1)+"Off", mode)
+				except:
+					break
+		pass
 
 	def onBeforeChange(self,obj,prop):
-		say("on Before Changed " )
-		say(obj.Label)
-		say(prop)
-		say (obj.getPropertyByName(prop))
+		#say(["on Before Changed ",obj.Label,prop,obj.getPropertyByName(prop)])
+		pass
 
 
 	def execute(self,obj):
@@ -99,37 +115,19 @@ class _MPL(object):
 		print obj.sourceObject.Label
 		src=obj.sourceObject
 		vs='src.'+obj.sourceData
-		print vs
 		v=eval(vs)
-		print "v: ",v
 		self.vals[v]=v
 
-		src1=obj.source1Object
-		if src1 <> None:
-			vs2='src1.'+obj.source1Data
-			print vs2
-			v2=eval(vs2)
-			print "v2: ",v2
-			self.vals1[v]=v2
-
-		src2=obj.source2Object
-		if src2 <> None:
-			vs2='src2.'+obj.source2Data
-			print vs2
-			v2=eval(vs2)
-			print "v2: ",v2
-			self.vals2[v]=v2
-
-		src3=obj.source3Object
-		if src3 <> None:
-			vs2='src3.'+obj.source3Data
-			print vs2
-			v2=eval(vs2)
-			print "v2: ",v2
-			self.vals3[v]=v2
-
-
-
+		for i in range(obj.countSources):
+			exec("src"+str(i+1)+"=obj.source"+str(i+1)+"Object")
+			exec("ss=obj.source"+str(i+1)+"Object")
+			if ss <> None:
+				vs2="obj.source"+str(i+1)+"Data"
+				v2=eval(vs2)
+				vs3="ss."+v2
+				v3=eval(vs3)
+				tt=eval("self.vals"+str(i+1))
+				tt[v]=v3
 		return
 
 
@@ -141,27 +139,25 @@ class _MPL(object):
 		return self.Object.Group
 
 	def __getstate__(self):
+		say("get state")
 		return None
 
 	def __setstate__(self,state):
+		say(["set state",state])
 		return None
 
 	def onDocumentRestored(self, fp):
 		say(["onDocumentRestored",fp,fp.Label])
 
-		
-
 class _ViewProviderMPL():
  
 	def __init__(self,vobj,icon='/icons/icon1.svg'):
-		print "viewwproergrger"
 		self.iconpath = icon
 		print self.iconpath
 		self.Object = vobj.Object
 		vobj.Proxy = self
 		self.cmenu=[]
 		self.emenu=[]
-
 		self.vers=__vers__
  
 	def getIcon(self):
@@ -206,8 +202,8 @@ class _ViewProviderMPL():
 		app.obj=self.Object
 		self.Object.Proxy.app=app
 		self.edit= lambda:miki2.run(MyApp.s6,app.create2)
-
 		self.edit()
+		FreeCAD.ActiveDocument.recompute()
 		return True
 
 	def unsetEdit(self,vobj,mode=0):
@@ -304,21 +300,19 @@ VerticalLayout:
 		
 		self.mpl.axes = self.mpl.figure.add_subplot(111)
 		self.mpl.draw()
-		
-		
-		print "plot"
+
 		print self.mpl.axes
 		print self.obj.Proxy.vals
 		vals=self.obj.Proxy.vals
 		
-		
-		
-		
 		x=[]
 		y=[]
+
 		for k in vals:
+			print k
 			x.append(k)
 			y.append(vals[k])
+		
 		
 #		label=self.obj.sourceObject.Label + ": " + self.obj.sourceData
 #		t=self.mpl.axes.plot(x,y,label=label)
@@ -353,10 +347,10 @@ VerticalLayout:
 		if self.obj.useNumpy:
 			x=self.obj.sourceNumpy.outTime
 			self.obj.outTime=x
-			
-			for i in range(10):
+
+		FreeCAD.activeDocument().recompute()
+		for i in range(10):
 				t=eval("self.obj.useOut"+str(i))
-				print t
 				if t:
 					y=self.obj.sourceNumpy.getPropertyByName('out'+str(i))
 					print y
@@ -368,7 +362,6 @@ VerticalLayout:
 					t=self.mpl.axes.plot(x,y,label=label)
 					exec("self.obj.out"+str(i)+"="+str(y))
 		legend = self.mpl.axes.legend(loc='upper right', shadow=True)
-		print t
 		self.mpl.draw()
 		self.mpl.figure.canvas.draw()
 
@@ -430,49 +423,31 @@ def createMPL(base=False):
 	print "create MPL ..."
 	obj=FreeCAD.ActiveDocument.addObject('App::DocumentObjectGroupPython','Plot')
 
-	obj.addProperty('App::PropertyBool','record',"base",'true record, false no record data')
-
-	obj.addProperty('App::PropertyLink','source1Object',"base")
-	obj.addProperty('App::PropertyString','source1Data',"base")
-	obj.addProperty('App::PropertyFloatList','source1Values',"base")
-	
-	obj.addProperty('App::PropertyLink','source2Object',"base")
-	obj.addProperty('App::PropertyString','source2Data',"base")
-	obj.addProperty('App::PropertyFloatList','source2Values',"base")
-	
-	obj.addProperty('App::PropertyLink','source3Object',"base")
-	obj.addProperty('App::PropertyString','source3Data',"base")
-	obj.addProperty('App::PropertyFloatList','source3Values',"base")
+	obj.addProperty('App::PropertyBool','record',"Base",'true record, false no record data')
+	obj.addProperty('App::PropertyInteger','countSources',"Base")
+	obj.countSources=0
 
 	# base data time/step
-	obj.addProperty('App::PropertyLink','sourceObject',"base")
-	obj.addProperty('App::PropertyString','sourceData',"base")
-	obj.addProperty('App::PropertyFloatList','sourceValues',"base")
-
-
-#	obj.addProperty('App::PropertyString','expression2',"out")
-#	obj.addProperty('App::PropertyFloatList','out2',"out")
+	obj.addProperty('App::PropertyLink','sourceObject',"Time")
+	obj.addProperty('App::PropertyString','sourceData',"Time")
+	obj.addProperty('App::PropertyFloatList','sourceValues',"Time")
 
 	obj.addProperty('App::PropertyBool','useNumpy',"numpy source" )
 	obj.addProperty('App::PropertyLink','sourceNumpy',"numpy source" )
+
 	for i in range(10):
 		obj.addProperty('App::PropertyBool','useOut'+str(i),"numpy source" )
 		obj.addProperty('App::PropertyFloatList','out'+str(i),"out values")
 
 	obj.addProperty('App::PropertyFloatList','outTime',"out values")
 
-
-#	obj.expression2="np.arctan2(in2,in3)"
-
-#	global _MPL
-#	global _ViewProviderMPL
 	if not base:
 		_MPL(obj,'/icons/bounder.png')
 		_ViewProviderMPL(obj.ViewObject,__dir__+ '/icons/icon1.svg') 
+		
+		obj.countSources=1
 
 		app=MyApp()
-		
-		
 		miki2=miki.Miki()
 		miki2.app=app
 		app.root=miki2
