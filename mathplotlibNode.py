@@ -8,29 +8,23 @@
 #-------------------------------------------------
 from __future__ import unicode_literals
 
-__vers__="04.04.2016  0.2"
-__dir__='/home/thomas/.FreeCAD/Mod/reconstruction'
+__vers__="05.04.2016  0.3"
 
-
-
-import sympy
-from sympy import Point3D,Plane
-
-import PySide
-from PySide import QtCore, QtGui
 
 
 import sys
 import os
 import random
+import numpy as np
+import time
 
+
+__dir__ = os.path.dirname(__file__)	
 
 import matplotlib
 matplotlib.use('Qt4Agg')
 matplotlib.rcParams['backend.qt4']='PySide'
 
-
-from numpy import arange, sin, pi
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
@@ -38,10 +32,15 @@ import FreeCAD,FreeCADGui
 App=FreeCAD
 Gui=FreeCADGui
 
+import PySide
+from PySide import QtCore, QtGui
 
-import numpy as np
-import time
+import reconstruction
+reload (reconstruction.projectiontools)
+from reconstruction.projectiontools import *
 
+import reconstruction.miki as miki
+reload(miki)
 
 
 def sayd(s):
@@ -56,15 +55,14 @@ def sayErr(s):
 		FreeCAD.Console.PrintError(str(s)+"\n")
 
 
+import Animation
 
-class _MPL(object):
+class _MPL(Animation._Actor):
 
 	def __init__(self,obj,icon='/icons/animation.png'):
 		obj.Proxy = self
 		self.Type = self.__class__.__name__
 		self.obj2 = obj
-		self.Lock=False
-		self.Changed=False
 		
 		self.vals={}
 #		self.vals1={}
@@ -73,9 +71,6 @@ class _MPL(object):
 #		
 		_ViewProviderMPL(obj.ViewObject,icon) 
 
-
-	def initialize(self):
-		say("initialize ...")
 
 	def onChanged(self,obj,prop):
 #		say(["onChanged " + str(self),obj,prop,obj.getPropertyByName(prop)])
@@ -130,26 +125,13 @@ class _MPL(object):
 				tt[v]=v3
 		return
 
-
-	def attach(self,vobj):
-
-		self.Object = vobj.Object
-
-	def claimChildren(self):
-		return self.Object.Group
-
-	def __getstate__(self):
-		say("get state")
-		return None
-
-	def __setstate__(self,state):
-		say(["set state",state])
-		return None
-
 	def onDocumentRestored(self, fp):
 		say(["onDocumentRestored",fp,fp.Label])
 
-class _ViewProviderMPL():
+
+
+
+class _ViewProviderMPL(Animation._ViewProviderActor):
  
 	def __init__(self,vobj,icon='/icons/icon1.svg'):
 		self.iconpath = icon
@@ -168,13 +150,7 @@ class _ViewProviderMPL():
 		self.emenu=[]
 		self.Object = vobj.Object
 
-
-	def showVersion(self):
-		cl=self.Object.Proxy.__class__.__name__
-		PySide.QtGui.QMessageBox.information(None, "About ", "Animation" + cl +" Node\nVersion " + self.vers)
-
-	def setupContextMenu(self, obj, menu):
-		
+	def createDialog(self):
 		app=MyApp()
 		miki2=miki.Miki()
 		miki2.app=app
@@ -182,7 +158,10 @@ class _ViewProviderMPL():
 		app.obj=self.Object
 		self.Object.Proxy.app=app
 		self.edit= lambda:miki2.run(MyApp.s6,app.create2)
-		
+
+	def setupContextMenu(self, obj, menu):
+		self.createDialog()
+
 		cl=self.Object.Proxy.__class__.__name__
 		action = menu.addAction("About " + cl)
 		action.triggered.connect(self.showVersion)
@@ -190,64 +169,13 @@ class _ViewProviderMPL():
 		action = menu.addAction("Edit ...")
 		action.triggered.connect(self.edit)
 
-#		for m in self.cmenu + self.anims():
-#			action = menu.addAction(m[0])
-#			action.triggered.connect(m[1])
 
 	def setEdit(self,vobj,mode=0):
-		app=MyApp()
-		miki2=miki.Miki()
-		miki2.app=app
-		app.root=miki2
-		app.obj=self.Object
-		self.Object.Proxy.app=app
-		self.edit= lambda:miki2.run(MyApp.s6,app.create2)
+		self.createDialog()
 		self.edit()
 		FreeCAD.ActiveDocument.recompute()
 		return True
 
-	def unsetEdit(self,vobj,mode=0):
-		return False
-
-	def doubleClicked(self,vobj):
-		self.setEdit(vobj,1)
-
-	def claimChildren(self):
-		try:
-			return self.Object.Group
-		except:
-			return None
-
-	def __getstate__(self):
-		return None
-
-	def __setstate__(self,state):
-		return None
-
-	def dialog(self,noclose=False):
-		return EditWidget(self,self.emenu + self.anims(),noclose)
-
-
-import reconstruction
-reload (reconstruction.projectiontools)
-from reconstruction.projectiontools import *
-
-import reconstruction.miki as miki
-reload(miki)
-
-#-----------------
-
-import PySide
-
-import matplotlib
-import numpy as np
-
-
-matplotlib.use('Qt4Agg')
-matplotlib.rcParams['backend.qt4']='PySide'
-
-from matplotlib.figure import Figure
-from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 
 
 class MatplotlibWidget(FigureCanvas):
@@ -260,19 +188,15 @@ class MatplotlibWidget(FigureCanvas):
 		self.canvas = FigureCanvas(self.figure)
 
 		FigureCanvas.setSizePolicy(self,
-								   QtGui.QSizePolicy.Expanding,
-								   QtGui.QSizePolicy.Expanding)
-
+				QtGui.QSizePolicy.Expanding,
+				QtGui.QSizePolicy.Expanding)
 		FigureCanvas.updateGeometry(self)
-		
+
 		self.axes = self.figure.add_subplot(111)
-		# self.axes.hold(False)
-		# self.axes.plot([1,100],[1,100])
 		self.setMinimumSize(self.size())
 
 
 
-#-------------------
 class MyApp(object):
 
 
@@ -291,109 +215,68 @@ VerticalLayout:
 	def plot(self):
 		
 		self.mpl.figure.clf()
-		# self.mpl.figure = Figure(figsize=(width, height), dpi=dpi) 
 		self.mpl.canvas = FigureCanvas(self.mpl.figure)
-#		FigureCanvas.setSizePolicy(self,
-#								   QtGui.QSizePolicy.Expanding,
-#								   QtGui.QSizePolicy.Expanding)
 		FigureCanvas.updateGeometry(self.mpl)
-		
+
 		self.mpl.axes = self.mpl.figure.add_subplot(111)
 		self.mpl.draw()
 
-		print self.mpl.axes
-		print self.obj.Proxy.vals
 		vals=self.obj.Proxy.vals
-		
 		x=[]
 		y=[]
 
 		for k in vals:
-			print k
 			x.append(k)
 			y.append(vals[k])
-		
-		
-#		label=self.obj.sourceObject.Label + ": " + self.obj.sourceData
-#		t=self.mpl.axes.plot(x,y,label=label)
+
 		self.obj.sourceValues=y
 
-		if self.obj.source1Object<>None:
-		# if False:
-			vals=self.obj.Proxy.vals1
-			x2=[k for k in vals]
-			y1=[vals[k] for k in vals]
-			label=self.obj.source1Object.Label + ": " + self.obj.source1Data
-			t=self.mpl.axes.plot(x,y1,label=label)
-			self.obj.source1Values=y1
+		for i in range(self.obj.countSources):
+			nr=str(i+1)
+			ss=eval("self.obj.source"+nr+"Object")
+			sf=eval("self.obj.source"+nr+"Off")
+			if ss<>None and not sf:
+				exec("vals=self.obj.Proxy.vals"+nr)
+				x2=[k for k in vals]
+				y1=[vals[k] for k in vals]
+				exec("label=self.obj.source"+nr+"Object.Label + ': ' + self.obj.source"+nr+"Data")
+				t=self.mpl.axes.plot(x,y1,label=label)
+				exec("self.obj.source"+nr+"Values=y1")
 
-		if self.obj.source2Object<>None:
-			vals=self.obj.Proxy.vals2
-			x2=[k for k in vals]
-			y2=[vals[k] for k in vals]
-			label=self.obj.source2Object.Label + ": " + self.obj.source2Data
-			t=self.mpl.axes.plot(x,y2,label=label)
-			self.obj.source2Values=y2
-
-		if self.obj.source3Object<>None:
-			vals=self.obj.Proxy.vals3
-			x2=[k for k in vals]
-			y3=[vals[k] for k in vals]
-			label=self.obj.source3Object.Label + ": " + self.obj.source3Data
-			t=self.mpl.axes.plot(x,y3,label=label)
-			self.obj.source3Values=y3
-			
-		
 		if self.obj.useNumpy:
-			x=self.obj.sourceNumpy.outTime
-			self.obj.outTime=x
+			self.obj.outTime=self.obj.sourceNumpy.outTime
 
 		FreeCAD.activeDocument().recompute()
+
 		for i in range(10):
-				t=eval("self.obj.useOut"+str(i))
-				if t:
+				if eval("self.obj.useOut"+str(i))
 					y=self.obj.sourceNumpy.getPropertyByName('out'+str(i))
-					print y
 					label=self.obj.sourceNumpy.getPropertyByName('label'+str(i))
 					if label=='':
 						label="numpy " + str(i)
-					
+
 					x=range(len(y))
 					t=self.mpl.axes.plot(x,y,label=label)
 					exec("self.obj.out"+str(i)+"="+str(y))
+
 		legend = self.mpl.axes.legend(loc='upper right', shadow=True)
 		self.mpl.draw()
 		self.mpl.figure.canvas.draw()
 
+
 	def reset(self):
 		self.obj.Proxy.vals={}
-		self.obj.Proxy.vals1={}
-		self.obj.Proxy.vals2={}
-		self.obj.Proxy.vals3={}
-		
 		self.obj.sourceValues=[]
-		self.obj.source1Values=[]
-		self.obj.source2Values=[]
-		self.obj.source3Values=[]
-		
-#		self.mpl.hide()
-#		self.mpl=MatplotlibWidget()
-#		self.root.ids['main'].layout.addWidget(t)
-
+		for i in range(self.obj.countSources):
+			nr=str(i+1)
+			exec("self.obj.Proxy.vals"+nr+"={}")
+			exec("self.obj.source"+nr+"Values=[]"
 
 		self.mpl.figure.clf()
-
-		# self.mpl.figure = Figure(figsize=(width, height), dpi=dpi) 
 		self.mpl.canvas = FigureCanvas(self.mpl.figure)
 
-#		FigureCanvas.setSizePolicy(self,
-#								   QtGui.QSizePolicy.Expanding,
-#								   QtGui.QSizePolicy.Expanding)
-
 		FigureCanvas.updateGeometry(self.mpl)
-		
 		self.mpl.axes = self.mpl.figure.add_subplot(111)
-
 		self.mpl.draw()
 		self.plot()
 
@@ -401,25 +284,24 @@ VerticalLayout:
 	def create2(self):
 		par=self.root.ids['main']
 
-		t=MatplotlibWidget()
-		self.mpl=t
+		self.mpl=MatplotlibWidget()
 		bt=QtGui.QPushButton("update diagram")
 		bt.clicked.connect(self.plot)
-		self.root.ids['main'].layout.addWidget(t)
-		self.root.ids['main'].layout.addWidget(bt)
-		self.root.ids['main'].layout.setStretchFactor(t, 1)
-		# t.show()
+
 		bt2=QtGui.QPushButton("reset data")
 		bt2.clicked.connect(self.reset)
+
+		self.root.ids['main'].layout.addWidget(self.mpl)
+		self.root.ids['main'].layout.addWidget(bt)
 		self.root.ids['main'].layout.addWidget(bt2)
+		self.root.ids['main'].layout.setStretchFactor(self.mpl, 1)
 
 		self.plot()
 
-	def mpl(self):
-		return self.mpl
 
 
 def createMPL(base=False):
+
 	print "create MPL ..."
 	obj=FreeCAD.ActiveDocument.addObject('App::DocumentObjectGroupPython','Plot')
 
@@ -458,10 +340,8 @@ def createMPL(base=False):
 	return obj
 
 
-#
-#
 
-if 0 or False:
+if False:
 
 	t=createMPL()
 	t.sourceObject= App.ActiveDocument.My_Manager

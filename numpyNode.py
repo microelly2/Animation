@@ -8,7 +8,6 @@
 #-------------------------------------------------
 
 __vers__="XX13.03.2016  0.0"
-__dir__='/home/thomas/.FreeCAD/Mod/Animation'
 
 
 import sympy
@@ -41,6 +40,8 @@ import time
 import FreeCAD
 
 
+
+__dir__ = os.path.dirname(__file__)	
 
 def sayd(s):
 	if hasattr(FreeCAD,'animation_debug'):
