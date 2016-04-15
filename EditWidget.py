@@ -23,6 +23,12 @@ class _EditWidget(QtGui.QWidget):
 			dial.setMaximum(100)
 			dial.valueChanged.connect(obj.dialer);
 
+			edi = QtGui.QLineEdit()
+			edi.setText("50")
+			dial.valueChanged.connect(lambda: edi.setText(str(dial.value())))
+			edi.textChanged.connect(lambda:dial.setValue(int(edi.text())))
+
+
 		layout = QtGui.QVBoxLayout()
 		layout.addWidget(self.vollabel)
 
@@ -33,6 +39,7 @@ class _EditWidget(QtGui.QWidget):
 
 		if dialer:
 			layout.addWidget(dial)
+			layout.addWidget(edi)
 
 		if not noclose:
 			self.pushButton02 = QtGui.QPushButton("close")
