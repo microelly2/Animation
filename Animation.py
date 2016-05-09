@@ -170,7 +170,7 @@ class _Actor(object):
 
 
 	def onDocumentRestored(self, fp):
-		say(["onDocumentRestored",fp])
+		say(["onDocumentRestored",str(fp.Label)+ ": "+str(fp.Proxy.__class__.__name__)])
 
 class _ViewProviderActor():
  
@@ -227,6 +227,7 @@ class _ViewProviderActor():
 
 
 	def doubleClicked(self,vobj):
+		vobj.Visibility=True
 		self.setEdit(vobj,1)
 
 	def claimChildren(self):
@@ -243,6 +244,8 @@ class _ViewProviderActor():
 
 
 	def dialog(self,noclose=False):
+		say("huhu")
+		say(EditWidget)
 		return EditWidget(self,self.emenu + self.anims(),noclose)
 
 	def animforward(self):
@@ -2517,15 +2520,7 @@ class _Filler(_Actor):
 			b.ViewObject.Visibility=True
 			c.ViewObject.DisplayMode = "Shaded"
 
-
-
-
-		
-		
-
 class _ViewProviderFiller(_ViewProviderActor):
-	
+
 	def getIcon(self):
 		return __dir__ + '/icons/filler.png'
-
-

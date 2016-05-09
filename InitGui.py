@@ -32,11 +32,13 @@ import FreeCAD
 import FreeCADGui
 import PySide
 from PySide import QtGui
-
 import os
-global __dir__
+
 import Animation
+global __dir__
 __dir__ = os.path.dirname(Animation.__file__)
+
+# print "Animation  dir:", __dir__
 
 
 
@@ -84,7 +86,7 @@ class _CommandActor():
 if FreeCAD.GuiUp:
 	FreeCADGui.addCommand('Anim_Abroller',_CommandActor("abroller",'/icons/abroller.png'))
 	FreeCADGui.addCommand('Anim_Adjuster',_CommandActor('Adjuster','/icons/adjuster.png'))
-	FreeCADGui.addCommand('Anim_Assembly2Controller',_CommandActor("Assembly2Controller",'/icons/assembly2SolveConstraints.svg',"Assembly2Controller.creanteAssembly2Controller()"))
+	FreeCADGui.addCommand('Anim_Assembly2Controller',_CommandActor("Assembly2Controller",'/icons/assembly2SolveConstraints.svg',"Assembly2Controller.createAssembly2Controller()"))
 	FreeCADGui.addCommand('Anim_Billboard',_CommandActor('Billboard', '/icons/billboard.png'))
 	FreeCADGui.addCommand('Anim_Bounder',_CommandActor("Bounder",'/icons/bounder.png'))
 	FreeCADGui.addCommand('Anim_Collider',_CommandActor("Collision",'/icons/collider.png',"Collision.createCollision()"))
@@ -95,8 +97,8 @@ if FreeCAD.GuiUp:
 	FreeCADGui.addCommand('Anim_Diagram',_CommandActor("Diagram",'/icons/diagram.png',"Diagram.createDiagram()"))
 	FreeCADGui.addCommand('Anim_Extruder',_CommandActor('Extruder','/icons/extruder.png'))
 	FreeCADGui.addCommand('Anim_Filler',_CommandActor('Filler','/icons/filler.png'))
-	FreeCADGui.addCommand('Anim_Gearing',_CommandActor('Gearing','/icons/gearing.png'))
-	FreeCADGui.addCommand('Anim_Kartan',_CommandActor('Kartan','/icons/kardan.png'))
+	FreeCADGui.addCommand('Anim_Gearing',_CommandActor('Gearing','/icons/gearing.png','Gearing.createGearing()'))
+	FreeCADGui.addCommand('Anim_Kartan',_CommandActor('Kartan','/icons/kardan.png','Kartan.createKartan()'))
 	FreeCADGui.addCommand('Anim_Manager',_CommandActor('Manager','/icons/manager.png'))
 	FreeCADGui.addCommand('Anim_Mover',_CommandActor('Mover','/icons/mover.png'))
 	FreeCADGui.addCommand('Anim_Moviescreen',_CommandActor('Moviescreen', '/icons/moviescreen.png'))
