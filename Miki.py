@@ -63,6 +63,7 @@ def  fv(name="vertical"):
 
 	pB= QtGui.QLabel(name)
 	layout.addWidget(pB)
+	w.setWindowTitle("Testfenster")
 	w.show()
 	w.layout=layout
 	return w

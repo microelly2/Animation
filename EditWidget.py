@@ -7,6 +7,7 @@
 #-- GNU Lesser General Public License (LGPL)
 #-------------------------------------------------
 from PySide import QtCore, QtGui
+from say import *
 
 class _EditWidget(QtGui.QWidget):
 	'''double clicked dialog''' 
@@ -14,19 +15,20 @@ class _EditWidget(QtGui.QWidget):
 		QtGui.QWidget.__init__(self, *args)
 		obj.widget=self
 		self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
-		self.vollabel =QtGui.QLabel( "<b>"+obj.Object.Label+"</b>") 
+		self.vollabel =QtGui.QLabel( "<b>"+obj.Object.Label+"</b>")
+		self.obj=obj
 
 		if dialer:
 			dial = QtGui.QDial()
 			dial.setNotchesVisible(True)
 			self.dial=dial
 			dial.setMaximum(100)
-			dial.valueChanged.connect(obj.dialer);
 
 			edi = QtGui.QLineEdit()
 			edi.setText("50")
 			dial.valueChanged.connect(lambda: edi.setText(str(dial.value())))
 			edi.textChanged.connect(lambda:dial.setValue(int(edi.text())))
+			dial.valueChanged.connect(obj.dialer)
 
 
 		layout = QtGui.QVBoxLayout()
@@ -43,7 +45,7 @@ class _EditWidget(QtGui.QWidget):
 
 		if not noclose:
 			self.pushButton02 = QtGui.QPushButton("close")
-			self.pushButton02.clicked.connect(self.hide)
+			self.pushButton02.clicked.connect(self.close2)
 			layout.addWidget(self.pushButton02)
 
 		self.setLayout(layout)
@@ -52,6 +54,14 @@ class _EditWidget(QtGui.QWidget):
 		except:
 			pass
 
+	def close2(self):
+		sayErr("close2")
+		self.hide()
+		say("2")
+		say(self.obj)
+		FreeCAD.tt=self.obj
+		self.obj.Object.ViewObject.Visibility=False
+		say("done")
 
 class EditWidget(_EditWidget):
 	def __init__(self, obj,menu,noclose,*args):

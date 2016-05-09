@@ -8,16 +8,13 @@
 #-------------------------------------------------
 from __future__ import unicode_literals
 
-__vers__="05.04.2016  0.3"
-
-
+__vers__="08.04.2016  0.4"
 
 import sys
 import os
 import random
 import numpy as np
 import time
-
 
 __dir__ = os.path.dirname(__file__)	
 
@@ -28,12 +25,9 @@ matplotlib.rcParams['backend.qt4']='PySide'
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
-import FreeCAD,FreeCADGui
-App=FreeCAD
-Gui=FreeCADGui
-
-import PySide
-from PySide import QtCore, QtGui
+import say
+reload(say)
+from say import *
 
 import reconstruction
 reload (reconstruction.projectiontools)
@@ -42,34 +36,16 @@ from reconstruction.projectiontools import *
 import reconstruction.miki as miki
 reload(miki)
 
-
-def sayd(s):
-	if hasattr(FreeCAD,'animation_debug'):
-		pass
-		FreeCAD.Console.PrintMessage(str(s)+"\n")
-
-def say(s):
-		FreeCAD.Console.PrintMessage(str(s)+"\n")
-
-def sayErr(s):
-		FreeCAD.Console.PrintError(str(s)+"\n")
-
-
 import Animation
 
 class _MPL(Animation._Actor):
 
-	def __init__(self,obj,icon='/icons/animation.png'):
+	def __init__(self,obj):
 		obj.Proxy = self
 		self.Type = self.__class__.__name__
 		self.obj2 = obj
-		
 		self.vals={}
-#		self.vals1={}
-#		self.vals2={}
-#		self.vals3={}
-#		
-		_ViewProviderMPL(obj.ViewObject,icon) 
+		_ViewProviderMPL(obj.ViewObject) 
 
 
 	def onChanged(self,obj,prop):
@@ -96,17 +72,27 @@ class _MPL(Animation._Actor):
 					break
 		pass
 
-	def onBeforeChange(self,obj,prop):
-		#say(["on Before Changed ",obj.Label,prop,obj.getPropertyByName(prop)])
-		pass
-
 
 	def execute(self,obj):
-		print "execute"
-		if not obj.record:
-			print "no recording"
+
+		if obj.mode=='histogram':
+			# self.edit()
+			say("plot ------------------")
+			try:
+				app=obj.Proxy.app
+				app.plot()
+			except:
+				sayW("Error for call obj.Proxy.app.plot()")
+			say("plot ----------------done   --")
 			return
 
+		if not obj.record:
+			say(obj.Label+ " no recording")
+			return
+		
+
+		try: t=self.vals
+		except: self.vals={}
 		print obj.sourceObject.Label
 		src=obj.sourceObject
 		vs='src.'+obj.sourceData
@@ -125,30 +111,28 @@ class _MPL(Animation._Actor):
 				tt[v]=v3
 		return
 
-	def onDocumentRestored(self, fp):
-		say(["onDocumentRestored",fp,fp.Label])
-
-
-
 
 class _ViewProviderMPL(Animation._ViewProviderActor):
- 
-	def __init__(self,vobj,icon='/icons/icon1.svg'):
-		self.iconpath = icon
-		print self.iconpath
+
+
+	def __init__(self,vobj):
+		self.attach(vobj)
 		self.Object = vobj.Object
 		vobj.Proxy = self
-		self.cmenu=[]
-		self.emenu=[]
 		self.vers=__vers__
- 
+
+
+	def attach(self,vobj):
+		self.emenu=[]
+		self.cmenu=[]
+		self.Object = vobj.Object
+		vobj.Proxy = self
+		self.vers=__vers__
+
+
 	def getIcon(self):
 		return  __dir__+ '/icons/icon1.svg'
 
-	def attach(self,vobj):
-		print "attach---------------------MLP-----------"
-		self.emenu=[]
-		self.Object = vobj.Object
 
 	def createDialog(self):
 		app=MyApp()
@@ -173,7 +157,7 @@ class _ViewProviderMPL(Animation._ViewProviderActor):
 	def setEdit(self,vobj,mode=0):
 		self.createDialog()
 		self.edit()
-		FreeCAD.ActiveDocument.recompute()
+		#FreeCAD.ActiveDocument.recompute()
 		return True
 
 
@@ -212,7 +196,26 @@ VerticalLayout:
 		
 '''
 
+
 	def plot(self):
+		if self.obj.mode=='histogram':
+			self.mpl.figure.clf()
+			self.mpl.canvas = FigureCanvas(self.mpl.figure)
+			FigureCanvas.updateGeometry(self.mpl)
+
+			self.mpl.axes = self.mpl.figure.add_subplot(111)
+			self.mpl.draw()
+			FreeCAD.mpl=self.mpl
+
+
+			k=self.plot_histogram()
+			
+#			FreeCAD.k=k
+#			self.mpl.axes.set_xlabel('length')
+#			self.mpl.axes.set_ylabel('count')
+#			self.mpl.axes.title=self.obj.Label
+
+			return
 		
 		self.mpl.figure.clf()
 		self.mpl.canvas = FigureCanvas(self.mpl.figure)
@@ -249,17 +252,48 @@ VerticalLayout:
 		FreeCAD.activeDocument().recompute()
 
 		for i in range(10):
-				if eval("self.obj.useOut"+str(i))
+				if eval("self.obj.useOut"+str(i)):
 					y=self.obj.sourceNumpy.getPropertyByName('out'+str(i))
 					label=self.obj.sourceNumpy.getPropertyByName('label'+str(i))
 					if label=='':
 						label="numpy " + str(i)
 
+#					if x == []: 
 					x=range(len(y))
+					
 					t=self.mpl.axes.plot(x,y,label=label)
 					exec("self.obj.out"+str(i)+"="+str(y))
 
 		legend = self.mpl.axes.legend(loc='upper right', shadow=True)
+		self.mpl.draw()
+		self.mpl.figure.canvas.draw()
+
+
+	def plot_histogram(self): # for mode ==histogram
+		
+		self.mpl.figure.clf()
+		self.mpl.canvas = FigureCanvas(self.mpl.figure)
+		FigureCanvas.updateGeometry(self.mpl)
+
+		self.mpl.axes = self.mpl.figure.add_subplot(111)
+		self.mpl.draw()
+
+
+
+		sob=self.obj.source1Object
+		y="sob."+str(self.obj.source1Data)
+		vals=eval(y)
+		# Proxy.extras.linelengths2
+		# say(vals)
+		
+		FreeCAD.mpl=self.mpl
+		# self.mpl.axes.axis([-90, 90, 0, 100])
+		n, bins, patches = self.mpl.axes.hist(vals, 180, normed=0, facecolor='green', alpha=0.75)
+		self.mpl.axes.axis([0, 180, 0, np.max(n)])
+		
+
+		# legend = self.mpl.axes.legend(loc='upper right', shadow=True)
+		
 		self.mpl.draw()
 		self.mpl.figure.canvas.draw()
 
@@ -270,7 +304,7 @@ VerticalLayout:
 		for i in range(self.obj.countSources):
 			nr=str(i+1)
 			exec("self.obj.Proxy.vals"+nr+"={}")
-			exec("self.obj.source"+nr+"Values=[]"
+			exec("self.obj.source"+nr+"Values=[]")
 
 		self.mpl.figure.clf()
 		self.mpl.canvas = FigureCanvas(self.mpl.figure)
@@ -284,13 +318,15 @@ VerticalLayout:
 	def create2(self):
 		par=self.root.ids['main']
 
+		l=QtGui.QLabel(self.obj.Label)
+		
 		self.mpl=MatplotlibWidget()
 		bt=QtGui.QPushButton("update diagram")
 		bt.clicked.connect(self.plot)
 
 		bt2=QtGui.QPushButton("reset data")
 		bt2.clicked.connect(self.reset)
-
+		self.root.ids['main'].layout.addWidget(l)
 		self.root.ids['main'].layout.addWidget(self.mpl)
 		self.root.ids['main'].layout.addWidget(bt)
 		self.root.ids['main'].layout.addWidget(bt2)
@@ -304,6 +340,7 @@ def createMPL(base=False):
 
 	print "create MPL ..."
 	obj=FreeCAD.ActiveDocument.addObject('App::DocumentObjectGroupPython','Plot')
+	obj.addProperty('App::PropertyString','mode',"Base")
 
 	obj.addProperty('App::PropertyBool','record',"Base",'true record, false no record data')
 	obj.addProperty('App::PropertyInteger','countSources',"Base")
@@ -324,8 +361,8 @@ def createMPL(base=False):
 	obj.addProperty('App::PropertyFloatList','outTime',"out values")
 
 	if not base:
-		_MPL(obj,'/icons/bounder.png')
-		_ViewProviderMPL(obj.ViewObject,__dir__+ '/icons/icon1.svg') 
+		_MPL(obj)
+		#_ViewProviderMPL(obj.ViewObject,__dir__+ '/icons/icon1.svg') 
 		
 		obj.countSources=1
 
@@ -338,6 +375,7 @@ def createMPL(base=False):
 
 		obj.ViewObject.Proxy.edit= lambda:miki2.run(MyApp.s6,app.create2)
 	return obj
+
 
 
 
@@ -382,4 +420,4 @@ if False:
 	t2.useOut2=True
 	t2.record=True
 
-		
+

@@ -34,6 +34,9 @@ def createPlacer(name='My_Placer',target=None,src=None):
 	c3.Placement=FreeCAD.Placement()
 
 
+	c3.addProperty("App::PropertyPlacement","prePlacement","Parameter","")
+	c3.addProperty("App::PropertyPlacement","postPlacement","Parameter","")
+
 	# parameter
 	c3.addProperty("App::PropertyFloat","x0","Parameter","")
 	c3.x0=0
@@ -129,7 +132,9 @@ class _Placer(Animation._Actor):
 		if str(self.obj2.target.TypeId) == 'App::Annotation':
 			self.obj2.target.Position=(xv,yv,zv)
 		else:
-			self.obj2.target.Placement=pl
+			pl2=pl.multiply(self.obj2.prePlacement)
+			self.obj2.target.Placement=pl2
+			
 		self.obj2.Placement=pl
 		if self.obj2.followers:
 			for f in self.obj2.followers:
