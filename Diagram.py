@@ -18,7 +18,6 @@ App=FreeCAD
 
 __vers__= '0.2'
 __dir__ = os.path.dirname(__file__)	
-__dir__="/home/thomas/.FreeCAD/Mod/Animation/"
 
 def _creategraphs(obj):
 
@@ -33,39 +32,39 @@ def _creategraphs(obj):
 	obj.Proxy.data9={}
 	
 	
-	if obj.trafo:
+	if obj.trafo<>'' and obj.graph == None:
 		w=Part.makeSphere(0.1)
 		Part.show(w)
 		obj.graph=FreeCAD.activeDocument().ActiveObject
 		obj.graph.ViewObject.LineColor=(1.0,0.0,.0)
 		obj.graph.Label="Graph 1 "
-	if obj.trafo2:
+	if obj.trafo2<>'' and obj.graph2 == None:
 		w=Part.makeSphere(0.1)
 		Part.show(w)
 		obj.graph2=FreeCAD.activeDocument().ActiveObject
 		obj.graph2.ViewObject.LineColor=(.0,1.0,.0)
 		obj.graph2.Label="Graph 2 "
-	if obj.trafo3:
+	if obj.trafo3<>'' and obj.graph3 == None:
 		w=Part.makeSphere(0.1)
 		Part.show(w)
 		obj.graph3=FreeCAD.activeDocument().ActiveObject
 		obj.graph3.ViewObject.LineColor=(.0,.0,1.0)
 		obj.graph3.Label="Graph 3 "
-	if obj.trafo4:
+	if obj.trafo4<>'' and obj.graph4 == None:
 		w=Part.makeSphere(0.1)
 		Part.show(w)
 		obj.graph4=FreeCAD.activeDocument().ActiveObject
 		obj.graph4.ViewObject.LineColor=(1.0,1.0,.0)
 		obj.graph4.Label="Graph 4 "
 
-	if obj.trafo5:
+	if obj.trafo5<>'' and  obj.graph5 == None:
 		w=Part.makeSphere(0.1)
 		Part.show(w)
 		obj.graph5=FreeCAD.activeDocument().ActiveObject
 		obj.graph5.ViewObject.LineColor=(1.0,.0,1.0)
 		obj.graph5.Label="Graph 5 "
 
-	if obj.trafo6:
+	if obj.trafo6<>'' and obj.graph6 == None:
 		w=Part.makeSphere(0.1)
 		Part.show(w)
 		obj.graph6=FreeCAD.activeDocument().ActiveObject
@@ -88,7 +87,9 @@ def createDiagram(name='My_Diagram',trafo='',trafo2='',trafo3='',trafo4='',trafo
 	obj.addProperty("App::PropertyLink","graph4","Base","")
 	obj.addProperty("App::PropertyLink","graph5","Base","")
 	obj.addProperty("App::PropertyLink","graph6","Base","")
-
+	obj.addProperty("App::PropertyLink","graph7","Base","")
+	obj.addProperty("App::PropertyLink","graph8","Base","")
+	obj.addProperty("App::PropertyLink","graph9","Base","")
 	
 	obj.addProperty("App::PropertyFloat","out","Results","")
 	obj.addProperty("App::PropertyFloat","out2","Results","")
@@ -210,6 +211,16 @@ class _Diagram(Animation._Actor):
 		if self.obj2.trafo6:
 			self.register(time,self.data6,out6,self.obj2.graph6)
 
+		if self.obj2.trafo7:
+			self.register(time,self.data7,out7,self.obj2.graph7)
+
+		if self.obj2.trafo8:
+			self.register(time,self.data8,out8,self.obj2.graph8)
+
+		if self.obj2.trafo9:
+			self.register(time,self.data9,out9,self.obj2.graph9)
+
+
 
 
 	def register(self,time,data,out,graph):
@@ -237,6 +248,12 @@ class _Diagram(Animation._Actor):
 	def step(self,now):
 #			say("step "+str(now) + str(self))
 			self.obj2.time=float(now)/100
+
+
+	def onChanged(self,obj,prop):
+		if prop in ['trafo','trafo2','trafo3','trafo4','trafo5','trafo6','trafo7','trafo8','trafo9']:
+			_creategraphs(obj)
+
 
 
 class _ViewProviderDiagram(Animation._ViewProviderActor):

@@ -1,6 +1,10 @@
 import FreeCAD
 print "Module Collision started.!"
 
+from say import *
+
+__dir__ = os.path.dirname(__file__)	
+
 #-----------------------------------------
 
 #--------------------------------------------
@@ -37,7 +41,8 @@ def sayexc(mess=''):
 class _ViewProvider(object):
  
 	def getIcon(self):
-		return  '/home/thomas/.FreeCAD/Mod/Animation/icons/collider.png'
+		
+		return  __dir__ + '/icons/collider.png'
    
 	def __init__(self,vobj):
 		vobj.Proxy = self

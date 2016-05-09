@@ -17,7 +17,6 @@ from PySide import QtCore, QtGui
 
 __vers__= '0.1'
 __dir__ = os.path.dirname(__file__)	
-__dir__="/home/thomas/.FreeCAD/Mod/Animation/"
 
 
 Gui=FreeCADGui
