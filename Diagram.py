@@ -7,14 +7,10 @@
 #-- GNU Lesser General Public License (LGPL)
 #-------------------------------------------------
 
-import math,os, time
+from say import *
+import math
 
-import FreeCAD, FreeCADGui, Animation, PySide, Part
-from Animation import say,sayErr,sayexc
 from EditWidget import EditWidget
-
-Gui=FreeCADGui
-App=FreeCAD
 
 __vers__= '0.2'
 __dir__ = os.path.dirname(__file__)	
@@ -30,20 +26,21 @@ def _creategraphs(obj):
 	obj.Proxy.data7={}
 	obj.Proxy.data8={}
 	obj.Proxy.data9={}
-	
-	
+
 	if obj.trafo<>'' and obj.graph == None:
 		w=Part.makeSphere(0.1)
 		Part.show(w)
 		obj.graph=FreeCAD.activeDocument().ActiveObject
 		obj.graph.ViewObject.LineColor=(1.0,0.0,.0)
 		obj.graph.Label="Graph 1 "
+
 	if obj.trafo2<>'' and obj.graph2 == None:
 		w=Part.makeSphere(0.1)
 		Part.show(w)
 		obj.graph2=FreeCAD.activeDocument().ActiveObject
 		obj.graph2.ViewObject.LineColor=(.0,1.0,.0)
 		obj.graph2.Label="Graph 2 "
+
 	if obj.trafo3<>'' and obj.graph3 == None:
 		w=Part.makeSphere(0.1)
 		Part.show(w)
@@ -70,6 +67,27 @@ def _creategraphs(obj):
 		obj.graph6=FreeCAD.activeDocument().ActiveObject
 		obj.graph6.ViewObject.LineColor=(.0,1.0,1.0)
 		obj.graph6.Label="Graph 6 "
+
+	if obj.trafo7<>'' and obj.graph6 == None:
+		w=Part.makeSphere(0.1)
+		Part.show(w)
+		obj.graph7=FreeCAD.activeDocument().ActiveObject
+		obj.graph7.ViewObject.LineColor=(.0,1.0,1.0)
+		obj.graph7.Label="Graph 7 "
+
+	if obj.trafo8<>'' and obj.graph8 == None:
+		w=Part.makeSphere(0.1)
+		Part.show(w)
+		obj.graph8=FreeCAD.activeDocument().ActiveObject
+		obj.graph8.ViewObject.LineColor=(.0,1.0,1.0)
+		obj.graph8.Label="Graph 8 "
+
+	if obj.trafo9<>'' and obj.graph9 == None:
+		w=Part.makeSphere(0.1)
+		Part.show(w)
+		obj.graph9=FreeCAD.activeDocument().ActiveObject
+		obj.graph9.ViewObject.LineColor=(.0,1.0,1.0)
+		obj.graph9.Label="Graph 9 "
 
 
 
@@ -103,6 +121,7 @@ def createDiagram(name='My_Diagram',trafo='',trafo2='',trafo3='',trafo4='',trafo
 	
 	obj.addProperty("App::PropertyFloat","time","Base","")
 	obj.time=0
+
 	obj.addProperty("App::PropertyString","timeExpression","Functions","")
 	obj.addProperty("App::PropertyString","trafo","Functions","")
 	obj.addProperty("App::PropertyString","trafo2","Functions","")
@@ -113,6 +132,7 @@ def createDiagram(name='My_Diagram',trafo='',trafo2='',trafo3='',trafo4='',trafo
 	obj.addProperty("App::PropertyString","trafo7","Functions","")
 	obj.addProperty("App::PropertyString","trafo8","Functions","")
 	obj.addProperty("App::PropertyString","trafo9","Functions","")
+
 	obj.trafo=trafo
 	obj.trafo2=trafo2
 	obj.trafo3=trafo3
@@ -146,20 +166,22 @@ class _Diagram(Animation._Actor):
 			say("update (ohne Label)")
 
 		time=self.obj2.time
-		
+
 		a=self.obj2.a
 		b=self.obj2.b
 		c=self.obj2.c
 		d=self.obj2.d
+
 		source=self.obj2.source
 		source2=self.obj2.source2
 		source3=self.obj2.source3
 		source4=self.obj2.source4
+
 		if self.obj2.timeExpression<>"":
 			say(["eval time Expression",time])
 			time=eval(self.obj2.timeExpression)
 			say(["time== ",time,self.obj2.timeExpression])
-		
+
 		out=0
 		out1=0
 		out2=0
@@ -170,7 +192,7 @@ class _Diagram(Animation._Actor):
 		out7=0
 		out8=0
 		out9=0
-		
+
 		if self.obj2.trafo: out=eval(self.obj2.trafo)
 		if self.obj2.trafo2: out2=eval(self.obj2.trafo2)
 		if self.obj2.trafo3: out3=eval(self.obj2.trafo3)
@@ -180,9 +202,8 @@ class _Diagram(Animation._Actor):
 		if self.obj2.trafo7: out7=eval(self.obj2.trafo7)
 		if self.obj2.trafo8: out8=eval(self.obj2.trafo8)
 		if self.obj2.trafo9: out9=eval(self.obj2.trafo9) 
-		
-		say([time,out,out2,out3,out4])
 
+#		say([time,out,out2,out3,out4])
 		self.obj2.out=out
 		self.obj2.out2=out2
 		self.obj2.out3=out3
@@ -229,7 +250,7 @@ class _Diagram(Animation._Actor):
 		ts=data.keys()
 		ts.sort()
 		pl=[]
-		say("points")
+#		say("points")
 		for t in ts:
 			pl.append((t,data[t],1))
 #		say(pl)
@@ -244,11 +265,8 @@ class _Diagram(Animation._Actor):
 			pass
 
 
-
 	def step(self,now):
-#			say("step "+str(now) + str(self))
-			self.obj2.time=float(now)/100
-
+		self.obj2.time=float(now)/100
 
 	def onChanged(self,obj,prop):
 		if prop in ['trafo','trafo2','trafo3','trafo4','trafo5','trafo6','trafo7','trafo8','trafo9']:
@@ -260,7 +278,6 @@ class _ViewProviderDiagram(Animation._ViewProviderActor):
 
 
 	def attach(self,vobj):
-		say("VO attach " + str(vobj.Object.Label))
 		vobj.Proxy = self
 		self.Object = vobj.Object
 		self.obj2=self.Object
@@ -280,6 +297,8 @@ class _ViewProviderDiagram(Animation._ViewProviderActor):
 
 
 if __name__ == '__main__':
+	
+	from Diagram import *
 
 	App.setActiveDocument("Unnamed")
 	App.ActiveDocument=App.getDocument("Unnamed")
@@ -307,18 +326,12 @@ if __name__ == '__main__':
 	s3.target=App.ActiveDocument.Box003
 	s3.y="20"
 
-
 	import Diagram
 	c=Diagram.createDiagram("dia","0.200*time","0.2*(0.01*time-0.5)**2","10+time+1","-10*time")
 	c.source=s1
-	c.trafo="source.Placement.Rotation.Angle"
-	c.timeExpression="source.time*100"
+	c.trafo="source.Placement.Rotation.Angle*100"
+	c.timeExpression="source.time*10000"
 	c.graphPlacement.Base.z=10
-	
 
 	m=App.ActiveDocument.My_Manager
 	m.addObject(c)
-	
-
-
-

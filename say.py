@@ -1,3 +1,11 @@
+# -*- coding: utf-8 -*-
+#-------------------------------------------------
+#-- Animation workbench
+#--
+#-- microelly 2016
+#--
+#-- GNU Lesser General Public License (LGPL)
+#-------------------------------------------------
 
 import FreeCAD
 
@@ -59,5 +67,3 @@ def sayexc(mess=''):
 	l=len(lls)
 	l2=lls[(l-3):]
 	FreeCAD.Console.PrintError(mess + "\n" +"-->  ".join(l2))
-
-
