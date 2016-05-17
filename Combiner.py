@@ -7,14 +7,10 @@
 #-- GNU Lesser General Public License (LGPL)
 #-------------------------------------------------
 
+from say import *
 import math,os, time
 
-import FreeCAD, FreeCADGui, Animation, PySide
-from Animation import say,sayErr,sayexc
 from EditWidget import EditWidget
-
-Gui=FreeCADGui
-App=FreeCAD
 
 __vers__= '0.2'
 __dir__ = os.path.dirname(__file__)	
@@ -97,23 +93,15 @@ class _Combiner(Animation._Actor):
 
 		tl=[self.obj2.target,self.obj2.target2,self.obj2.target3,self.obj2.target4]
 		outl=[out,out2,out3,out4]
-#		say(outl)
-#		say("UPDATE targets-------------------")
 		for t in range(4):
-#			say("t "+str(t))
 			try:
-				
-#				say(outl[t])
 				tl[t].Proxy.step(outl[t])
-#				say("yy")
 				tl[t].Proxy.update()
-#				
 				say("combiner update " + str(tl[t].Label) +  " wert: " + str(outl[t])) 
 			except:
 				pass
 
 	def step(self,now):
-#			say("step "+str(now) + str(self))
 			self.obj2.time=float(now)/100
 
 
@@ -121,7 +109,6 @@ class _ViewProviderCombiner(Animation._ViewProviderActor):
 
 
 	def attach(self,vobj):
-		say("VO attach " + str(vobj.Object.Label))
 		vobj.Proxy = self
 		self.Object = vobj.Object
 		self.obj2=self.Object
@@ -146,7 +133,6 @@ if __name__ == '__main__':
 	App.ActiveDocument.addObject("Part::Box","Box")
 	App.ActiveDocument.addObject("Part::Box","Box")
 	App.ActiveDocument.addObject("Part::Cone","Cone")
-
 
 	import Placer
 
@@ -173,7 +159,6 @@ if __name__ == '__main__':
 
 	c.trafo3="max(source.Radius1.Value,source.Radius2.Value)"
 	c.target3=s3
-
 
 
 

@@ -80,7 +80,7 @@ class _VertexTracker(Animation._Actor):
 		for v in s.Shape.Vertexes:
 			print "Point: ", v.Point
 			self.addpoint(v.Point)
-		print threads
+# 		print threads
 
 	def show(self):
 		for f in self.threads:

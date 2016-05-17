@@ -7,14 +7,8 @@
 #-- GNU Lesser General Public License (LGPL)
 #-------------------------------------------------
 
-import math,os, time
-
-import FreeCAD, FreeCADGui, Animation, PySide
-from Animation import say,sayErr,sayexc
-from EditWidget import EditWidget
-
-Gui=FreeCADGui
-App=FreeCAD
+from say import *
+import math
 
 __vers__= '0.2'
 __dir__ = os.path.dirname(__file__)	
@@ -194,22 +188,23 @@ class _ViewProviderSpeeder(Animation._ViewProviderActor):
 
 	def diagram(self):
 		''' diagram of relative location, speed/impulse, acceleration/force'''
+
 		points=[]
 		for time in range(101):
 			nt=self.Object.Proxy.t2nt(0.0+0.01*time)
 			points.append(FreeCAD.Vector(time,nt,0))
-		import Draft
 		w=Draft.makeWire(points)
 		w.Label=self.Object.trafo
 		w.ViewObject.LineColor=(.0,.0,1.0)
+
 		points=[]
 		for time in range(101):
 			nt=self.Object.Proxy.t2ntderive(0.0+0.01*time)
 			points.append(FreeCAD.Vector(time,nt,0))
-		import Draft
 		w=Draft.makeWire(points)
 		w.Label="derive/impulse of " + self.Object.trafo
 		w.ViewObject.LineColor=(.0,1.0,.0)
+
 		points=[]
 		for time in range(101):
 			nt=self.Object.Proxy.t2ntforce(0.0+0.01*time)
@@ -218,9 +213,4 @@ class _ViewProviderSpeeder(Animation._ViewProviderActor):
 		w=Draft.makeWire(points)
 		w.Label="2nd derive/force of " + self.Object.trafo
 		w.ViewObject.LineColor=(1.0,.0,.0)
-
-
-
-
-		pass
 
