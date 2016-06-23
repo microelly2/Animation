@@ -191,9 +191,10 @@ VerticalLayout:
 #		setFixedWidth: 500
 #		move:  PySide.QtCore.QPoint(3000,100)
 
-		QtGui.QLabel:
-			setText:"***    My    M A T P L O T L I B     ***"
-		
+#		QtGui.QLabel:
+#			setText:"***    My    M A T P L O T L I B     ***"
+#		
+
 '''
 
 
@@ -246,6 +247,20 @@ VerticalLayout:
 				t=self.mpl.axes.plot(x,y1,label=label)
 				exec("self.obj.source"+nr+"Values=y1")
 
+			if ss== None and not sf and not self.obj.useNumpy:
+				say("no sourcve .jijij")
+				exec("vals=self.obj.source"+nr+"Values")
+#				x2=[k for k in vals]
+#				y1=[vals[k] for k in vals]
+#				say(vals)
+				y1=vals
+				x=range(len(vals))
+				exec("label=self.obj.source"+nr+"Data")
+				# label="Label for " + str(nr) + ": "+ label 
+				t=self.mpl.axes.plot(x,y1,label=label)
+#				exec("self.obj.source"+nr+"Values=y1")
+				say("DDone")
+
 		if self.obj.useNumpy:
 			self.obj.outTime=self.obj.sourceNumpy.outTime
 
@@ -253,16 +268,22 @@ VerticalLayout:
 
 		for i in range(10):
 				if eval("self.obj.useOut"+str(i)):
-					y=self.obj.sourceNumpy.getPropertyByName('out'+str(i))
-					label=self.obj.sourceNumpy.getPropertyByName('label'+str(i))
-					if label=='':
-						label="numpy " + str(i)
+					try:
+						y=self.obj.sourceNumpy.getPropertyByName('out'+str(i))
+						label=self.obj.sourceNumpy.getPropertyByName('label'+str(i))
+						if label=='':
+							label="numpy " + str(i)
 
-#					if x == []: 
-					x=range(len(y))
-					
-					t=self.mpl.axes.plot(x,y,label=label)
-					exec("self.obj.out"+str(i)+"="+str(y))
+	#					if x == []: 
+						x=range(len(y))
+						if self.obj.outTime<>[]:
+							x=self.obj.outTime
+						say(("lens",len(x),len(y)))
+						
+						t=self.mpl.axes.plot(x,y,label=label)
+						exec("self.obj.out"+str(i)+"="+str(y))
+					except:
+						sayexc("cannont calculate out"+str(i))
 
 		legend = self.mpl.axes.legend(loc='upper right', shadow=True)
 		self.mpl.draw()

@@ -40,9 +40,12 @@ class _NP(Animation._Actor):
 		else:
 			inTime=[]
 
-		atts=[1,2,3]
+		atts=[1,2,3,4,5,6,7,8,9]
 		for i in atts:
-			exec('in'+str(i)+"=np.array(src.source"+str(i)+"Values)")
+			try:
+				exec('in'+str(i)+"=np.array(src.source"+str(i)+"Values)")
+			except:
+				pass
 
 		attos=range(10)
 		for i in attos:

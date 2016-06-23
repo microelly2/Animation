@@ -145,6 +145,8 @@ class _Actor(object):
 				return
 		except:
 			pass
+		try: self.Lock
+		except: self.Lock=False
 		if not self.Lock:
 			self.obj2=obj
 			self.Lock=True
@@ -577,6 +579,8 @@ class _Billboard(_Actor):
 		obj.Proxy = self
 		self.Type = "_Billboard"
 		_ViewProviderActor(obj.ViewObject,'/icons/billboard.png') 
+		self.Object.Proxy.Lock=False
+
 
 	def step(self,now):
 		k=self.obj2.text

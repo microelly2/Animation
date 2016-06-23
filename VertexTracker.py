@@ -74,11 +74,15 @@ class _VertexTracker(Animation._Actor):
 
 
 	def run(self,s):
-		print s.Label
+		say(s.Label)
 		print s.Shape
-		print s.Shape.Vertexes
+		say(s.Shape.Vertexes)
+		i=0
 		for v in s.Shape.Vertexes:
-			print "Point: ", v.Point
+			i += 1
+			if i > 5: break 
+			say(["Point: ", v.Point])
+			FreeCADGui.updateGui()
 			self.addpoint(v.Point)
 # 		print threads
 
