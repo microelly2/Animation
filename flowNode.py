@@ -51,16 +51,46 @@ damper=flowlib.damper
 #
 
 
+def lineCircleCommon(x0,y0,x1,y1,r):
+	''' schnittpunkt kreis mit strecke'''
+
+	v1=x1-x0
+	v2=y1-y0
+
+	rv2=v1**2+v2**2
+
+	zz=-(x0*v1+y0*v2)/rv2
+	D=zz**2 - (x0**2+y0**2-r**2)/rv2
+	if D<0:
+		print "Fehler Diskriminante r=", r 
+		print (x0,y0)
+		print np.sqrt(x0**2+y0**2)
+		print (x1,y1)
+		print np.sqrt(x1**2+y1**2)
+	t=zz + np.sqrt(zz**2 - (x0**2+y0**2-r**2)/rv2)
+
+	x2=x0+v1*t
+	y2=y0+v2*t
+	x2=0.95*x2
+	y2=0.95*y2
+	# print np.sqrt(x2**2+y2**2)
+	return(x2,y2)
+
+
+
 def velocity(self,ix,mytime):
 
 	(x,y,z)=self.ptslix[ix]
 
 	xy=ix%(self.obj2.dimU*self.obj2.dimV)
-	xp=xy//self.obj2.dimV
-	yp=xy%self.obj2.dimU
+	xp=xy//self.obj2.dimU
+	yp=xy%self.obj2.dimV
 
 	# geschwindkeit anpassen -- kraft am ort x,y,z addieren
+	
+#	print "vor ",self.pvs[xp,yp]
 	self.pvs[xp,yp] += force(x,y,z,self.pvs[xp,yp],mytime)
+#	print "nach ",self.pvs[xp,yp]
 
 	tt=self.pvs[xp,yp]
 
@@ -69,9 +99,10 @@ def velocity(self,ix,mytime):
 
 	xn,yn,zn=x+tt[0],y+tt[1],z+tt[2]
 
-	ddx=1
-	ddy=1
-	ddz=0.1
+	ddx=0.8
+	ddy=0.8
+	ddz=0.01
+
 
 	if self.obj2.boundMode=='Bound Box':
 		if zn<=0:
@@ -97,11 +128,39 @@ def velocity(self,ix,mytime):
 				zn=self.zmin -ddz*(zn-self.zmin)
 				self.pvs[xp,yp][2]  *= -1 
 
+
+	elif self.obj2.boundMode=='Bound Cylinder':
+
+		r=40
+		if xn**2+yn**2>r**2:
+			try:
+#				print "berechne wand"
+				(x2,y2)=lineCircleCommon(x,y,xn,yn,r)
+				xn,yn=x2,y2
+				ra=random.random()
+				ra2=(5.0-ra)/5
+				#print(xn,yn,ra,ra2)
+				xn=xn*ra2
+				yn=yn*ra2
+				self.pvs[xp,yp][0]  += -0.5*xn
+				self.pvs[xp,yp][1]  += -0.1*yn
+			except:
+				pass
+
+		if zn<self.zmin:
+			zn=self.zmin -ddz*(zn-self.zmin)
+			self.pvs[xp,yp][2]  *= -1 
+
+
 	elif self.obj2.boundMode=='no Bounds':
 		pass
 	else:
 		sayErr("nont implemented mode" + self.obj2.boundMode)
 
+	rr=1
+	if zn <-5:
+		xn,yn,zn=xn+rr*(0.5-random.random()),yn+rr*(0.5-random.random()),zn+rr*(0.5-random.random())
+	
 	self.ptslix[ix+self.obj2.dimU*self.obj2.dimV]=[xn,yn,zn]
 	return self.ptslix[ix+self.obj2.dimU*self.obj2.dimV]
 
@@ -143,7 +202,18 @@ def createStepPtsV2(self,i):
 def createStepFC(self,i):
 	objs=pclgroup()
 	(la,lb)=self.ptsl[i].shape
-	pts=[tuple(self.ptslix[self.ptsl[i][a][b]]) for a in range(la) for b in range(lb)]
+#	pts=[tuple(self.ptslix[self.ptsl[i][a][b]]) for a in range(la) for b in range(lb)]
+
+	pts=[]
+	for a in range(la):
+		for b in range(lb):
+			t=tuple(self.ptslix[self.ptsl[i][a][b]])
+			if np.isnan(t[0]) or np.isnan(t[1]) or np.isnan(t[2]):
+				print "found error ", t
+				print a,b
+				pass
+			else:
+				pts.append(t)
 
 	pcl=Points.Points(pts)
 	Points.show(pcl)
@@ -153,7 +223,17 @@ def createStepFC(self,i):
 
 	obj=App.ActiveDocument.ActiveObject
 	obj.ViewObject.ShapeColor=(random.random(),random.random(),random.random())
-	obj.Placement=self.obj2.startPosition
+
+
+	if len(objs.OutList)==0:
+		obj.Placement=self.obj2.startPosition
+	else:
+		movePosition=FreeCAD.Placement()
+		movePosition.Rotation=FreeCAD.Rotation(FreeCAD.Vector(0,0,1),10)
+		movePosition=self.obj2.deltaPosition
+		obj.Placement=objs.OutList[-1].Placement.multiply(movePosition)
+
+
 	objs.addObject(obj)
 
 	return obj
@@ -161,48 +241,62 @@ def createStepFC(self,i):
 
 
 
-def animateIntervall(pb=None,start=0,ende=None,objs=None):
+def animateIntervall(self,pb=None,start=0,ende=None,objs=None):
 	if objs==None: 
 		objs=pclgroup().OutList
-	if ende==None: ende=len(objs)
-	if pb == None: 	pb=createProgressBar("animation ..")
+	if ende==None: ende=len(objs)+ self.obj2.count4Slides
+	if start+1<>ende and pb == None: 	pb=createProgressBar("animation ..")
 
 	for u in objs: u.ViewObject.hide()
 
 	k=3
 	kk=10
 	kkk=30
+#	obj.addProperty("App::PropertyInteger","count4Slides","Base","").
+#	kkk=self.obj2.count4Slides=14
+#	obj.addProperty("App::PropertyInteger","color4Slides","Base","").
+#	c4=self.obj2.color4Slides
+
 
 	for i in range(start,ende):
 
-		pb.pb.setValue(i*100/(ende-start-1))
+		if pb<>None: pb.pb.setValue(i*100/(ende-start-1))
+		for u in objs: u.ViewObject.hide()
 
-		try:
-			objs[i-kkk].ViewObject.hide()
-			for j in range(kkk):
-				objs[i-j].ViewObject.ShapeColor=(.0,1.0,1.0)
-		except: pass
+		if True:
 
-		try:
-			for j in range(kk):
-				objs[i-j].ViewObject.ShapeColor=(1.0,.7,0.0)
-		except: pass
+			try:
+				
+			#	objs[i-kkk].ViewObject.hide()
+				for j in range(self.obj2.count4Slides):
+					if i-j>=0:
+						objs[i-j].ViewObject.show()
+						objs[i-j].ViewObject.ShapeColor=(.0,1.0,1.0)
+						objs[i-j].ViewObject.ShapeColor=self.obj2.color4Slides
+			except: pass
 
-		try:
-			for j in range(k):
-				objs[i-j].ViewObject.ShapeColor=(1.0,1.0,0.0)
-		except: pass
+			try:
+				for j in range(self.obj2.count3Slides):
+					objs[i-j].ViewObject.ShapeColor=self.obj2.color3Slides
+			except: pass
 
-		objs[i].ViewObject.ShapeColor=(1.0,0.0,0.0)
-		objs[i].ViewObject.show()
+			try:
+				for j in range(self.obj2.count2Slides):
+					objs[i-j].ViewObject.ShapeColor=self.obj2.color2Slides
+			except: pass
+			try:
+				objs[i].ViewObject.ShapeColor=self.obj2.colorSlides
+				objs[i].ViewObject.show()
+			except:
+				pass
+			App.activeDocument().recompute()
+			Gui.updateGui()
+			time.sleep(self.obj2.sleep)
+
 		App.activeDocument().recompute()
 		Gui.updateGui()
-		time.sleep(0.1)
-
-	App.activeDocument().recompute()
-	Gui.updateGui()
-	pb.hide()
-	objs[i].ViewObject.hide()
+		if pb<>None: pb.hide()
+		#objs[i].ViewObject.hide()
 
 
 def hideAll():
@@ -279,19 +373,37 @@ dial=createSingleSliceViewer()
 
 def createFlow(name='My_Flow',target=None,src=None):
 	obj = FreeCAD.ActiveDocument.addObject("App::DocumentObjectGroupPython",name)
-	obj.addProperty("App::PropertyFloat","time","Base","")
-	obj.addProperty("App::PropertyInteger","countSlices","Base","").countSlices=20
-	obj.addProperty("App::PropertyInteger","dimU","Base","").dimU=50
-	obj.addProperty("App::PropertyInteger","dimV","Base","").dimV=100
-	obj.addProperty("App::PropertyLink","boundBox","Base","")
-	obj.addProperty("App::PropertyEnumeration","boundMode","Base","")
+	obj.addProperty("App::PropertyFloat","time","Animation","")
+	obj.addProperty("App::PropertyFloat","sleep","Animation","").sleep=0.0
+
+	obj.addProperty("App::PropertyInteger","countSlices","Animation","").countSlices=20
+	obj.addProperty("App::PropertyInteger","period","Animation","")
+
+
+	obj.addProperty("App::PropertyInteger","dimU","Layout","").dimU=50
+	obj.addProperty("App::PropertyInteger","dimV","Layout","").dimV=100
+
+	obj.addProperty("App::PropertyLink","boundBox","Bounds","")
+	obj.addProperty("App::PropertyEnumeration","boundMode","Bounds","")
 	obj.boundMode=['no Bounds','Bound Box','Bound Cylinder','Bound Sphere']
 
-	obj.addProperty("App::PropertyEnumeration","startFace","Base","")
+	obj.addProperty("App::PropertyEnumeration","startFace","Layout","")
 	obj.startFace=['Circle','Rectangle']
 	
-	obj.addProperty("App::PropertyPlacement","startPosition","Base","")
-	obj.startPosition.Base=FreeCAD.Vector(50,10,-30)
+	obj.addProperty("App::PropertyPlacement","startPosition","Clouds","")
+	obj.addProperty("App::PropertyPlacement","deltaPosition","Clouds","")
+	# obj.deltaPosition.Rotation=FreeCAD.Rotation(FreeCAD.Vector(0,0,1),-5)
+	
+	obj.addProperty("App::PropertyInteger","count2Slides","Clouds","").count2Slides=2
+	obj.addProperty("App::PropertyInteger","count3Slides","Clouds","").count3Slides=6
+	obj.addProperty("App::PropertyInteger","count4Slides","Clouds","").count4Slides=14
+	obj.addProperty("App::PropertyColor","colorSlides","Clouds","").colorSlides=(1.0,0.0,0.0)
+	obj.addProperty("App::PropertyColor","color2Slides","Clouds","").color2Slides=(1.0,1.0,0.0)
+	obj.addProperty("App::PropertyColor","color3Slides","Clouds","").color3Slides=(1.0,.7,0.0)
+	obj.addProperty("App::PropertyColor","color4Slides","Clouds","").color4Slides=(.0,1.0,1.0)
+
+
+	# obj.startPosition.Base=FreeCAD.Vector(50,10,-30)
 
 	obj.boundMode='Bound Box'
 
@@ -319,7 +431,8 @@ class _Flow(Animation._Actor):
 		for u in objs: u.ViewObject.hide()
 		i=int(round(time*(len(objs)-1)))
 		print i
-		objs[i].ViewObject.show()
+		try:objs[i].ViewObject.show()
+		except: pass
 
 
 	def createTracks(self):
@@ -353,6 +466,9 @@ class _Flow(Animation._Actor):
 
 	def m2(self,value):
 		objs=pclgroup().OutList
+		animateIntervall(self,None,value,value+1)
+		return
+		
 		for u in objs:
 			u.ViewObject.hide()
 		objs[value].ViewObject.show()
@@ -388,7 +504,7 @@ class _Flow(Animation._Actor):
 
 		bt=QtGui.QPushButton("animate loop")
 		hbox.addWidget(bt)
-		bt.clicked.connect(animateIntervall)
+		bt.clicked.connect(lambda:animateIntervall(self))
 
 		w.show()
 		hideAll()
@@ -439,7 +555,7 @@ class _Flow(Animation._Actor):
 		hideAll()
 
 		pb.hide()
-		animateIntervall()
+		animateIntervall(self)
 
 
 
@@ -519,21 +635,46 @@ def run():
 	Gui.ActiveDocument.ActiveView.setAnimationEnabled(False)
 	App.ActiveDocument.addObject("Part::Cylinder","Cylinder")
 	App.ActiveDocument.ActiveObject.Label = "Cylinder"
-	App.ActiveDocument.ActiveObject.Height=50
-	App.ActiveDocument.ActiveObject.Radius=10
+	App.ActiveDocument.ActiveObject.Height=200
+	App.ActiveDocument.ActiveObject.Radius=40
 	App.ActiveDocument.ActiveObject.ViewObject.Transparency=70
+	App.ActiveDocument.ActiveObject.Placement.Base=App.Vector(-0,-0,-200)
+	App.ActiveDocument.ActiveObject.ViewObject.Selectable = False
+	# App.ActiveDocument.ActiveObject.ViewObject.hide()
 
 	b=App.ActiveDocument.addObject("Part::Box","Box")
-	b.Length=40
-	b.Width=50
+	b.Length=100
+	b.Width=40
 	b.Height=200
-	b.Placement.Base=App.Vector(-40,-60,-30)
+	b.Placement.Base=App.Vector(-50,-20,-200)
 	b.ViewObject.Transparency=70
+	b.ViewObject.Selectable = False
 
 	Gui.activeDocument().activeView().viewAxonometric()
 	App.activeDocument().recompute()
 
 	f=createFlow()
+	# f.startPosition.Base=FreeCAD.Vector(50,10,-30)
+
+	f.boundMode='Bound Box'
+	f.boundMode='Bound Cylinder'
+
+	f.dimU=10
+	f.dimV=10
+	f.period=30
+	f.deltaPosition.Rotation=FreeCAD.Rotation(FreeCAD.Vector(0,0,1),-5)
+	
+	try:f.boundBox=App.ActiveDocument.Box
+	except: pass
+
+	Gui.SendMsgToActiveView("ViewFit")
+	f.countSlices=150
+	f.count2Slides=2
+	f.count3Slides=3
+	f.count4Slides=8
+
+	f.sleep=0.1
+	f.Proxy.main()
 
 
 # run()

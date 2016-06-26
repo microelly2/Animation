@@ -37,17 +37,25 @@ def damper(x,y,z,p,t=0):
 
 	if alpha>0 and alpha<0.1: return(1,1,0.2)
 	if alpha>0.8 and alpha<1.1: return(1,1,0.1)
+	if z>20:
+		return(0.4,0.4,0)
 
-	return (1,1,1)
+	return (0.99,1.0,0.99)
+
+
 
 
 def force(x,y,z,p,t=0):
 	k=0.002
-	m=0.003
+	m=0.0005
 	#if x**2+y**2 >3600:
 	if x**2+y**2 >100:
-		return(k*y-m*x,-k*x-m*y,-1)
+		return(k*y-m*x,-k*x-m*y,-0.5)
 	else:
-		return(k*y,-k*x,-0)
+		return(k*y,-k*x,-0.2)
 	return (0,0,-1)
 
+
+
+def force(x,y,z,p,t=0):
+	return(0.01*x,0.03*y,-1)
