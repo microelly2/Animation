@@ -43,8 +43,8 @@ import numpy as np
 import flowlib
 reload(flowlib)
 
-force=flowlib.force
-damper=flowlib.damper
+# force=flowlib.force
+# damper=flowlib.damper
 
 #
 # end of user function 
@@ -101,17 +101,23 @@ def mirrorCircle(x0,y0,x2,y2):
 def velocity(self,ix,mytime):
 
 	force=self.force
+	damper=self.damper
 	
 	(x,y,z)=self.ptslix[ix]
 
 	xy=ix%(self.obj2.dimU*self.obj2.dimV)
-	xp=xy//self.obj2.dimU
+#	xp=xy//self.obj2.dimU
+#	yp=xy%self.obj2.dimV
+
+	xp=xy//self.obj2.dimV
 	yp=xy%self.obj2.dimV
+
 
 	# geschwindkeit anpassen -- kraft am ort x,y,z addieren
 
 #	print "vor ",self.pvs[xp,yp]
 	self.pvs[xp,yp] += force(x,y,z,self.pvs[xp,yp],mytime)
+	print (ix,xy, xp,yp,force(x,y,z,self.pvs[xp,yp],mytime))
 #	print "nach ",self.pvs[xp,yp]
 
 	tt=self.pvs[xp,yp]
@@ -151,6 +157,8 @@ def velocity(self,ix,mytime):
 	elif self.obj2.boundMode=='Bound Cylinder':
 
 		r=40
+		r=max(self.xmax,self.ymax)
+		
 		if xn**2+yn**2>r**2:
 			try:
 				(x2,y2)=lineCircleCommon(x,y,xn,yn,r)
@@ -161,7 +169,7 @@ def velocity(self,ix,mytime):
 
 				xn,yn=x2,y2
 
-				self.pvs[xp,yp][0]  =  -0.5*xn
+				self.pvs[xp,yp][0]  = -0.5*xn
 				self.pvs[xp,yp][1]  = -0.5*yn
 
 
@@ -264,8 +272,8 @@ def createStepFC(self,i):
 	if len(objs.OutList)==0:
 		obj.Placement=self.obj2.startPosition
 	else:
-		movePosition=FreeCAD.Placement()
-		movePosition.Rotation=FreeCAD.Rotation(FreeCAD.Vector(0,0,1),10)
+		#movePosition=FreeCAD.Placement()
+		#movePosition.Rotation=FreeCAD.Rotation(FreeCAD.Vector(0,0,1),10)
 		movePosition=self.obj2.deltaPosition
 		obj.Placement=objs.OutList[-1].Placement.multiply(movePosition)
 
@@ -596,6 +604,7 @@ class _Flow(Animation._Actor):
 
 
 		bb=self.obj2.boundBox.Shape.BoundBox
+		print "bounds ",bb
 		self.xmax=bb.XMax
 		self.ymax=bb.YMax
 		self.zmax=bb.ZMax
@@ -706,20 +715,21 @@ def run():
 	Gui.ActiveDocument.ActiveView.setAnimationEnabled(False)
 	App.ActiveDocument.addObject("Part::Cylinder","Cylinder")
 	App.ActiveDocument.ActiveObject.Label = "Cylinder"
-	App.ActiveDocument.ActiveObject.Height=200
+	App.ActiveDocument.ActiveObject.Height=800
 	App.ActiveDocument.ActiveObject.Radius=40
 	App.ActiveDocument.ActiveObject.ViewObject.Transparency=70
-	App.ActiveDocument.ActiveObject.Placement.Base=App.Vector(-0,-0,-200)
+	App.ActiveDocument.ActiveObject.Placement.Base=App.Vector(-0,-0,-800)
 	App.ActiveDocument.ActiveObject.ViewObject.Selectable = False
-	# App.ActiveDocument.ActiveObject.ViewObject.hide()
+	App.ActiveDocument.ActiveObject.ViewObject.hide()
 
 	b=App.ActiveDocument.addObject("Part::Box","Box")
-	b.Length=100
-	b.Width=40
-	b.Height=200
-	b.Placement.Base=App.Vector(-50,-20,-200)
+	b.Length=400
+	b.Width=500
+	b.Height=800
+	b.Placement.Base=App.Vector(-200,-250,-800)
 	b.ViewObject.Transparency=70
 	b.ViewObject.Selectable = False
+	b.ViewObject.hide()
 
 	Gui.activeDocument().activeView().viewAxonometric()
 	App.activeDocument().recompute()
@@ -730,27 +740,30 @@ def run():
 	f.boundMode='Bound Box'
 	f.boundMode='Bound Cylinder'
 
-	f.dimU=50
-	f.dimV=50
-	f.period=20
+	f.dimU=12
+	f.dimV=3
+	f.period=0
 	# f.deltaPosition.Rotation=FreeCAD.Rotation(FreeCAD.Vector(0,0.2,1),-5)
-	f.deltaPosition.Rotation=FreeCAD.Rotation(FreeCAD.Vector(0,0.3,1),-5)
-	f.deltaPosition.Base=FreeCAD.Vector(10,5,20)
+	#f.deltaPosition.Rotation=FreeCAD.Rotation(FreeCAD.Vector(0,0.3,1),-5)
+	#f.deltaPosition.Base=FreeCAD.Vector(10,5,20)
 	try:f.boundBox=App.ActiveDocument.Box
 	except: pass
 
 	Gui.SendMsgToActiveView("ViewFit")
-	f.countSlices=140
+	f.countSlices=40
 	f.count2Slides=3
 	f.count3Slides=6
 	f.count4Slides=10
 
-	f.sleep=0.02
+	f.sleep=0.01
+	f.noise=0
 	
 	#f.startFace='Rectangle'
 	f.lengthStartCloud=200
-	f.widthStartCloud=50
+	f.widthStartCloud=200
 
+	f.methodDamper='nodamper'
+	f.methodForce='simpleforce'
 	f.Proxy.main()
 
 

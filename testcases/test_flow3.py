@@ -57,7 +57,7 @@ f.count3Slides=18
 f.count4Slides=24
 
 f.period=50
-f.sleep=0.
+f.sleep=0.05
 f.noise=0
 f.Proxy.main()
 

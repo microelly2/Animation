@@ -26,7 +26,7 @@ def force2(x,y,z,p,t=0):
 	return (0,0,0.3)
 
 
-def damper(x,y,z,p,t=0):
+def damperX(x,y,z,p,t=0):
 	alpha=np.arctan2(x,y)
 
 	if alpha>0 and alpha<np.pi*1/3: return(1,1,0.2)
@@ -62,7 +62,18 @@ def force3(x,y,z,p,t=0):
 def force4(x,y,z,p,t=0):
 	#return(0.,0,-1)
 	return(0.01*y,0.01*x,-1)
-	
+
+
+def nodamper(x,y,z,p,t=0):
+	return (0.9,0.9,1)
+
+def simpleforce(x,y,z,p,t=0):
+	if z<-20 and z>-140:
+		return (-0.01*x, -0.01*y,-0.5)
+	if z<=-140:
+		return (0.01*x, 0.01*y,-0.1)
+	return (0,0,-1)
+
 
 force=force4
 myforce=force4
