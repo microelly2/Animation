@@ -60,7 +60,8 @@ def force3(x,y,z,p,t=0):
 
 # ausbreiten und schnell fallen
 def force4(x,y,z,p,t=0):
-	return(0.01*x,0.03*y,-1)
+	#return(0.,0,-1)
+	return(0.01*y,0.01*x,-1)
 	
 
 force=force4

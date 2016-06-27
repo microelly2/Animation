@@ -162,7 +162,7 @@ def velocity(self,ix,mytime):
 				xn,yn=x2,y2
 
 				self.pvs[xp,yp][0]  =  -0.5*xn
-				self.pvs[xp,yp][1]  = -0.1*yn
+				self.pvs[xp,yp][1]  = -0.5*yn
 
 
 			except:
@@ -334,12 +334,13 @@ def animateIntervall(self,pb=None,start=0,ende=None,objs=None):
 				objs[i].ViewObject.show()
 			except:
 				pass
-			App.activeDocument().recompute()
-			Gui.updateGui()
-			time.sleep(self.obj2.sleep)
+#			App.activeDocument().recompute()
+#			Gui.updateGui()
+
 
 		App.activeDocument().recompute()
 		Gui.updateGui()
+		time.sleep(self.obj2.sleep)
 	if pb<>None: pb.hide()
 		#objs[i].ViewObject.hide()
 
@@ -731,18 +732,18 @@ def run():
 
 	f.dimU=50
 	f.dimV=50
-	f.period=0
+	f.period=20
 	# f.deltaPosition.Rotation=FreeCAD.Rotation(FreeCAD.Vector(0,0.2,1),-5)
-	#f.deltaPosition.Rotation=FreeCAD.Rotation(FreeCAD.Vector(0,0,1),-5)
-	
+	f.deltaPosition.Rotation=FreeCAD.Rotation(FreeCAD.Vector(0,0.3,1),-5)
+	f.deltaPosition.Base=FreeCAD.Vector(10,5,20)
 	try:f.boundBox=App.ActiveDocument.Box
 	except: pass
 
 	Gui.SendMsgToActiveView("ViewFit")
-	f.countSlices=50
-	f.count2Slides=2
-	f.count3Slides=3
-	f.count4Slides=4
+	f.countSlices=140
+	f.count2Slides=3
+	f.count3Slides=6
+	f.count4Slides=10
 
 	f.sleep=0.02
 	
