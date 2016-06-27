@@ -10,8 +10,8 @@ if App.ActiveDocument==None:
 
 
 b=App.ActiveDocument.addObject("Part::Box","Box")
-b.Length=100
-b.Width=40
+b.Length=130
+b.Width=100
 b.Height=200
 b.Placement.Base=App.Vector(-50,-20,-200)
 b.ViewObject.Transparency=70

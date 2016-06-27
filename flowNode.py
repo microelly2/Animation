@@ -62,12 +62,17 @@ def lineCircleCommon(x0,y0,x1,y1,r):
 	zz=-(x0*v1+y0*v2)/rv2
 	D=zz**2 - (x0**2+y0**2-r**2)/rv2
 	if D<0:
-		print "Fehler Diskriminante r=", r 
+		print "Fehler Diskriminante r=", r
+		print zz
+		print (x0**2+y0**2-r**2)/rv2
+		print rv2
+		print "D=",D
 		print (x0,y0)
 		print np.sqrt(x0**2+y0**2)
 		print (x1,y1)
 		print np.sqrt(x1**2+y1**2)
-	t=zz + np.sqrt(zz**2 - (x0**2+y0**2-r**2)/rv2)
+		if D>-20: D=0
+	t=zz + np.sqrt(D)
 
 	x2=x0+v1*t
 	y2=y0+v2*t
@@ -77,9 +82,26 @@ def lineCircleCommon(x0,y0,x1,y1,r):
 	return(x2,y2)
 
 
+def mirrorCircle(x0,y0,x2,y2):
+#	base=M
+#	dir=P2.sub(M)
+	dir=FreeCAD.Vector(x2,y2,0)
+
+	pnt=FreeCAD.Vector(x0,y0,0)
+	diff = FreeCAD.Vector() # this will be the vector from pnt to the projection of pnt
+	diff.projectToLine(pnt,dir)
+	proj = pnt + diff # proj now lies on the line
+	mirr = proj + diff
+#	print proj
+#	print diff
+#	print mirr
+	return (mirr.x,mirr.y)
+
 
 def velocity(self,ix,mytime):
 
+	force=self.force
+	
 	(x,y,z)=self.ptslix[ix]
 
 	xy=ix%(self.obj2.dimU*self.obj2.dimV)
@@ -87,7 +109,7 @@ def velocity(self,ix,mytime):
 	yp=xy%self.obj2.dimV
 
 	# geschwindkeit anpassen -- kraft am ort x,y,z addieren
-	
+
 #	print "vor ",self.pvs[xp,yp]
 	self.pvs[xp,yp] += force(x,y,z,self.pvs[xp,yp],mytime)
 #	print "nach ",self.pvs[xp,yp]
@@ -99,10 +121,7 @@ def velocity(self,ix,mytime):
 
 	xn,yn,zn=x+tt[0],y+tt[1],z+tt[2]
 
-	ddx=0.8
-	ddy=0.8
-	ddz=0.01
-
+	ddx,ddy,ddz=self.obj2.damperWall.x,self.obj2.damperWall.y,self.obj2.damperWall.z
 
 	if self.obj2.boundMode=='Bound Box':
 		if zn<=0:
@@ -134,16 +153,18 @@ def velocity(self,ix,mytime):
 		r=40
 		if xn**2+yn**2>r**2:
 			try:
-#				print "berechne wand"
 				(x2,y2)=lineCircleCommon(x,y,xn,yn,r)
+				try:
+					(x2,y2)=mirrorCircle(x,y,x2,y2)
+				except:
+					sayexc("")
+
 				xn,yn=x2,y2
-				ra=random.random()
-				ra2=(5.0-ra)/5
-				#print(xn,yn,ra,ra2)
-				xn=xn*ra2
-				yn=yn*ra2
-				self.pvs[xp,yp][0]  += -0.5*xn
-				self.pvs[xp,yp][1]  += -0.1*yn
+
+				self.pvs[xp,yp][0]  =  -0.5*xn
+				self.pvs[xp,yp][1]  = -0.1*yn
+
+
 			except:
 				pass
 
@@ -158,6 +179,7 @@ def velocity(self,ix,mytime):
 		sayErr("nont implemented mode" + self.obj2.boundMode)
 
 	rr=1
+	rr=self.obj2.noise
 	if zn <-5:
 		xn,yn,zn=xn+rr*(0.5-random.random()),yn+rr*(0.5-random.random()),zn+rr*(0.5-random.random())
 	
@@ -177,15 +199,16 @@ def createStartPtsSquare(self):
 	''' create the starting cloud - square '''
 	for x in range(self.obj2.dimU):
 		for y in range(self.obj2.dimV):
-			self.ptslix[y*self.obj2.dimU+x]=[x,y,3]
+			self.ptslix[y*self.obj2.dimU+x]=[self.obj2.lengthStartCloud*(x-0.5*self.obj2.dimU)/self.obj2.dimU,
+					self.obj2.widthStartCloud*(y-0.5*self.obj2.dimV)/self.obj2.dimV,0]
 
 
 def createStartPtsCircle(self):
 	''' create the starting cloud filled circle/cone '''
 	for x in range(self.obj2.dimU):
 		for y in range(self.obj2.dimV):
-			self.ptslix[y*self.obj2.dimU+x]=[0.3*(10+y)*np.cos(np.pi*2*x/self.obj2.dimU),
-					0.3*(10+1.2*y)*np.sin(np.pi*2*x/self.obj2.dimU),0]
+			self.ptslix[y*self.obj2.dimU+x]=[self.obj2.lengthStartCloud*(10+y)/(10+self.obj2.dimV)*np.cos(np.pi*2*x/self.obj2.dimU),
+					self.obj2.widthStartCloud*(10+y)/(10+self.obj2.dimV)*np.sin(np.pi*2*x/self.obj2.dimU),0]
 
 
 def createStartPtsV2(self):
@@ -193,6 +216,18 @@ def createStartPtsV2(self):
 		createStartPtsCircle(self)
 	elif self.obj2.startFace == "Rectangle":
 		createStartPtsSquare(self)
+
+	for x in range(self.obj2.dimU):
+		for y in range(self.obj2.dimV):
+			[xn,yn,zn]=self.ptslix[y*self.obj2.dimU+x]
+			if self.obj2.boundMode=='Bound Box':
+				if xn>self.xmax or yn>self.ymax or xn<self.xmin or yn<self.ymin:
+					self.ptslix[y*self.obj2.dimU+x]=[0,0,0]
+			if self.obj2.boundMode=='Bound Cylinder':
+				if xn>self.xmax or yn>self.ymax or xn<self.xmin or yn<self.ymin:
+					self.ptslix[y*self.obj2.dimU+x]=[0,0,0]
+
+
 
 def createStepPtsV2(self,i):
 	velo(self,self.ptsl[i],i)
@@ -210,7 +245,8 @@ def createStepFC(self,i):
 			t=tuple(self.ptslix[self.ptsl[i][a][b]])
 			if np.isnan(t[0]) or np.isnan(t[1]) or np.isnan(t[2]):
 				print "found error ", t
-				print a,b
+				print (a,b)
+				
 				pass
 			else:
 				pts.append(t)
@@ -242,6 +278,8 @@ def createStepFC(self,i):
 
 
 def animateIntervall(self,pb=None,start=0,ende=None,objs=None):
+	Gui.ActiveDocument.ActiveView.setAnimationEnabled(False)
+	
 	if objs==None: 
 		objs=pclgroup().OutList
 	if ende==None: ende=len(objs)+ self.obj2.count4Slides
@@ -260,11 +298,18 @@ def animateIntervall(self,pb=None,start=0,ende=None,objs=None):
 
 	for i in range(start,ende):
 
-		if pb<>None: pb.pb.setValue(i*100/(ende-start-1))
+
 		for u in objs: u.ViewObject.hide()
 
-		if True:
 
+	for i0 in range(start,ende):
+		# print "i0:",i0
+		if pb<>None: pb.pb.setValue(i0*100/(ende-start-1))
+		
+		period=self.obj2.period
+		if period<1: period=10000
+
+		for i in range(i0,0,-period):
 			try:
 				
 			#	objs[i-kkk].ViewObject.hide()
@@ -295,7 +340,7 @@ def animateIntervall(self,pb=None,start=0,ende=None,objs=None):
 
 		App.activeDocument().recompute()
 		Gui.updateGui()
-		if pb<>None: pb.hide()
+	if pb<>None: pb.hide()
 		#objs[i].ViewObject.hide()
 
 
@@ -402,6 +447,19 @@ def createFlow(name='My_Flow',target=None,src=None):
 	obj.addProperty("App::PropertyColor","color3Slides","Clouds","").color3Slides=(1.0,.7,0.0)
 	obj.addProperty("App::PropertyColor","color4Slides","Clouds","").color4Slides=(.0,1.0,1.0)
 
+	obj.addProperty("App::PropertyVector","damperWall","Clouds","")
+	obj.damperWall=FreeCAD.Vector(0.8,0.8,0.01)
+
+	obj.addProperty("App::PropertyFloat","lengthStartCloud","Layout","").lengthStartCloud=100
+	obj.addProperty("App::PropertyFloat","widthStartCloud","Layout","").widthStartCloud=100
+	
+	obj.addProperty("App::PropertyString","methodForce","Layout","").methodForce="myforce"
+	obj.addProperty("App::PropertyString","methodDamper","Layout","").methodDamper="mydamper"
+
+	#rr=1
+	#rr=self.obj2.noise
+	obj.addProperty("App::PropertyInteger","noise","Layout","").noise=5
+
 
 	# obj.startPosition.Base=FreeCAD.Vector(50,10,-30)
 
@@ -428,7 +486,9 @@ class _Flow(Animation._Actor):
 		except:
 			say("update (ohne Label)")
 		objs=pclgroup().OutList
-		for u in objs: u.ViewObject.hide()
+		for u in objs: 
+			u.ViewObject.hide()
+			u.ViewObject.ShapeColor=(1.0,0.0,0.0)
 		i=int(round(time*(len(objs)-1)))
 		print i
 		try:objs[i].ViewObject.show()
@@ -543,6 +603,16 @@ class _Flow(Animation._Actor):
 		self.zmin=bb.ZMin
 
 		createStartPtsV2(self)
+
+
+#		self.obj2.forceMethod="myforce"
+		reload(flowlib)
+		force=eval("flowlib."+self.obj2.methodForce)
+		self.force=force
+		
+		damper=eval("flowlib."+self.obj2.methodDamper)
+		self.damper=damper
+
 
 		for i in range(anz-1): 
 			createStepPtsV2(self,i)
@@ -659,21 +729,27 @@ def run():
 	f.boundMode='Bound Box'
 	f.boundMode='Bound Cylinder'
 
-	f.dimU=10
-	f.dimV=10
-	f.period=30
-	f.deltaPosition.Rotation=FreeCAD.Rotation(FreeCAD.Vector(0,0,1),-5)
+	f.dimU=50
+	f.dimV=50
+	f.period=0
+	# f.deltaPosition.Rotation=FreeCAD.Rotation(FreeCAD.Vector(0,0.2,1),-5)
+	#f.deltaPosition.Rotation=FreeCAD.Rotation(FreeCAD.Vector(0,0,1),-5)
 	
 	try:f.boundBox=App.ActiveDocument.Box
 	except: pass
 
 	Gui.SendMsgToActiveView("ViewFit")
-	f.countSlices=150
+	f.countSlices=50
 	f.count2Slides=2
 	f.count3Slides=3
-	f.count4Slides=8
+	f.count4Slides=4
 
-	f.sleep=0.1
+	f.sleep=0.02
+	
+	#f.startFace='Rectangle'
+	f.lengthStartCloud=200
+	f.widthStartCloud=50
+
 	f.Proxy.main()
 
 
