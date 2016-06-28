@@ -68,10 +68,10 @@ def nodamper(x,y,z,p,t=0):
 	return (0.9,0.9,1)
 
 def simpleforce(x,y,z,p,t=0):
-	if z<-20 and z>-140:
+	if z<-20 and z>-50:
 		return (-0.01*x, -0.01*y,-0.5)
-	if z<=-140:
-		return (0.01*x, 0.01*y,-0.1)
+	if z<=-70:
+		return (0.01*np.sin(z*np.pi/20)*x, 0.01*np.sin(z*np.pi/20)*y,-0.1)
 	return (0,0,-1)
 
 

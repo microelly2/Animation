@@ -317,6 +317,9 @@ def animateIntervall(self,pb=None,start=0,ende=None,objs=None):
 		period=self.obj2.period
 		if period<1: period=10000
 
+		for u in objs: u.ViewObject.hide()
+
+
 		for i in range(i0,0,-period):
 			try:
 				
@@ -725,8 +728,8 @@ def run():
 	b=App.ActiveDocument.addObject("Part::Box","Box")
 	b.Length=400
 	b.Width=500
-	b.Height=800
-	b.Placement.Base=App.Vector(-200,-250,-800)
+	b.Height=8000
+	b.Placement.Base=App.Vector(-200,-250,-8000)
 	b.ViewObject.Transparency=70
 	b.ViewObject.Selectable = False
 	b.ViewObject.hide()
@@ -742,7 +745,7 @@ def run():
 
 	f.dimU=12
 	f.dimV=3
-	f.period=0
+	f.period=40
 	# f.deltaPosition.Rotation=FreeCAD.Rotation(FreeCAD.Vector(0,0.2,1),-5)
 	#f.deltaPosition.Rotation=FreeCAD.Rotation(FreeCAD.Vector(0,0.3,1),-5)
 	#f.deltaPosition.Base=FreeCAD.Vector(10,5,20)
@@ -750,17 +753,17 @@ def run():
 	except: pass
 
 	Gui.SendMsgToActiveView("ViewFit")
-	f.countSlices=40
+	f.countSlices=400
 	f.count2Slides=3
 	f.count3Slides=6
-	f.count4Slides=10
+	f.count4Slides=20
 
-	f.sleep=0.01
+	f.sleep=0.0
 	f.noise=0
 	
 	#f.startFace='Rectangle'
-	f.lengthStartCloud=200
-	f.widthStartCloud=200
+	f.lengthStartCloud=100
+	f.widthStartCloud=100
 
 	f.methodDamper='nodamper'
 	f.methodForce='simpleforce'
