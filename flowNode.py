@@ -240,9 +240,10 @@ def createStartPtsV2(self):
 def createStepPtsV2(self,i):
 	velo(self,self.ptsl[i],i)
 
-
+import time
 
 def createStepFC(self,i):
+	ts=time.time()
 	objs=pclgroup()
 	(la,lb)=self.ptsl[i].shape
 #	pts=[tuple(self.ptslix[self.ptsl[i][a][b]]) for a in range(la) for b in range(lb)]
@@ -252,9 +253,13 @@ def createStepFC(self,i):
 		for b in range(lb):
 			t=tuple(self.ptslix[self.ptsl[i][a][b]])
 			if np.isnan(t[0]) or np.isnan(t[1]) or np.isnan(t[2]):
-				print "found error ", t
-				print (a,b)
+##debug				print "found error ", t
+#				print (a,b)
 				
+				pass
+# ignore zero points
+			elif 	abs(t[0])<10 and  abs(t[1])<20:
+##debug				print "ignore inner point ",t
 				pass
 			else:
 				pts.append(t)
@@ -279,6 +284,8 @@ def createStepFC(self,i):
 
 
 	objs.addObject(obj)
+	te=time.time()
+	say(("createStepFC ",i,"timee",round(te-ts,3)))
 
 	return obj
 
@@ -391,11 +398,14 @@ def createProgressBar(label=None):
 
 def createFCOs(self,anz,step=1):
 	pb=createProgressBar("create FreeCAD objects")
+	ts=time.time()
 	for i in range(anz-1):
 		if i%step == 0: 
 			createStepFC(self,i)
 			pb.pb.setValue(i*100/(anz-2))
 			Gui.updateGui()
+	te=time.time()
+	say(("createFCOs ",round(te-ts,3)))
 
 
 
@@ -626,19 +636,25 @@ class _Flow(Animation._Actor):
 		damper=eval("flowlib."+self.obj2.methodDamper)
 		self.damper=damper
 
+		ts=time.time()
 
 		for i in range(anz-1): 
 			createStepPtsV2(self,i)
 			pb.pb.setValue(i*100/(anz-2))
 
-		createFCOs(self,anz,1)
+		te=time.time()
 
+
+
+		createFCOs(self,anz,1)
+		say(("create points all ",i,"timee",round(te-ts,3)))
 		showAll()
 		Gui.SendMsgToActiveView("ViewFit")
 		hideAll()
 
 		pb.hide()
-		animateIntervall(self)
+		
+		##animateIntervall(self)
 
 
 

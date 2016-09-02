@@ -75,6 +75,30 @@ def simpleforce(x,y,z,p,t=0):
 	return (0,0,-1)
 
 
+#-------------------------
+# mail vom 10.07.
+# angepasst auf negative hoehen
+
+def force4(x,y,z,p,t=0):
+	if z<-10 and z>-30:
+		return (0.1*x, 0.1*y,-0.1)
+	if z<=-30 and z>-130:
+		return (0,0,-0.5)
+	if z<=-130 and z>-220:
+		return (-0.1*x,-0.1*y,-0.1)
+	return (0,0,-1)
+
+
+def nodamper(x,y,z,p,t=0):
+	if z<-300:
+		return (0,0,0)
+	return (0.9,0.9,1)
+
+
+
+
+
+
 force=force4
 myforce=force4
 mydamper=damper2

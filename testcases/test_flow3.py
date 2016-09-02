@@ -51,7 +51,7 @@ try:f.boundBox=App.ActiveDocument.Cylinder
 except: pass
 
 Gui.SendMsgToActiveView("ViewFit")
-f.countSlices=500
+f.countSlices=100
 f.count2Slides=8
 f.count3Slides=18
 f.count4Slides=24

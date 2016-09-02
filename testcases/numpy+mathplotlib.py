@@ -13,6 +13,7 @@ from mathplotlibNode import createMPL
 
 t=createMPL()
 t.sourceObject= App.ActiveDocument.My_Manager
+t.countSources=4
 t.sourceData="step"
 
 t.source1Object= App.ActiveDocument.Box001
