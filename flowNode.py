@@ -14,9 +14,9 @@ from Animation import say,sayErr,sayexc
 from  EditWidget import EditWidget
 
 __vers__= '0.1'
-# __dir__ = os.path.dirname(__file__)
+__dir__ = os.path.dirname(__file__)
 
-__dir__="/home/thomas/.FreeCAD/Mod/Animation"
+
 
 
 import FreeCAD,FreeCADGui
