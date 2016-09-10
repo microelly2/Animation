@@ -1395,7 +1395,6 @@ def createManager(name='My_Manager'):
 import os.path
 
 
-
 class _Manager(_Actor):
 
 	def __init__(self,obj):
@@ -1411,8 +1410,9 @@ class _Manager(_Actor):
 
 	def register(self,obj):
 		self.obj2.targets.append(obj)
-		
+
 	def step(self,nw):
+
 		if self.obj2.start<=nw and   nw<=self.obj2.start + self.obj2.intervall:
 			say("step  " + self.obj2.Label + "  " + str(nw))
 			t=FreeCAD.ActiveDocument.getObject(self.obj2.Name)
@@ -1424,7 +1424,8 @@ class _Manager(_Actor):
 			say(s +" ************************* manager run loop:" + str(nw-self.obj2.start) + "/" + str(intervall))
 			
 			self.obj2.step=nw
-			if os.path.exists("/tmp/stop"):
+			#if os.path.exists("/tmp/stop"):
+			if FreeCAD.ParamGet('User parameter:Plugins/animation').GetBool("stop"):
 					say("notbremse gezogen")
 					raise Exception("Notbremse Manager main loop")
 			for ob in t.OutList:
@@ -1466,7 +1467,9 @@ class _Manager(_Actor):
 
 		firstRun=True
 		bigloop=0
-		while firstRun or os.path.exists("/tmp/loop"):
+
+		#while firstRun or os.path.exists("/tmp/loop"):
+		while firstRun or FreeCAD.ParamGet('User parameter:Plugins/animation').GetBool("loop"):
 			say("manager infinite loop #################################")
 			firstRun=False
 			bigloop += 1 
@@ -1663,35 +1666,44 @@ def runManager(vobj=None):
 	say("done")
 
 def stopManager(vobj=None):
-	fname='/tmp/stop'
-	fhandle = open(fname, 'a')
-	fhandle.close()
-
+#	fname='/tmp/stop'
+#	fhandle = open(fname, 'a')
+#	fhandle.close()
+	ta=FreeCAD.ParamGet('User parameter:Plugins/animation')
+	ta.SetBool("stop",True)
 
 def unlockManager(vobj=None):
-	import os
-	from os import remove
-	fname='/tmp/stop'
-	try:
-		os.remove(fname)
-	except:
-		pass
+#	import os
+#	from os import remove
+#	fname='/tmp/stop'
+#	try:
+#		os.remove(fname)
+#	except:
+#		pass
+	ta=FreeCAD.ParamGet('User parameter:Plugins/animation')
+	ta.SetBool("stop",False)
 
 
 def loopManager(vobj=None):
-	fname='/tmp/loop'
-	fhandle = open(fname, 'a')
-	fhandle.close()
+#	fname='/tmp/loop'
+#	fhandle = open(fname, 'a')
+#	fhandle.close()
+	ta=FreeCAD.ParamGet('User parameter:Plugins/animation')
+	ta.SetBool("loop",True)
+
 
 
 def unloopManager(vobj=None):
-	import os
-	from os import remove
-	fname='/tmp/loop'
-	try:
-		os.remove(fname)
-	except:
-		pass
+#	import os
+#	from os import remove
+#	fname='/tmp/loop'
+#	try:
+#		os.remove(fname)
+#	except:
+#		pass
+	ta=FreeCAD.ParamGet('User parameter:Plugins/animation')
+	ta.SetBool("loop",False)
+
 
 
 
