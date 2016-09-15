@@ -1295,6 +1295,7 @@ def createPhotographer(name='My_Photographer'):
 	obj = FreeCAD.ActiveDocument.addObject("App::DocumentObjectGroupPython",name)
 	obj.addProperty("App::PropertyInteger","start","Base","start").start=0
 	obj.addProperty("App::PropertyInteger","end","Base","end").end=40000
+	obj.addProperty("App::PropertyBool","preview","Base","end").preview=False
 	obj.addProperty("App::PropertyInteger","duration","Base","end").duration=40000
 	obj.addProperty("App::PropertyInteger","size_x","Output","start").size_x=640
 	obj.addProperty("App::PropertyInteger","size_y","Output","end").size_y=480
@@ -1320,11 +1321,15 @@ class _Photographer(_Actor):
 		sayd("execute _Photographer")
 		obj.setEditorMode("end", 1) #ro
 		obj.end=obj.start+obj.duration
+		if obj.preview:
+			if hasattr(self,"now"):
+				self.step(self.now,True)
 
-	def step(self,now):
+	def step(self,now,force=False):
 		if now<=self.obj2.start or now>self.obj2.end:
 			pass
 		else:
+			st=FreeCADGui.Selection.getSelection()
 			FreeCADGui.Selection.clearSelection()
 			FreeCADGui.ActiveDocument.ActiveView.setAnimationEnabled(False)
 
@@ -1349,8 +1354,9 @@ class _Photographer(_Actor):
 			if self.obj2.camDirection == 'Left':
 					FreeCADGui.ActiveDocument.ActiveView.viewLeft()
 			
-			FreeCAD.ActiveDocument.recompute()
-			FreeCADGui.updateGui() 
+			if not force:
+				FreeCAD.ActiveDocument.recompute()
+				FreeCADGui.updateGui() 
 			
 			kf= "%04.f"%now
 			fn=self.obj2.fn+kf+'.png'
@@ -1365,6 +1371,20 @@ class _Photographer(_Actor):
 			fn=self.obj2.fn+kf+'.'+self.obj2.format 
 			fn2=self.obj2.fn+'_XXX_' +kf+'.'+self.obj2.format 
 			FreeCADGui.activeDocument().activeView().saveImage(fn,self.obj2.size_x,self.obj2.size_y,'Current')
+			
+			
+			#fn='/home/thomas/Bilder/bp_111.png'
+			self.now=now
+			if self.obj2.preview:
+				try:
+					self.imager.run(fn)
+					
+				except:
+					self.fn=fn
+					self.imager=showimage(fn)
+			for t in st:
+				FreeCADGui.Selection.addSelection(t)
+
 			#my_render(fn2)
 	def  toInitialPlacement(self):
 		pass
@@ -1550,6 +1570,10 @@ class AddMyWidget(QtGui.QWidget):
 			self.pushButton5.clicked.connect(self.on_pushButton_clicked5)
 			layout.addWidget(self.pushButton5, 5,1)
 
+			self.pushButton6 = QtGui.QPushButton()
+			self.pushButton6.clicked.connect(self.on_pushButton_clicked6)
+			layout.addWidget(self.pushButton6, 6,1)
+
 		dial = QtGui.QDial()
 		dial.setNotchesVisible(True)
 		self.dial=dial
@@ -1613,9 +1637,12 @@ class AddMyWidget(QtGui.QWidget):
 		self.fun5(self.vobj)
 		#FreeCADGui.Control.closeDialog()
 
+	def on_pushButton_clicked6(self):
+		#self.fun6(self.vobj)
+		self.dialer()
 
-	
-		
+
+
 
 class AddMyTask():
 	def __init__(self,vobj,fun,fun2,fun4,fun5):
@@ -1706,7 +1733,6 @@ def unloopManager(vobj=None):
 
 
 
-
 class _ViewProviderManager(_ViewProviderActor):
 	
 	def getIcon(self):
@@ -1723,6 +1749,7 @@ class _ViewProviderManager(_ViewProviderActor):
 		panel.form.pushButton2.setText("Stop")
 		panel.form.pushButton4.setText("Loop")
 		panel.form.pushButton5.setText("Unloop")
+		panel.form.pushButton6.setText("Refresh")
 
 		# FreeCADGui.Control.showDialog(panel)
 		
@@ -2540,3 +2567,74 @@ class _ViewProviderFiller(_ViewProviderActor):
 
 	def getIcon(self):
 		return __dir__ + '/icons/filler.png'
+
+
+
+
+
+
+
+
+import PySide
+from PySide import QtCore, QtGui
+
+from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.figure import Figure
+import matplotlib.image as mpimg
+
+
+import PySide
+from PySide import QtCore, QtGui
+
+from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.figure import Figure
+
+
+class MatplotlibWidget(FigureCanvas):
+
+	def __init__(self, parent=None, width=5, height=4, dpi=100):
+
+		super(MatplotlibWidget, self).__init__(Figure())
+
+
+		self.setParent(parent)
+		self.figure = Figure(figsize=(width, height), dpi=dpi) 
+		self.canvas = FigureCanvas(self.figure)
+
+		FigureCanvas.updateGeometry(self)
+		self.axes = self.figure.add_subplot(111)
+
+	def run(self,fn):
+		mpl=self
+		plt=mpl.figure
+		plt.clf()
+
+		img2=mpimg.imread(fn)
+
+		plt.figimage(img2)
+		l,b,c=img2.shape
+		say((fn,l,b,c))
+		mpl.draw()
+		mpl.resize(b,l)
+
+
+def showimage(fn):
+	mpl=MatplotlibWidget()
+	mpl.resize(100,100)
+	mpl.show()
+
+	plt=mpl.figure
+	plt.clf()
+
+
+	img2=mpimg.imread(fn)
+
+	plt.figimage(img2)
+	l,b,c=img2.shape
+	mpl.draw()
+	mpl.resize(b,l)
+	return mpl
+
+
+#fn='/home/thomas/Bilder/bp_111.png'
+#rc=showimage(fn)
