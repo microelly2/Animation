@@ -1266,7 +1266,7 @@ class _Styler(_Actor):
 				gob.Transparency=90
 				relativ=1.00/(self.obj2.end-self.obj2.start)
 				gob.Transparency=  int(relativ* (self.obj2.transpaEnd -self.obj2.transpaStart)*(now-self.obj2.start)) + self.obj2.transpaStart
-		if now==self.obj2.start or now==self.obj2.end:
+		if now==self.obj2.start+1 or now==self.obj2.end:
 			if self.obj2.visibility:
 				gob=FreeCADGui.ActiveDocument.getObject(self.obj2.obj.Name)
 				gob.Visibility = not gob.Visibility
@@ -1596,6 +1596,9 @@ class AddMyWidget(QtGui.QWidget):
 		time=float(self.dial.value())/100
 		nw=self.dial.value()
 		t=self.vobj.Object
+		
+		t.step=self.dial.value()
+		
 		for ob in t.OutList:
 			say("step " +  str(nw) + "fuer " + ob.Label)
 			if ob.ViewObject.Visibility:
