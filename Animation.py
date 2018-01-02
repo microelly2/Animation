@@ -1775,9 +1775,10 @@ def reinit():
 					pass
 				else:
 					say("reinit __init__")
-					obj.Proxy.__init__(obj)
-					say(obj.Proxy.Type)
-				
+#					obj.Proxy.__init__(obj)
+#					say(obj.Proxy.Type)
+					obj.Proxy.obj2=obj
+
 				# print("init " +obj.Name)
 				if obj.Proxy.Type=='_Plugger':
 					if not hasattr(obj,'status'):

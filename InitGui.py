@@ -118,6 +118,140 @@ if FreeCAD.GuiUp:
 	FreeCADGui.addCommand('Anim_Tranquillizer',_CommandActor('Tranquillizer','/icons/tranq.png'))
 	FreeCADGui.addCommand('Anim_Viewpoint',_CommandActor('Viewpoint','/icons/viewpoint.png'))
 	FreeCADGui.addCommand('Anim_ViewSequence',_CommandActor("ViewSequence",'/icons/snapshotviewer.png',"Snapshot.createViewSequence()","Snapshot"))
+#------------------
+#------------------
+
+global _Command
+class _Command():
+
+	def __init__(self,lib=None,name=None,icon='/../icons/nurbs.svg',command=None,modul='nurbswb'):
+
+		if lib==None: lmod=modul
+		else: lmod=modul+'.'+lib
+		if command==None: command=lmod+".run()"
+		else: command =lmod + "."+command
+
+		self.lmod=lmod
+		self.command=command
+		self.modul=modul
+		self.icon=  __dir__+ icon
+
+		if name==None: name=command
+		self.name=name
+
+
+	def GetResources(self): 
+		return {'Pixmap' : self.icon, 
+			'MenuText': self.name, 
+			'ToolTip': self.name, 
+			'CmdType': "ForEdit" # bleibt aktiv, wenn sketch editor oder andere tasktab an ist
+		} 
+
+	def IsActive(self):
+		if FreeCADGui.ActiveDocument: return True
+		else: return False
+
+	def Activated(self):
+		#FreeCAD.ActiveDocument.openTransaction("create " + self.name)
+		if self.command <> '':
+			if self.modul <>'': modul=self.modul
+			else: modul=self.name
+			FreeCADGui.doCommand("import " + modul)
+			FreeCADGui.doCommand("import "+self.lmod)
+			FreeCADGui.doCommand("reload("+self.lmod+")")
+			FreeCADGui.doCommand(self.command)
+		#FreeCAD.ActiveDocument.commitTransaction()
+		if FreeCAD.ActiveDocument <> None:
+			FreeCAD.ActiveDocument.recompute()
+
+
+class _alwaysActive(_Command):
+
+	def IsActive(self):
+		return True
+
+# conditions when a command should be active ..
+
+def always():
+	''' always'''
+	return True
+
+def ondocument():
+	'''if a document is active'''
+	return FreeCADGui.ActiveDocument <> None
+
+def onselection():
+	'''if at least one object is selected'''
+	return len(FreeCADGui.Selection.getSelection())>0
+
+def onselection1():
+	'''if exactly one object is selected'''
+	return len(FreeCADGui.Selection.getSelection())==1
+
+def onselection2():
+	'''if exactly two objects are selected'''
+	return len(FreeCADGui.Selection.getSelection())==2
+
+def onselection3():
+	'''if exactly three objects are selected'''
+	return len(FreeCADGui.Selection.getSelection())==3
+
+def onselex():
+	'''if at least one subobject is selected'''
+	return len(FreeCADGui.Selection.getSelectionEx())<>0
+
+def onselex1():
+	'''if exactly one subobject is selected'''
+	return len(FreeCADGui.Selection.getSelectionEx())==1
+
+
+# the menu entry list
+FreeCAD.tcmds6=[]
+
+# create menu entries 
+'''
+def c1(menu,name,*info):
+	global _Command
+	name1="Nurbs_"+name
+	t=_Command(name,*info)
+	FreeCADGui.addCommand(name1,t)
+	FreeCAD.tcmds5.append([menu,name1,name,'always',info])
+'''
+
+def c1a(menu,isactive,name,*info):
+	global _Command
+	name1="Nurbs_"+name
+	t=_Command(name,*info)
+	t.IsActive=isactive
+	FreeCADGui.addCommand(name1,t)
+	FreeCAD.tcmds6.append([menu,name1,name,isactive,info])
+
+
+def c2a(menu,isactive,title,name,*info):
+	global _Command
+	t=_Command(name,*info)
+	title1="Nurbs_"+title
+	t.IsActive=isactive
+	FreeCADGui.addCommand(title1,t)
+	FreeCAD.tcmds6.append([menu,title1,name,isactive,info])
+
+
+# special conditions for actions
+
+
+
+if FreeCAD.GuiUp:
+
+	c2a(["Compounds"],ondocument,'createCompound',"compounds","create Compound of a Selection ",'/icons/comp_create.svg',"create()","animationwb")
+	c2a(["Compounds"],ondocument,'addCompound',"compounds","add Selection to Compound",'/icons/comp_add.svg',"add()","animationwb")
+	c2a(["Compounds"],ondocument,'deleteCompound',"compounds","delete Selection from Compound",'/icons/comp_delete.svg',"delete()","animationwb")
+
+
+
+#-------------------
+#-------------------
+
+
 
 
 
@@ -352,7 +486,23 @@ static char * animation_xpm[] = {
 		
 		self.appendMenu('Animation',self.animtools)
 ##		self.appendMenu('Script Actions',self.actions)
-		
+
+
+		# add the commands version 2018 
+		menues={}
+		ml=[]
+		for _t in FreeCAD.tcmds6:
+			c=_t[0]
+			a=_t[1]
+			try:menues[tuple(c)].append(a)
+
+			except: 
+				menues[tuple(c)]=[a]
+				ml.append(tuple(c))
+
+		for m in ml:
+			self.appendMenu(list(m),menues[m])
+
 
 		
 		Log ('Loading Animation Workbench ... done\n')
