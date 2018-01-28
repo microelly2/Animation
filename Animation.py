@@ -1299,6 +1299,7 @@ def createPhotographer(name='My_Photographer'):
 	obj.addProperty("App::PropertyInteger","duration","Base","end").duration=40000
 	obj.addProperty("App::PropertyInteger","size_x","Output","start").size_x=640
 	obj.addProperty("App::PropertyInteger","size_y","Output","end").size_y=480
+	obj.addProperty("App::PropertyIntegerList","frameSelection",'',"only these frames")
 	obj.addProperty("App::PropertyPath","fn","Output","outdir").fn="/tmp/animation/t"
 	obj.addProperty("App::PropertyEnumeration","format","Output","Bildformat").format=["png","jpg","bmp"]
 	obj.addProperty("App::PropertyEnumeration","camDirection","Camera","Sichtrichtung").camDirection=["Front","Top","Axometric","Left","View"]
@@ -1326,6 +1327,13 @@ class _Photographer(_Actor):
 				self.step(self.now,True)
 
 	def step(self,now,force=False):
+		if hasattr(self.obj2,"frameSelection"):
+			fsel=self.obj2.frameSelection
+			if fsel<>[]: 
+				if now not in fsel: 
+					print "skip frame",now
+					return
+
 		if now<=self.obj2.start or now>self.obj2.end:
 			pass
 		else:

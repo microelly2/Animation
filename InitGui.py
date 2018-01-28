@@ -1,6 +1,6 @@
 #***************************************************************************
 #*																		 *
-#*   Copyright (c) 2014													*  
+#*   Copyright (c) 2014, 2018												*  
 #*   <microelly2@freecadbuch.de>										   * 
 #*   this file is based on the code and the ideas						  *   
 #*   of the freecad arch module developed by Yorik van Havre			   *
@@ -220,7 +220,7 @@ def c1(menu,name,*info):
 
 def c1a(menu,isactive,name,*info):
 	global _Command
-	name1="Nurbs_"+name
+	name1="Animation_"+name
 	t=_Command(name,*info)
 	t.IsActive=isactive
 	FreeCADGui.addCommand(name1,t)
@@ -230,7 +230,7 @@ def c1a(menu,isactive,name,*info):
 def c2a(menu,isactive,title,name,*info):
 	global _Command
 	t=_Command(name,*info)
-	title1="Nurbs_"+title
+	title1="Animation_"+title
 	t.IsActive=isactive
 	FreeCADGui.addCommand(title1,t)
 	FreeCAD.tcmds6.append([menu,title1,name,isactive,info])

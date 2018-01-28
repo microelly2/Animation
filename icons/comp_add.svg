@@ -376,7 +376,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
         <dc:creator>
           <cc:Agent>
             <dc:title>[wmayer]</dc:title>
@@ -412,7 +412,7 @@
     <g
        id="g3922">
       <path
-         style="fill:#00ffff;stroke:#210b1e;stroke-width:1.23415947000000004;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         style="fill:#ffff00;stroke:#210b1e;stroke-width:1.23415947000000004;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
          d="M 6.6006249,18.595237 38.75405,9.6420609 l 0,25.5805031 -32.1534251,8.953176 z"
          id="path3851"
          inkscape:connector-curvature="0" />
@@ -422,7 +422,7 @@
          id="path3851-3"
          inkscape:connector-curvature="0" />
       <path
-         style="fill:#00ffff;stroke:#210b1e;stroke-width:1.35036599999999996;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         style="fill:#ffff00;stroke:#210b1e;stroke-width:1.35036599999999996;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
          d="m 13.912282,33.11414 37.194437,-9.265883 0,26.473953 -37.194437,9.265884 z"
          id="path3851-6"
          inkscape:connector-curvature="0" />
