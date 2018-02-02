@@ -72,6 +72,7 @@ class _CommandActor():
 				else:
 					modul=self.name
 				FreeCADGui.doCommand("import " + modul)
+				FreeCADGui.doCommand("reload(" + modul +")")
 				FreeCADGui.doCommand(self.command)
 			else:
 				FreeCADGui.doCommand("import Animation")
@@ -84,7 +85,7 @@ class _CommandActor():
 
 
 if FreeCAD.GuiUp:
-	FreeCADGui.addCommand('Anim_Abroller',_CommandActor("abroller",'/icons/abroller.png'))
+	FreeCADGui.addCommand('Anim_Abroller',_CommandActor("Abroller",'/icons/abroller.png','Abroller.createAbroller()'))
 	FreeCADGui.addCommand('Anim_Adjuster',_CommandActor('Adjuster','/icons/adjuster.png'))
 	FreeCADGui.addCommand('Anim_Assembly2Controller',_CommandActor("Assembly2Controller",'/icons/assembly2SolveConstraints.svg',"Assembly2Controller.createAssembly2Controller()"))
 	FreeCADGui.addCommand('Anim_Billboard',_CommandActor('Billboard', '/icons/billboard.png'))
