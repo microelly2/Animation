@@ -13,34 +13,37 @@ import Draft
 import Part
 import time
 
-def updateData(obj,sk):
-	print "huhu"
-#	sk=App.ActiveDocument.Sketch
-	obj.path=sk
+def updateData(obj,sk=None):
+
+	if sk != None: 	obj.path=sk
+
+	sk=obj.path
 	sk.Placement.Rotation.Angle=0
 
-
-
-
 	w=sk.Shape
-	assert (abs(w.Vertexes[0].Point.y) <10**-6)
+	assert (abs(w.Vertexes[0].Point.y) <10**-2)
+	if obj.countPoints<5:obj.countPoints=5
+	if obj.densityPoints<1:obj.densityPoints=1
 
-#	w=App.ActiveDocument.Sketch.Shape
 	c=w.Edges[0].Curve
 
-	anz=10
+	anz=obj.countPoints
 	pts=w.discretize(anz+1)
-#	dw=Draft.makeWire(w.discretize(200))
 
 	obj.pathName=sk.Name+'_Anim'
+
 	cyy=App.ActiveDocument.getObject(obj.pathName)
 	if cyy==None:
 		cyy=App.ActiveDocument.addObject('Part::Feature',obj.pathName)
-		
-	pol=Part.makePolygon(w.discretize(200))
-	obj.pola=w.discretize(200)
+
+
+	pol=Part.makePolygon(w.discretize(anz+1))
+#	obj.pola=w.discretize(200)
 	cyy.Shape=pol
-#	App.ActiveDocument.removeObject(dw.Label)
+
+
+	obj.pola=w.discretize(anz+1)
+	pol=Part.makePolygon(obj.pola)
 
 	alphaq=[np.arctan2(p.y,p.x) for p in pts]
 	ns=np.arange(anz+1)
@@ -61,28 +64,27 @@ def updateData(obj,sk):
 	for p in pos:
 		kk += [c.value(p),FreeCAD.Vector()]
 
-	#dw=Draft.makeWire(kk)
-	#dw.ViewObject.hide()
 
-
-
-	of=App.ActiveDocument.addObject("Part::Offset2D","Offset2D")
+	of=App.ActiveDocument.getObject(obj.pathName+"_Offset")
+	if of==None:
+		of=App.ActiveDocument.addObject("Part::Offset2D",obj.pathName+"_Offset")
 	of.Source = obj.path
-	of.Value = 10.0
+	of.Value = obj.offsetValue
+	obj.offset=of
+
+
 
 	App.activeDocument().recompute()
+	Gui.updateGui()
 	w2=of.Shape.Wires[0]
 
 	ptsa=[]
 	for e in w2.Edges:
-		dian=int(round(e.Length*3))
+		dian=int(round(e.Length*obj.densityPoints))
 		ptsa +=  e.discretize(dian+1)[:-1]
-
-	#wa=Draft.makeWire(ptsa)
 
 
 	alphaq=[np.arctan2(p.y,p.x) for p in ptsa]
-	alphaq
 
 	alpha=[]
 
@@ -92,21 +94,28 @@ def updateData(obj,sk):
 
 	alpha += [2*np.pi+alpha[0]]
 
+
+
 	anz=len(alpha)
 	ns=np.arange(len(alpha))
+	
+	#if obj.useBSpline:
 	bc=Part.BSplineCurve()
-	bc.approximate(ptsa,DegMax=3,Tolerance=.2)
+	bc.approximate(ptsa,DegMin=1,DegMax=obj.degreeBSpline,Tolerance=obj.approxTolerance)
 
 
 
-	cww=App.ActiveDocument.getObject(obj.pathName+"_")
+
+	cww=App.ActiveDocument.getObject(obj.pathName+"_OFFSET")
 	if cww== None:
 		cww=App.ActiveDocument.addObject('Part::Feature',obj.pathName+'_OFFSET')
-		
+	
+	obj.polb=ptsa
 	pol=Part.makePolygon(ptsa)
 	cww.Shape=pol
-	obj.polb=ptsa
-
+	if obj.useBSpline:
+		cww.Shape=bc.toShape()
+	
 	App.ActiveDocument.ActiveObject.ViewObject.LineColor=(1.,0.,0.)
 	App.ActiveDocument.ActiveObject.ViewObject.LineWidth=8
 	Gui.updateGui()
@@ -127,35 +136,27 @@ def updateData(obj,sk):
 		kk += [pp,FreeCAD.Vector()]
 		kka += [pp]
 
-	#dw=Draft.makeWire(kk)
-	#dw.ViewObject.hide()
 
 	Gui.updateGui()
-	obj.circle=Draft.makeCircle(10)
-	obj.circle2=Draft.makeCircle(1)
+	if obj.circle==None:
+		obj.circle=Draft.makeCircle(obj.offsetValue)
+	if obj.circle2==None:
+		obj.circle2=Draft.makeCircle(1)
 
-	#dw=Draft.makeWire(kka)
-	#dw.ViewObject.hide()
 	obj.kka=[FreeCAD.Vector(p) for p in kka]
+
 	return pol
-	
 
-def runAnimation(obj=None):
 
+def runAnimation(obj=None,loop=False):
 
 	cww=App.ActiveDocument.getObject(obj.pathName+"_OFFSET")
 	cyy=App.ActiveDocument.getObject(obj.pathName)
-	a=cww.Shape.copy()
 
-	kka=obj.kka
-	# print kka
-	for i,p in enumerate(kka):
-		pass
-	
-	if 1:
-		i=obj.anim
-		p=kka[i]
-	#	if i >20: return
+	if loop: ixs=obj.kka
+	else: ixs=[obj.kka[obj.anim]]
+
+	for i,p in enumerate(ixs):
 
 		pp=Part.Point(FreeCAD.Vector(p))
 
@@ -166,26 +167,26 @@ def runAnimation(obj=None):
 
 		obj.circle.Placement.Base=FreeCAD.Vector(p.Length,0,0)
 		obj.circle2.Placement.Base=FreeCAD.Vector(p.Length,0,0)
-		
+
 		alpha=np.arctan2(p.y,p.x)*180/np.pi
-		print 
-		print alpha
-#		a=cww.Shape
+
 		cww.Shape=Part.makePolygon(obj.pola)
 		cww.Placement.Rotation=FreeCAD.Rotation(FreeCAD.Vector(0,0,1),-alpha)
 
-		# App.ActiveDocument.Sketch.Placement.Rotation.Angle=-alpha
-		
-		
-		print cyy.Placement
 		cyy.Shape=Part.makePolygon(obj.polb)
 		cyy.Placement.Rotation=FreeCAD.Rotation(FreeCAD.Vector(0,0,1),-alpha)
+
 		print cyy.Placement
 
-		#App.activeDocument().recompute()
-		#Gui.updateGui()
-		#time.sleep(0.1)
+		if loop:
+			App.activeDocument().recompute()
+			Gui.updateGui()
+			time.sleep(0.1)
+			if i>10: return
 
+
+	def step(self,now):
+			self.obj2.time=float(now)
 
 
 class Abroller:
@@ -205,12 +206,21 @@ class Abroller:
 		return None
 
 	def execute(self,obj):
-		print "excute ..."
-	
+		pass
+
 	def onChanged(self,obj,prop):
 		print "prop",prop
 		if prop=='anim':
 			runAnimation(obj)
+		if prop in ['offsetValue','path','densityPoints','countPoints','degreeBSpline','useBSpline']:
+			updateData(obj)
+
+	def step(self,now):
+			self.Object.anim=int(round(now))
+
+	def initialize(self):
+		pass
+
 
 
 class ViewProvider:
@@ -240,29 +250,42 @@ class ViewProvider:
 
 def createAbroller():
 
-	obj = FreeCAD.ActiveDocument.addObject("App::FeaturePython","MeinAbroller")
-	obj.addProperty("App::PropertyLink", "circle", "Base", "end")
-	obj.addProperty("App::PropertyLink", "circle2", "Base", "end")
-	obj.addProperty("App::PropertyLink", "offset", "Base", "end")
-	obj.addProperty("App::PropertyLink", "path", "Base", "end")
-	obj.addProperty("App::PropertyString", "pathName", "Base", "end")
-	obj.addProperty("App::PropertyInteger", "anim", "Base", "end")
-	obj.addProperty("App::PropertyVectorList", "kka", "Base", "end")
-	obj.addProperty("App::PropertyVectorList", "pola", "Base", "end")
-	obj.addProperty("App::PropertyVectorList", "polb", "Base", "end")
+	obj = FreeCAD.ActiveDocument.addObject("Part::FeaturePython","MeinAbroller")
+	obj.addProperty("App::PropertyLink", "circle", "_aux", "scooter")
+	obj.addProperty("App::PropertyLink", "circle2", "_aux", "center of scooter")
+	obj.addProperty("App::PropertyLink", "offset", "_aux", "end")
+	obj.addProperty("App::PropertyLink", "path", "Base", "closed  single wire path for the scooter")
+	obj.addProperty("App::PropertyInteger", "anim", "Base", "displayed frame number")
+	obj.addProperty("App::PropertyInteger", "countPoints", "_aux", "number of points of the path to interpolate").countPoints=40
+	obj.addProperty("App::PropertyInteger", "densityPoints", "_aux", "number of points of the generated curves per mm").densityPoints=3
+
+	obj.addProperty("App::PropertyFloat", "offsetValue", "Base", "size of the scooter").offsetValue=10
+	obj.addProperty("App::PropertyFloat", "approxTolerance", "_aux", "tolerance for BSpline Approximation").approxTolerance=3.
+	obj.addProperty("App::PropertyInteger", "degreeBSpline", "_aux", "degree of the BSpline ").degreeBSpline=1
+
+	obj.addProperty("App::PropertyBool", "useBSpline", "_aux", "use BSpline Approx for offset curve").useBSpline=True
+
+	# helper data
+	obj.addProperty("App::PropertyVectorList", "kka", "_comp", "end")
+	obj.addProperty("App::PropertyVectorList", "pola", "_comp", "end")
+	obj.addProperty("App::PropertyVectorList", "polb", "_comp", "end")
+	obj.addProperty("App::PropertyString", "pathName", "_aux", "label for the path")
 
 	print "create abroller"
-	sk=Gui.Selection.getSelection()[0]
-	try:
-		m=Gui.Selection.getSelection()[1]
+
+	try: sk=Gui.Selection.getSelection()[0]
+	except: sk= None
+	try: m=Gui.Selection.getSelection()[1]
 	except: m=None
+
 	shape=updateData(obj,sk)
-	# runAnimation(obj)
 	Abroller(obj)
-	obj.Proxy.Shape=shape
+#	obj.Proxy.Shape=shape
 	obj.Shape=Part.Shape()
 
 
 	ViewProvider(obj.ViewObject)
-	if m != None:
-		obj.setExpression('anim', m.Name+'.step')
+	#if m != None:
+	#	obj.setExpression('anim', m.Name+'.step')
+
+	# runAnimation(obj,True)

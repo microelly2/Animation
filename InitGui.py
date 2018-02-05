@@ -85,6 +85,12 @@ class _CommandActor():
 
 
 if FreeCAD.GuiUp:
+
+	FreeCADGui.addCommand('Anim_TA',_CommandActor("Interpolator",'/icons/icon1.svg',"Trackreader.runTA()","Trackreader"))
+	FreeCADGui.addCommand('Anim_TB',_CommandActor("Fourier",'/icons/icon2.svg',"Trackreader.runTB()","Trackreader"))
+	FreeCADGui.addCommand('Anim_TC',_CommandActor("Noise",'/icons/icon3.svg',"Trackreader.runTC()","Trackreader"))
+
+
 	FreeCADGui.addCommand('Anim_Abroller',_CommandActor("Abroller",'/icons/abroller.png','Abroller.createAbroller()'))
 	FreeCADGui.addCommand('Anim_Adjuster',_CommandActor('Adjuster','/icons/adjuster.png'))
 	FreeCADGui.addCommand('Anim_Assembly2Controller',_CommandActor("Assembly2Controller",'/icons/assembly2SolveConstraints.svg',"Assembly2Controller.createAssembly2Controller()"))
@@ -402,7 +408,6 @@ static char * animation_xpm[] = {
 
 
 
-
 	MenuText = "Animation"
 	ToolTip = "Animation workbench"
 
@@ -410,8 +415,18 @@ static char * animation_xpm[] = {
 #		import Animation
 #		import Scaler
 		
+		Gui.activateWorkbench("DraftWorkbench")
+		Gui.activateWorkbench("SketcherWorkbench")
+
+		self.functiontools=[
+				"Anim_TA",
+				"Anim_TB",
+				"Anim_TC",
+				'Draft_ToggleGrid',
+		]
 
 		self.animtools=[
+				"Anim_TA",
 				"Anim_Mover", 
 				"Anim_Rotator",
 				
@@ -481,10 +496,11 @@ static char * animation_xpm[] = {
 		
 		
 		
-
+		FreeCAD.t=self.appendToolbar("Functions",self.functiontools)
 		FreeCAD.t=self.appendToolbar("Animation",self.animtools)
 ##		FreeCAD.t=self.appendToolbar("ActionScript",self.actions)
 		
+		self.appendMenu('Functions',self.functiontools)
 		self.appendMenu('Animation',self.animtools)
 ##		self.appendMenu('Script Actions',self.actions)
 
