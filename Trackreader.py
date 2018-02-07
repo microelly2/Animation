@@ -272,7 +272,8 @@ class _ViewProviderTrackReader(Animation._ViewProviderActor):
 			pass
 		FreeCAD.ActiveDocument.recompute()
 
-#------------------------
+
+
 
 class _Function(Animation._Actor):
 
@@ -296,27 +297,50 @@ class _Function(Animation._Actor):
 		wire=self.obj2.source.Shape
 
 
+
 		if self.obj2.target==None:
 			self.obj2.target=Draft.makeCircle(5)
 			self.obj2.target.Label ="anim target for "+ self.obj2.source.Label
 
-		pts=wire.discretize(self.obj2.count)
+		# hier andere modi einbauen z. B. Endpunkte der edges #+#
+		
+		if self.obj2.usePoints:
+			w=wire
+			pts=[v.Point for v in w.Vertexes]
+			print "pts len ",len(pts)
+			# Draft.makeWire(pts)
+
+		else:
+			pts=wire.discretize(self.obj2.count)
+
 		tx=[p.x for p in pts]
 		ty=[p.y for p in pts]
 		tz=[p.z for p in pts]
 		self.obj2.xlist=tx
 		self.obj2.ylist=ty
 		self.obj2.zlist=tz
-		xmax=max(tx)
 		xmin=min(tx)
-		tx=(np.array(tx)-xmin)/xmax
+		tx=(np.array(tx)-xmin)
+		xmax=max(tx)
+		tx /= xmax
 
-		fx = interp1d(tx, ty, )
+#		zmin=min(tz)
+#		tz=(np.array(tz)-zmin)
+#		zmax=max(tz)
+#		tz /= zmax
+
+		# siehe https://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.interpolate.interp1d.html
+		
+		
+		fx = interp1d(tx,ty,kind=self.obj2.kindInterpolation)
+		fz = interp1d(tx,tz,kind=self.obj2.kindInterpolation)
+		
 		self.fx=fx
 		self.xmin=xmin
 		self.xmax=xmax
-		ptsa=[FreeCAD.Vector((0.01*i*xmax)+xmin,self.obj2.a*fx(0.01*i)+self.obj2.b) for i in range(101)]
-#		Draft.makeWire(ptsa)
+		ptsa=[FreeCAD.Vector((0.01*i*(xmax))+xmin,self.obj2.a*fx(0.01*i)+self.obj2.b,
+					self.obj2.a*fz(0.01*i)+self.obj2.b,) for i in range(101)]
+		#Draft.makeWire(ptsa)
 		pol=Part.makePolygon(ptsa)
 		try: self.k1.Shape=pol
 		except: 
@@ -471,6 +495,8 @@ def runTA():
 	obj.addProperty("App::PropertyFloatList", "xlist", "_comp", "end")
 	obj.addProperty("App::PropertyFloatList", "ylist", "_comp", "end")
 	obj.addProperty("App::PropertyFloatList", "zlist", "_comp", "end")
+	obj.addProperty("App::PropertyBool", "usePoints", "", "interpolate points").usePoints=True
+	obj.addProperty("App::PropertyEnumeration","kindInterpolation","Base").kindInterpolation=['cubic','linear', 'nearest', 'zero', 'slinear', 'quadratic', ]
 	
 
 
