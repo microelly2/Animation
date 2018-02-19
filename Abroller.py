@@ -65,16 +65,17 @@ def updateData(obj,sk=None):
 	rra=np.arange(2*anz2+1)*np.pi*2/(2*anz2+1) 
 #	pos=np.interp(rra, alpha, ns)/(anz)
 	
-	import scipy
-	from scipy.interpolate import interp1d
-
-	fx = interp1d(alpha,ns,kind="cubic",bounds_error=False)
-	pos=fx(rra)
-	pos /=anz
-
-	kk=[]
-	for p in pos:
-		kk += [c.value(p),FreeCAD.Vector()]
+#	if 0:
+#		import scipy
+#		from scipy.interpolate import interp1d
+#
+#		fx = interp1d(alpha,ns,kind="cubic",bounds_error=False)
+#		pos=fx(rra)
+#		pos /=anz
+#
+#		kk=[]
+#		for p in pos:
+#			kk += [c.value(p),FreeCAD.Vector()]
 
 
 	of=App.ActiveDocument.getObject(sk.Name+"_Offset")
@@ -154,10 +155,10 @@ def updateData(obj,sk=None):
 #	import scipy
 #	from scipy.interpolate import interp1d
 
-	fx = interp1d(alpha,ns,kind="cubic",bounds_error=True)
-	#fx = interp1d(alpha[2:-2],ns[2:-2],kind="linear",bounds_error=False)
-	pos=fx(rra[2:-2])
-	pos /=anz
+#	fx = interp1d(alpha,ns,kind="cubic",bounds_error=True)
+#	#fx = interp1d(alpha[2:-2],ns[2:-2],kind="linear",bounds_error=False)
+#	pos=fx(rra[2:-2])
+#	pos /=anz
 
 #--
 
@@ -380,6 +381,8 @@ def createAbroller():
 	except: sk= None
 	try: m=Gui.Selection.getSelection()[1]
 	except: m=None
+	try: m2=Gui.Selection.getSelection()[2]
+	except: m2=None
 
 	shape=updateData(obj,sk)
 	Abroller(obj)
@@ -388,9 +391,10 @@ def createAbroller():
 
 
 	ViewProvider(obj.ViewObject)
-	
-	obj.scooter=App.ActiveDocument.Compound001
-	obj.camshaft=App.ActiveDocument.Compound
+	obj.scooter=m
+	obj.camshaft=m2
+#	obj.scooter=App.ActiveDocument.Compound001
+#	obj.camshaft=App.ActiveDocument.Compound
 	#if m != None:
 	#	obj.setExpression('anim', m.Name+'.step')
 
