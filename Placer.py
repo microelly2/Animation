@@ -125,8 +125,10 @@ class _Placer(Animation._Actor):
 		arcv=eval(self.obj2.arc)
 
 		rot=FreeCAD.Rotation(self.obj2.RotAxis,arcv)
-		say(self.obj2.target.Label)
-		say("Vorgabe arcv " + str(arcv) +" ->Rotation ..." + str(rot.Axis) + "winkel " + str(rot.Angle))
+
+#		say(self.obj2.target.Label)
+#		say("Vorgabe arcv " + str(arcv) +" ->Rotation ..." + str(rot.Axis) + "winkel " + str(rot.Angle))
+
 		pl=FreeCAD.Placement(FreeCAD.Vector(xv,yv,zv),rot,self.obj2.RotCenter)
 		#say(pl)
 		if str(self.obj2.target.TypeId) == 'App::Annotation':
