@@ -21,7 +21,7 @@ def updateData(obj,sk=None):
 	sk.Placement.Rotation.Angle=0
 
 	w=sk.Shape
-	assert (abs(w.Vertexes[0].Point.y) <10**-2)
+#	assert (abs(w.Vertexes[0].Point.y) <10**-2)
 	if obj.countPoints<5:obj.countPoints=5
 	if obj.densityPoints<1:obj.densityPoints=1
 
@@ -229,12 +229,15 @@ def runAnimation(obj=None,loop=False):
 #		kkxx=App.ActiveDocument.Compound001
 		kkxx=obj.scooter
 		#print kkxx.Label
-		kkxx.Placement.Base=FreeCAD.Vector(p.Length,0,0)
+		if  kkxx <> None:
+			kkxx.Placement.Base=FreeCAD.Vector(p.Length,0,0)
 
 
 		alpha=np.arctan2(p.y,p.x)*180/np.pi
 
-		pos=obj.path.Shape.Curve.parameter(p)
+		try:pos=obj.path.Shape.Curve.parameter(p)
+		except: pos=obj.path.Shape.Edge1.Curve.parameter(p)
+		
 		arc2=-pos/obj.offsetValue/np.pi/2*180
 
 		#print ("rot",arc2,alpha)
@@ -243,11 +246,13 @@ def runAnimation(obj=None,loop=False):
 			#print "circle ",alpha
 			obj.circle.Placement=FreeCAD.Placement(FreeCAD.Vector(),FreeCAD.Rotation(FreeCAD.Vector(0,0,1),-alpha)).multiply(FreeCAD.Placement(p,FreeCAD.Rotation(FreeCAD.Vector(0,0,1),arc2+alpha)))
 			obj.circle2.Placement=obj.circle.Placement
-			kkxx.Placement=obj.circle.Placement
+			if  kkxx <> None:
+				kkxx.Placement=obj.circle.Placement
 		else:
 			obj.circle.Placement=FreeCAD.Placement(p,FreeCAD.Rotation(FreeCAD.Vector(0,0,1),arc2+alpha))
 			obj.circle2.Placement=obj.circle.Placement
-			kkxx.Placement=obj.circle.Placement
+			if  kkxx <> None:
+				kkxx.Placement=obj.circle.Placement
 
 
 
@@ -264,7 +269,8 @@ def runAnimation(obj=None,loop=False):
 #			kkyy=App.ActiveDocument.Compound
 			kkyy=obj.camshaft
 #			print kkyy.Label
-			kkyy.Placement.Rotation=FreeCAD.Rotation(FreeCAD.Vector(0,0,1),-alpha)
+			if  kkyy <> None:
+				kkyy.Placement.Rotation=FreeCAD.Rotation(FreeCAD.Vector(0,0,1),-alpha)
 
 #		print cyy.Placement
 
