@@ -95,7 +95,12 @@ def updateData(obj,sk=None):
 	for e in w2.Edges:
 		#print "Wire ---",e
 		dian=int(round(e.Length*obj.densityPoints))
-		ptsa +=  e.discretize(dian+1)[:-1]
+		print dian
+		if dian<1: dian=1
+		try:
+			ptsa +=  e.discretize(dian+1)[:-1]
+		except:
+			print "kann kante nicht discretize"
 
 	ptsa.reverse()
 #	print "ptsa"
