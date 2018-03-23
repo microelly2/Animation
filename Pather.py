@@ -54,8 +54,15 @@ class _Pather(Animation._Actor):
 		#
 		#w=Draft.makeWire(pl)
 		w=self.obj2.src
-		kk=w.Shape.LastParameter*self.obj2.time
-		p=w.Shape.valueAt(kk)
+		
+		#kk=w.Shape.LastParameter*self.obj2.time
+		#p=w.Shape.valueAt(kk)
+		
+		try:
+			p=w.Shape.Wires[0].discretize(101)[int(round(100*self.obj2.time))]
+		except:
+			p=w.Shape.discretize(101)[int(round(100*self.obj2.time))]
+
 		self.obj2.Placement.Base=p
 		if self.obj2.followers:
 			for f in self.obj2.followers:

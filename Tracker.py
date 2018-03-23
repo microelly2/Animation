@@ -25,7 +25,7 @@ __vers__='0.3 30.11.2015'
 __dir__ = os.path.dirname(__file__)	
 
 
-def createTracker(name,src=None,filename="/tmp/tracker"):
+def createTracker(name="MyTracker",src=None,filename="/tmp/tracker"):
 	obj = FreeCAD.ActiveDocument.addObject("App::DocumentObjectGroupPython",name)
 	obj.addProperty("App::PropertyString","filename","Base","").filename=filename
 	obj.addProperty("App::PropertyLink","src","Base","").src=src
