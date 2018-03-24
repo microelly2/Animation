@@ -99,13 +99,18 @@ class _Placer(Animation._Actor):
 		arc1=self.obj2.arc1
 		
 		if self.obj2.target:
-			x=self.obj2.target.Placement.Base.x
-			y=self.obj2.target.Placement.Base.y
-			z=self.obj2.target.Placement.Base.z
-			rx=self.obj2.target.Placement.Rotation.Axis.x
-			ry=self.obj2.target.Placement.Rotation.Axis.y
-			rz=self.obj2.target.Placement.Rotation.Axis.z
-			arc=self.obj2.target.Placement.Rotation.Angle
+			if self.obj2.target.__class__.__name__ == 'GroupExtension':
+				t=self.obj2.target.Group[0]
+			else:
+				t=self.obj2.target
+				
+			x=t.Placement.Base.x
+			y=t.Placement.Base.y
+			z=t.Placement.Base.z
+			rx=t.Placement.Rotation.Axis.x
+			ry=t.Placement.Rotation.Axis.y
+			rz=t.Placement.Rotation.Axis.z
+			arc=t.Placement.Rotation.Angle
 		try:
 			sx=self.obj2.src.Placement.Base.x
 			sy=self.obj2.src.Placement.Base.y
@@ -131,12 +136,30 @@ class _Placer(Animation._Actor):
 
 		pl=FreeCAD.Placement(FreeCAD.Vector(xv,yv,zv),rot,self.obj2.RotCenter)
 		#say(pl)
-		if str(self.obj2.target.TypeId) == 'App::Annotation':
-			self.obj2.target.Position=(xv,yv,zv)
-		else:
-			pl2=pl.multiply(self.obj2.prePlacement)
-			self.obj2.target.Placement=pl2
-			
+		if self.obj2.target<>None:
+			if self.obj2.target.__class__.__name__ == 'GroupExtension':
+				for t in self.obj2.target.Group:
+					if str(t.TypeId) == 'App::Annotation':
+						t.Position=(xv,yv,zv)
+					else:
+						pl2=pl.multiply(self.obj2.prePlacement)
+						t.Placement=pl2
+			else:
+				if str(self.obj2.target.TypeId) == 'App::Annotation':
+					self.obj2.target.Position=(xv,yv,zv)
+				else:
+					pl2=pl.multiply(self.obj2.prePlacement)
+					self.obj2.target.Placement=pl2
+
+		for t in self.obj2.Group:
+			if str(t.TypeId) == 'App::Annotation':
+				t.Position=(xv,yv,zv)
+			else:
+				pl2=pl.multiply(self.obj2.prePlacement)
+				t.Placement=pl2
+
+
+
 		self.obj2.Placement=pl
 		if self.obj2.followers:
 			for f in self.obj2.followers:
