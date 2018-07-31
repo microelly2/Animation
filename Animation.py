@@ -1379,6 +1379,7 @@ class _Photographer(_Actor):
 			fn=self.obj2.fn+kf+'.'+self.obj2.format 
 			fn2=self.obj2.fn+'_XXX_' +kf+'.'+self.obj2.format 
 			FreeCADGui.activeDocument().activeView().saveImage(fn,self.obj2.size_x,self.obj2.size_y,'Current')
+			#FreeCADGui.activeDocument().activeView().saveImage(fn,self.obj2.size_x,self.obj2.size_y,'white')
 			
 			
 			#fn='/home/thomas/Bilder/bp_111.png'
@@ -1449,7 +1450,7 @@ class _Manager(_Actor):
 				s= s=self.obj2.Label
 			else:
 				s=self.obj2.Label + ' ('+ self.obj2.Name +")"
-			say(s +" ************************* manager run loop:" + str(nw-self.obj2.start) + "/" + str(intervall))
+			say(s +" !************************* manager run loop:" + str(nw-self.obj2.start) + "/" + str(intervall))
 			
 			self.obj2.step=nw
 			#if os.path.exists("/tmp/stop"):
@@ -1471,7 +1472,8 @@ class _Manager(_Actor):
 						say("fehler step 2")
 						raise Exception("step nicht ausfuerbar")
 			FreeCAD.ActiveDocument.recompute()
-			FreeCADGui.updateGui()
+			print "deaktivate d huhua updateGui()--------------------------------------------------!"
+			#FreeCADGui.updateGui()
 			time.sleep(self.obj2.sleeptime)
 
 
