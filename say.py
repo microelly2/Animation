@@ -16,13 +16,15 @@ Gui=FreeCADGui
 import PySide
 from PySide import QtCore, QtGui
 
-import FreeCAD
-import Draft, Part, Animation
+import Draft
+import Part
+import Animation
 
 import numpy as np
-import matplotlib
-import matplotlib.pyplot as plt
-from matplotlib.pyplot import cm 
+
+#import matplotlib
+#import matplotlib.pyplot as plt
+#from matplotlib.pyplot import cm 
 
 import os,random,time,sys,traceback
 

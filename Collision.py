@@ -1,5 +1,4 @@
 import FreeCAD
-print "Module Collision started.!"
 
 from say import *
 
@@ -15,7 +14,7 @@ def col(actor,obstacles):
 	for obl in obstacles:
 		ov=obl.Shape.BoundBox
 		if ov.XMin < av.XMax  and  ov.XMax > av.XMin and ov.YMin <= av.YMax and  ov.YMax >= av.YMin and  ov.ZMin <= av.ZMax and  ov.ZMax >= av.ZMin:
-			print obl.Label
+			print(obl.Label)
 			obl.ViewObject.DiffuseColor=(1.0,0.0,0.0)
 		else:
 			obl.ViewObject.DiffuseColor=(1.0,1.0,0.0)  
@@ -110,12 +109,10 @@ class Detector():
 
 	def die(self):
 		try:
-			print "DIE"
+			print("DIE")
 			for k in [self.offs,self.comm,self.s1,self.s2,self.s3,self.obj2]:
-				print k
-				print str(k.Name)
+				print(k,str(k.Name))
 				FreeCAD.ActiveDocument.removeObject(str(k.Name))
-				print "done"
 		except:
 			sayexc()
 
@@ -150,7 +147,6 @@ class Detector():
 			#print poipair
 			pass
 
-		print "huhu"
 		# process only one near point 
 		p1=poipair[0]
 		p2=poipair[1]
@@ -163,12 +159,8 @@ class Detector():
 		pl=[]
 		for poipair in points:
 			pl.append(poipair[0])
-		#print pl
-		#wire=Draft.makeWire(pl,closed=False,face=False,support=None)
-		#wire.Points=pl
 
 		if dist<0.001:
-			#print "Collisoon"
 			s=B.Shape
 			s2=C.Shape
 

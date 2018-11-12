@@ -128,7 +128,7 @@ class _Gearing(Animation._Actor):
 				m.Placement.Rotation.Axis=FreeCAD.Vector(0,0,1)
 				
 			# Eigenachsen Rotationen
-			print (s.Placement.Rotation.Angle)
+			print(s.Placement.Rotation.Angle)
 			an=s.Placement.Rotation.Angle
 			ax=s.Placement.Rotation.Axis
 			day_star=self.obj2.dayStar

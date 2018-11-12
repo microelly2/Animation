@@ -72,7 +72,7 @@ class EventFilter(QtCore.QObject):
 				# only first time key pressed
 				if not self.keypressed:
 					text=e.text()
-					if 0 or text <>'':
+					if 0 or text !='':
 						self.keypressed=True
 						key=''
 						if e.modifiers() & QtCore.Qt.SHIFT:

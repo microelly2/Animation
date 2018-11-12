@@ -18,12 +18,15 @@ import time
 
 __dir__ = os.path.dirname(__file__)	
 
-import matplotlib
-matplotlib.use('Qt4Agg')
-matplotlib.rcParams['backend.qt4']='PySide'
 
-from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.figure import Figure
+#import matplotlib
+
+#matplotlib.use('Qt4Agg')
+#matplotlib.rcParams['backend.qt4']='PySide'
+
+#from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
+#from matplotlib.figure import Figure
+
 
 import say
 reload(say)
@@ -93,7 +96,6 @@ class _MPL(Animation._Actor):
 
 		try: t=self.vals
 		except: self.vals={}
-		print obj.sourceObject.Label
 		src=obj.sourceObject
 		vs='src.'+obj.sourceData
 		v=eval(vs)
@@ -102,7 +104,7 @@ class _MPL(Animation._Actor):
 		for i in range(obj.countSources):
 			exec("src"+str(i+1)+"=obj.source"+str(i+1)+"Object")
 			exec("ss=obj.source"+str(i+1)+"Object")
-			if ss <> None:
+			if ss != None:
 				vs2="obj.source"+str(i+1)+"Data"
 				v2=eval(vs2)
 				vs3="ss."+v2
@@ -239,7 +241,7 @@ VerticalLayout:
 			nr=str(i+1)
 			ss=eval("self.obj.source"+nr+"Object")
 			sf=eval("self.obj.source"+nr+"Off")
-			if ss<>None and not sf:
+			if ss!=None and not sf:
 				exec("vals=self.obj.Proxy.vals"+nr)
 				x2=[k for k in vals]
 				y1=[vals[k] for k in vals]
@@ -276,7 +278,7 @@ VerticalLayout:
 
 	#					if x == []: 
 						x=range(len(y))
-						if self.obj.outTime<>[]:
+						if self.obj.outTime!=[]:
 							x=self.obj.outTime
 						say(("lens",len(x),len(y)))
 						
@@ -359,7 +361,6 @@ VerticalLayout:
 
 def createMPL(base=False):
 
-	print "create MPL ..."
 	obj=FreeCAD.ActiveDocument.addObject('App::DocumentObjectGroupPython','Plot')
 	obj.addProperty('App::PropertyString','mode',"Base")
 

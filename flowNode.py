@@ -62,15 +62,6 @@ def lineCircleCommon(x0,y0,x1,y1,r):
 	zz=-(x0*v1+y0*v2)/rv2
 	D=zz**2 - (x0**2+y0**2-r**2)/rv2
 	if D<0:
-		print "Fehler Diskriminante r=", r
-		print zz
-		print (x0**2+y0**2-r**2)/rv2
-		print rv2
-		print "D=",D
-		print (x0,y0)
-		print np.sqrt(x0**2+y0**2)
-		print (x1,y1)
-		print np.sqrt(x1**2+y1**2)
 		if D>-20: D=0
 	t=zz + np.sqrt(D)
 
@@ -78,7 +69,6 @@ def lineCircleCommon(x0,y0,x1,y1,r):
 	y2=y0+v2*t
 	x2=0.95*x2
 	y2=0.95*y2
-	# print np.sqrt(x2**2+y2**2)
 	return(x2,y2)
 
 
@@ -92,9 +82,6 @@ def mirrorCircle(x0,y0,x2,y2):
 	diff.projectToLine(pnt,dir)
 	proj = pnt + diff # proj now lies on the line
 	mirr = proj + diff
-#	print proj
-#	print diff
-#	print mirr
 	return (mirr.x,mirr.y)
 
 
@@ -117,7 +104,7 @@ def velocity(self,ix,mytime):
 
 #	print "vor ",self.pvs[xp,yp]
 	self.pvs[xp,yp] += force(x,y,z,self.pvs[xp,yp],mytime)
-	print (ix,xy, xp,yp,force(x,y,z,self.pvs[xp,yp],mytime))
+	print(ix,xy, xp,yp,force(x,y,z,self.pvs[xp,yp],mytime))
 #	print "nach ",self.pvs[xp,yp]
 
 	tt=self.pvs[xp,yp]
@@ -253,13 +240,11 @@ def createStepFC(self,i):
 		for b in range(lb):
 			t=tuple(self.ptslix[self.ptsl[i][a][b]])
 			if np.isnan(t[0]) or np.isnan(t[1]) or np.isnan(t[2]):
-##debug				print "found error ", t
-#				print (a,b)
 				
 				pass
-# ignore zero points
+
 			elif 	abs(t[0])<10 and  abs(t[1])<20:
-##debug				print "ignore inner point ",t
+
 				pass
 			else:
 				pts.append(t)
@@ -298,7 +283,7 @@ def animateIntervall(self,pb=None,start=0,ende=None,objs=None):
 	if objs==None: 
 		objs=pclgroup().OutList
 	if ende==None: ende=len(objs)+ self.obj2.count4Slides
-	if start+1<>ende and pb == None: 	pb=createProgressBar("animation ..")
+	if start+1!=ende and pb == None: 	pb=createProgressBar("animation ..")
 
 	for u in objs: u.ViewObject.hide()
 
@@ -318,8 +303,7 @@ def animateIntervall(self,pb=None,start=0,ende=None,objs=None):
 
 
 	for i0 in range(start,ende):
-		# print "i0:",i0
-		if pb<>None: pb.pb.setValue(i0*100/(ende-start-1))
+		if pb!=None: pb.pb.setValue(i0*100/(ende-start-1))
 		
 		period=self.obj2.period
 		if period<1: period=10000
@@ -359,7 +343,7 @@ def animateIntervall(self,pb=None,start=0,ende=None,objs=None):
 		App.activeDocument().recompute()
 		Gui.updateGui()
 		time.sleep(self.obj2.sleep)
-	if pb<>None: pb.hide()
+	if pb!=None: pb.hide()
 		#objs[i].ViewObject.hide()
 
 
@@ -382,7 +366,7 @@ def createProgressBar(label=None):
 	w.setLayout(hbox)
 	pb=QtGui.QProgressBar()
 	w.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
-	if label<>None:
+	if label!=None:
 		lab=QtGui.QLabel(label)
 		hbox.addWidget(lab)
 	hbox.addWidget(pb)
@@ -512,7 +496,6 @@ class _Flow(Animation._Actor):
 			u.ViewObject.hide()
 			u.ViewObject.ShapeColor=(1.0,0.0,0.0)
 		i=int(round(time*(len(objs)-1)))
-		print i
 		try:objs[i].ViewObject.show()
 		except: pass
 
@@ -525,9 +508,9 @@ class _Flow(Animation._Actor):
 		pb=createProgressBar("create tracks ..")
 
 		for x in range(self.obj2.dimU):
-			if x%10<>0: continue
+			if x%10!=0: continue
 			for y in range(self.obj2.dimV):
-				if y%10<>0: continue
+				if y%10!=0: continue
 				pts=[]
 				for z in range(zc):
 					p=FreeCAD.Vector(tuple(self.ptslix[self.ptsl[z,x,y]]))
@@ -566,7 +549,7 @@ class _Flow(Animation._Actor):
 		hbox = QtGui.QVBoxLayout()
 		w.setLayout(hbox)
 
-		if label<>None:
+		if label!=None:
 			lab=QtGui.QLabel(label)
 			hbox.addWidget(lab)
 
@@ -617,7 +600,6 @@ class _Flow(Animation._Actor):
 
 
 		bb=self.obj2.boundBox.Shape.BoundBox
-		print "bounds ",bb
 		self.xmax=bb.XMax
 		self.ymax=bb.YMax
 		self.zmax=bb.ZMax

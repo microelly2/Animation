@@ -43,9 +43,8 @@ class _VertexTracker(Animation._Actor):
 	''' track the time/placement of src to filename '''
 
 	def update(self):
-		print "update VERTEX Tracker "
+		print("update VERTEX Tracker ")
 		self.run(self.obj2.src)
-		print "done"
 
 	def step(self,now):
 		say("step "+str(now) + str(self))
@@ -62,20 +61,20 @@ class _VertexTracker(Animation._Actor):
 		fcount=len(self.threads)
 		dist=1.5
 		for f in self.threads:
-			print f, self.threads[f]
+			print(f, self.threads[f])
 			t=self.threads[f]
 			if point.distanceToPoint(t[-1]) < dist:
-				print "found"
+				print( "found")
 				self.threads[f].append(point)
 				return self.threads[f]
-		print "not found"
+		print("not found")
 		self.threads[fcount]=[point]
 		return self.threads[fcount]
 
 
 	def run(self,s):
 		say(s.Label)
-		print s.Shape
+		print(s.Shape)
 		say(s.Shape.Vertexes)
 		i=0
 		for v in s.Shape.Vertexes:
@@ -84,17 +83,16 @@ class _VertexTracker(Animation._Actor):
 			say(["Point: ", v.Point])
 			FreeCADGui.updateGui()
 			self.addpoint(v.Point)
-# 		print threads
 
 	def show(self):
 		for f in self.threads:
-			print f
+			print(f)
 			for p in self.threads[f]:
-				print "       ",p
+				print("       ",p)
 
 	def gen(self):
 		for f in self.threads:
-			print f
+			print(f)
 			if  self.isOnePoint(self.threads[f]):
 				p=FreeCAD.ActiveDocument.addObject("Part::Vertex","Vertex")
 				p.Placement.Base=self.threads[f][0]
@@ -106,7 +104,7 @@ class _VertexTracker(Animation._Actor):
 				return False
 			sp=f[0]
 			for p in f:
-				if p <> sp:
+				if p != sp:
 					return False
 			return True
 

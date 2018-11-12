@@ -300,7 +300,6 @@ if __name__ == "__main__":
 	box=App.ActiveDocument.addObject("Part::Box","Bax")
 	t=create("Anim "+box.Label,box)
 	box.ViewObject.ShapeColor=(.0,1.0,.0)
-	print t
 	# linear function - left upper corner to right bottom 
 	t.x0=-150
 	t.x1=150
@@ -315,7 +314,6 @@ if __name__ == "__main__":
 	box1=App.ActiveDocument.addObject("Part::Cone","Bux")
 	box1.ViewObject.ShapeColor=(1.0,.0,.0)
 	t1=create("Anim "+box1.Label,box1)
-	print t1
 	t1.x0=-150
 	t1.x1=150
 	t1.y0=-150
@@ -331,7 +329,6 @@ if __name__ == "__main__":
 	box3=App.ActiveDocument.addObject("Part::Cylinder","Circler")
 	box3.ViewObject.ShapeColor=(1.0,.0,1.0)
 	t3=create("Anim "+box3.Label,box3)
-	print t3
 	# ellipse
 	t3.y="80 * math.sin(math.pi*2*time)"
 	t3.x="80 * math.cos(math.pi*2*time)"
@@ -342,7 +339,6 @@ if __name__ == "__main__":
 	box3=App.ActiveDocument.addObject("Part::Sphere","Circler-helper")
 	box3.ViewObject.ShapeColor=(1.0,.0,1.0)
 	tt3=create("Anim "+box3.Label,box3,t3)
-	print t3
 	# ellipse
 	tt3.y="sx"
 	tt3.x="sx"
@@ -352,7 +348,6 @@ if __name__ == "__main__":
 	box4=App.ActiveDocument.addObject("Part::Cylinder","T1")
 	box4.ViewObject.ShapeColor=(1.0,1.0,.0)
 	t1=create("Anim "+box4.Label,box4,t3)
-	print t1
 	# ellipse
 	t1.y="87"
 	t1.x="-50"
@@ -362,7 +357,6 @@ if __name__ == "__main__":
 	box4=App.ActiveDocument.addObject("Part::Cylinder","T2")
 	box4.ViewObject.ShapeColor=(1.0,1.0,.0)
 	t1=create("Anim "+box4.Label,box4,t3)
-	print t1
 	# ellipse
 	t1.y="-87"
 	t1.x="-50"
@@ -372,7 +366,6 @@ if __name__ == "__main__":
 	box4=App.ActiveDocument.addObject("Part::Cylinder","T3")
 	box4.ViewObject.ShapeColor=(1.0,1.0,.0)
 	t1=create("Anim "+box4.Label,box4,t3)
-	print t1
 	# ellipse
 	t1.y="0"
 	t1.x="100"

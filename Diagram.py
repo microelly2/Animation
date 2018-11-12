@@ -27,62 +27,62 @@ def _creategraphs(obj):
 	obj.Proxy.data8={}
 	obj.Proxy.data9={}
 
-	if obj.trafo<>'' and obj.graph == None:
+	if obj.trafo!='' and obj.graph == None:
 		w=Part.makeSphere(0.1)
 		Part.show(w)
 		obj.graph=FreeCAD.activeDocument().ActiveObject
 		obj.graph.ViewObject.LineColor=(1.0,0.0,.0)
 		obj.graph.Label="Graph 1 "
 
-	if obj.trafo2<>'' and obj.graph2 == None:
+	if obj.trafo2!='' and obj.graph2 == None:
 		w=Part.makeSphere(0.1)
 		Part.show(w)
 		obj.graph2=FreeCAD.activeDocument().ActiveObject
 		obj.graph2.ViewObject.LineColor=(.0,1.0,.0)
 		obj.graph2.Label="Graph 2 "
 
-	if obj.trafo3<>'' and obj.graph3 == None:
+	if obj.trafo3!='' and obj.graph3 == None:
 		w=Part.makeSphere(0.1)
 		Part.show(w)
 		obj.graph3=FreeCAD.activeDocument().ActiveObject
 		obj.graph3.ViewObject.LineColor=(.0,.0,1.0)
 		obj.graph3.Label="Graph 3 "
-	if obj.trafo4<>'' and obj.graph4 == None:
+	if obj.trafo4!='' and obj.graph4 == None:
 		w=Part.makeSphere(0.1)
 		Part.show(w)
 		obj.graph4=FreeCAD.activeDocument().ActiveObject
 		obj.graph4.ViewObject.LineColor=(1.0,1.0,.0)
 		obj.graph4.Label="Graph 4 "
 
-	if obj.trafo5<>'' and  obj.graph5 == None:
+	if obj.trafo5!='' and  obj.graph5 == None:
 		w=Part.makeSphere(0.1)
 		Part.show(w)
 		obj.graph5=FreeCAD.activeDocument().ActiveObject
 		obj.graph5.ViewObject.LineColor=(1.0,.0,1.0)
 		obj.graph5.Label="Graph 5 "
 
-	if obj.trafo6<>'' and obj.graph6 == None:
+	if obj.trafo6!='' and obj.graph6 == None:
 		w=Part.makeSphere(0.1)
 		Part.show(w)
 		obj.graph6=FreeCAD.activeDocument().ActiveObject
 		obj.graph6.ViewObject.LineColor=(.0,1.0,1.0)
 		obj.graph6.Label="Graph 6 "
 
-	if obj.trafo7<>'' and obj.graph6 == None:
+	if obj.trafo7!='' and obj.graph6 == None:
 		w=Part.makeSphere(0.1)
 		Part.show(w)
 		obj.graph7=FreeCAD.activeDocument().ActiveObject
 		obj.graph7.ViewObject.LineColor=(.0,1.0,1.0)
 		obj.graph7.Label="Graph 7 "
 
-	if obj.trafo8<>'' and obj.graph8 == None:
+	if obj.trafo8!='' and obj.graph8 == None:
 		w=Part.makeSphere(0.1)
 		Part.show(w)
 		obj.graph8=FreeCAD.activeDocument().ActiveObject
 		obj.graph8.ViewObject.LineColor=(.0,1.0,1.0)
 		obj.graph8.Label="Graph 8 "
 
-	if obj.trafo9<>'' and obj.graph9 == None:
+	if obj.trafo9!='' and obj.graph9 == None:
 		w=Part.makeSphere(0.1)
 		Part.show(w)
 		obj.graph9=FreeCAD.activeDocument().ActiveObject
@@ -177,7 +177,7 @@ class _Diagram(Animation._Actor):
 		source3=self.obj2.source3
 		source4=self.obj2.source4
 
-		if self.obj2.timeExpression<>"":
+		if self.obj2.timeExpression!="":
 			say(["eval time Expression",time])
 			time=eval(self.obj2.timeExpression)
 			say(["time== ",time,self.obj2.timeExpression])

@@ -215,7 +215,7 @@ class _ViewProviderActor():
 
 	def edit(self):
 		anims=self.anims()
-		print anims
+		print(anims)
 		
 		self.dialog=EditWidget(self,self.emenu + anims,False)
 		self.dialog.show()
@@ -411,7 +411,7 @@ class _Viewpoint(_Actor):
 		if now==self.obj2.start:
 			pass
 
-		if self.obj2.zoom <>1:
+		if self.obj2.zoom !=1:
 			if self.obj2.zoom <=0:
 				sayErr("Zoom darf nicht <= NULL seinn")
 				errorDialog("Zoom darf nicht <= NULL seinn")
@@ -726,7 +726,7 @@ class _Mover(_Actor):
 		
 		FreeCAD.zu=obj
 		# say(obj.ModeMotion)
-		if obj.ModeMotion <> 'Vector':
+		if obj.ModeMotion != 'Vector':
 			obj.setEditorMode("vectorMotion", 1) #ro
 			obj.setEditorMode("reverseMotion", 1) #ro
 		else: 
@@ -756,9 +756,9 @@ class _Mover(_Actor):
 
 				if not hasattr(FreeCAD,'animMover'):
 					FreeCAD.animMover=[]
-					print ("neu")
+					print("neu")
 
-				# print (FreeCAD.animMover)
+				# !=(FreeCAD.animMover)
 
 				#FreeCAD.animMover.append("start")
 				#FreeCAD.animMover.append("start")
@@ -1329,9 +1329,9 @@ class _Photographer(_Actor):
 	def step(self,now,force=False):
 		if hasattr(self.obj2,"frameSelection"):
 			fsel=self.obj2.frameSelection
-			if fsel<>[]: 
+			if fsel!=[]: 
 				if now not in fsel: 
-					print "skip frame",now
+					print("skip frame",now)
 					return
 
 		if now<=self.obj2.start or now>self.obj2.end:
@@ -1472,7 +1472,7 @@ class _Manager(_Actor):
 						say("fehler step 2")
 						raise Exception("step nicht ausfuerbar")
 			FreeCAD.ActiveDocument.recompute()
-			print "deaktivate d huhua updateGui()--------------------------------------------------!"
+			print("deaktivate updateGui()--------------------------------------------------!")
 			#FreeCADGui.updateGui()
 			time.sleep(self.obj2.sleeptime)
 
@@ -1856,7 +1856,7 @@ class _Runner:
 			FreeCADGui.doCommand("App.ActiveDocument.My_Manager.Proxy.run(-1)")
 			FreeCAD.ActiveDocument.commitTransaction()
 			FreeCAD.ActiveDocument.recompute()
-		elif M[0].Object.Proxy.Type <> '_Manager':
+		elif M[0].Object.Proxy.Type != '_Manager':
 			errorDialog("Manager auswahlen")
 		else:
 			FreeCAD.ActiveDocument.openTransaction("run Manager")
@@ -2592,18 +2592,23 @@ class _ViewProviderFiller(_ViewProviderActor):
 import PySide
 from PySide import QtCore, QtGui
 
-from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.figure import Figure
-import matplotlib.image as mpimg
+
+#from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
+#from matplotlib.figure import Figure
+#import matplotlib.image as mpimg
 
 
 import PySide
 from PySide import QtCore, QtGui
 
-from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.figure import Figure
+#from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
+#from matplotlib.figure import Figure
 
+class MatplotlibWidget():
+	pass
 
+'''
+Fehelr wegen Figure Convas #+#
 class MatplotlibWidget(FigureCanvas):
 
 	def __init__(self, parent=None, width=5, height=4, dpi=100):
@@ -2630,6 +2635,7 @@ class MatplotlibWidget(FigureCanvas):
 		say((fn,l,b,c))
 		mpl.draw()
 		mpl.resize(b,l)
+'''
 
 
 def showimage(fn):

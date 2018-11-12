@@ -95,12 +95,12 @@ def updateData(obj,sk=None):
 	for e in w2.Edges:
 		#print "Wire ---",e
 		dian=int(round(e.Length*obj.densityPoints))
-		print dian
+		print(dian)
 		if dian<1: dian=1
 		try:
 			ptsa +=  e.discretize(dian+1)[:-1]
 		except:
-			print "kann kante nicht discretize"
+			print( "kann kante nicht discretize")
 
 	ptsa.reverse()
 #	print "ptsa"
@@ -150,7 +150,7 @@ def updateData(obj,sk=None):
 
 	# jetzt die Animationsschritte
 	anz2=50
-	print ("Interpolation anz, anz2",anz,anz2)
+	print("Interpolation anz, anz2",anz,anz2)
 	
 	rra=np.arange(2*anz2+1)*np.pi*2/(2*anz2+1) 
 	pos=np.interp(rra, alpha, ns)/(anz)
@@ -223,7 +223,7 @@ def runAnimation(obj=None,loop=False):
 		if 0:
 			w=App.ActiveDocument.Sketch.Shape
 			dist=w.distToShape(pp.toShape())
-			print dist[0]
+			print(dist[0])
 
 
 		testmode=True
@@ -234,7 +234,7 @@ def runAnimation(obj=None,loop=False):
 #		kkxx=App.ActiveDocument.Compound001
 		kkxx=obj.scooter
 		#print kkxx.Label
-		if  kkxx <> None:
+		if  kkxx != None:
 			kkxx.Placement.Base=FreeCAD.Vector(p.Length,0,0)
 
 
@@ -251,12 +251,12 @@ def runAnimation(obj=None,loop=False):
 			#print "circle ",alpha
 			obj.circle.Placement=FreeCAD.Placement(FreeCAD.Vector(),FreeCAD.Rotation(FreeCAD.Vector(0,0,1),-alpha)).multiply(FreeCAD.Placement(p,FreeCAD.Rotation(FreeCAD.Vector(0,0,1),arc2+alpha)))
 			obj.circle2.Placement=obj.circle.Placement
-			if  kkxx <> None:
+			if  kkxx != None:
 				kkxx.Placement=obj.circle.Placement
 		else:
 			obj.circle.Placement=FreeCAD.Placement(p,FreeCAD.Rotation(FreeCAD.Vector(0,0,1),arc2+alpha))
 			obj.circle2.Placement=obj.circle.Placement
-			if  kkxx <> None:
+			if  kkxx != None:
 				kkxx.Placement=obj.circle.Placement
 
 
@@ -274,7 +274,7 @@ def runAnimation(obj=None,loop=False):
 #			kkyy=App.ActiveDocument.Compound
 			kkyy=obj.camshaft
 #			print kkyy.Label
-			if  kkyy <> None:
+			if  kkyy != None:
 				kkyy.Placement.Rotation=FreeCAD.Rotation(FreeCAD.Vector(0,0,1),-alpha)
 
 #		print cyy.Placement
@@ -386,7 +386,7 @@ def createAbroller():
 
 	obj.addProperty("App::PropertyEnumeration","mode","","Animation mode").mode=['rotate camshaft','roll scooter']
 
-	print "create abroller"
+	print("create abroller")
 
 	try: sk=Gui.Selection.getSelection()[0]
 	except: sk= None

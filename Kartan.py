@@ -70,7 +70,7 @@ def createKartan(name='My_Kartan'):
 
 def rotcross(part,alpha,phi):
 	phi2=math.atan(math.cos(alpha*math.pi/180)*math.tan(phi*math.pi/180))*180/math.pi
-	print (phi,phi2)
+	print(phi,phi2)
 
 	rot = App.Rotation(App.Vector(0,0,1), phi)
 	wy=rot.multVec(App.Vector(0,1,0))

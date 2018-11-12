@@ -38,7 +38,6 @@ import Animation
 global __dir__
 __dir__ = os.path.dirname(Animation.__file__)
 
-# print "Animation  dir:", __dir__
 
 
 
@@ -66,8 +65,8 @@ class _CommandActor():
 	def Activated(self):
 		if FreeCADGui.ActiveDocument:
 			FreeCAD.ActiveDocument.openTransaction("create " + self.name)
-			if self.command <> '':
-				if self.modul <>'':
+			if self.command != '':
+				if self.modul !='':
 					modul=self.modul
 				else:
 					modul=self.name
@@ -160,15 +159,15 @@ class _Command():
 
 	def Activated(self):
 		#FreeCAD.ActiveDocument.openTransaction("create " + self.name)
-		if self.command <> '':
-			if self.modul <>'': modul=self.modul
+		if self.command != '':
+			if self.modul !='': modul=self.modul
 			else: modul=self.name
 			FreeCADGui.doCommand("import " + modul)
 			FreeCADGui.doCommand("import "+self.lmod)
 			FreeCADGui.doCommand("reload("+self.lmod+")")
 			FreeCADGui.doCommand(self.command)
 		#FreeCAD.ActiveDocument.commitTransaction()
-		if FreeCAD.ActiveDocument <> None:
+		if FreeCAD.ActiveDocument != None:
 			FreeCAD.ActiveDocument.recompute()
 
 
@@ -185,7 +184,7 @@ def always():
 
 def ondocument():
 	'''if a document is active'''
-	return FreeCADGui.ActiveDocument <> None
+	return FreeCADGui.ActiveDocument != None
 
 def onselection():
 	'''if at least one object is selected'''
@@ -205,7 +204,7 @@ def onselection3():
 
 def onselex():
 	'''if at least one subobject is selected'''
-	return len(FreeCADGui.Selection.getSelectionEx())<>0
+	return len(FreeCADGui.Selection.getSelectionEx())!=0
 
 def onselex1():
 	'''if exactly one subobject is selected'''

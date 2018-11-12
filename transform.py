@@ -588,9 +588,7 @@ def createVertexPlugger(name='VertexPlugger', src=None, target=None, point=0):
 	c3.refOld=FreeCAD.Vector()
 	if src:
 		c3.refOld=FreeCAD.Vector(src.Shape.Vertexes[point].Point)
-	print "position kugel"
-	print c3.refOld
-	
+
 	for p in ['point','src','target','plOld','refOld']:
 		obj.setEditorMode(p, 1) #ro
 	_VertexPlugger(obj)
@@ -637,18 +635,7 @@ class _VertexPlugger():
 		
 		refalt2=FreeCAD.Placement()
 		refalt2.Base=refalt
-		print "update ---"
-		print "neue position"
-		print koopalt
-		print refalt
-		print self.obj2.src.Shape.Vertexes[self.obj2.point].Point
-		print self.obj2.point
-		print "gemerkte position"
-		print self.obj2.plOld
-		print lastrefalt
-		print 
-		
-		
+
 		oldobinv=self.obj2.plOld.inverse()
 		oldrelref=oldobinv.multiply(lastrefalt)
 		oldrelrefinv=oldrelref.inverse()

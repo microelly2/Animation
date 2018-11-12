@@ -35,7 +35,7 @@ class _NP(Animation._Actor):
 	def execute(self,obj):
 
 		src=obj.sourceObject
-		if src.sourceValues<>[]:
+		if src.sourceValues!=[]:
 			exec("inTime=np.array(src.sourceValues)")
 		else:
 			inTime=[]
@@ -51,7 +51,7 @@ class _NP(Animation._Actor):
 		for i in attos:
 			try:
 				e=obj.getPropertyByName("expression" +str(i))
-				if e <>'':
+				if e !='':
 					r=eval(e)
 					exec("obj.out" + str(i)+"=" +str(list(r)))
 				else:

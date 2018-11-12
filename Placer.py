@@ -136,7 +136,7 @@ class _Placer(Animation._Actor):
 
 		pl=FreeCAD.Placement(FreeCAD.Vector(xv,yv,zv),rot,self.obj2.RotCenter)
 		#say(pl)
-		if self.obj2.target<>None:
+		if self.obj2.target!=None:
 			if self.obj2.target.__class__.__name__ == 'GroupExtension':
 				for t in self.obj2.target.Group:
 					if str(t.TypeId) == 'App::Annotation':

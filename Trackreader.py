@@ -65,7 +65,7 @@ def interpol2(filename,show=True):
 		llf=[]
 		for z in ll:
 			llf.append(float(z))
-		print llf
+
 		tv.append(llf[0])
 		xv.append(llf[1])
 		yv.append(llf[2])
@@ -80,7 +80,7 @@ def interpol2(filename,show=True):
 	import numpy as np
 	import scipy
 	from scipy.interpolate import interp1d
-	import matplotlib.pyplot as plt
+	#import matplotlib.pyplot as plt
 
 	fx = interp1d(tv, xv, )
 	fy = interp1d(tv, yv, )
@@ -156,7 +156,7 @@ class _TrackReader(Animation._Actor):
 				FreeCAD.Vector(float(ll[1]),float(ll[2]),float(ll[3])),
 				FreeCAD.Vector(float(ll[4]),float(ll[5]),float(ll[6])),
 				float(ll[7])*180/math.pi)
-		print self.path
+		print(self.path)
 
 	def showtrack(self):
 		interpol2(self.obj2.filename,True)
@@ -167,7 +167,7 @@ class _TrackReader(Animation._Actor):
 				FreeCAD.Vector(float(ll[1]),float(ll[2]),float(ll[3])),
 				FreeCAD.Vector(float(ll[4]),float(ll[5]),float(ll[6])),
 				float(ll[7])*180/math.pi)
-		print self.path
+		print(self.path)
 
 
 	def showtrack(self):
@@ -179,7 +179,7 @@ class _TrackReader(Animation._Actor):
 				FreeCAD.Vector(float(ll[1]),float(ll[2]),float(ll[3])),
 				FreeCAD.Vector(float(ll[4]),float(ll[5]),float(ll[6])),
 				float(ll[7])*180/math.pi)
-		print self.path
+		print(self.path)
 
 
 	def execute(self,obj):
@@ -292,7 +292,7 @@ class _Function(Animation._Actor):
 		import numpy as np
 		import scipy
 		from scipy.interpolate import interp1d
-		import matplotlib.pyplot as plt
+		#import matplotlib.pyplot as plt
 
 		wire=self.obj2.source.Shape
 
@@ -307,9 +307,6 @@ class _Function(Animation._Actor):
 		if self.obj2.usePoints:
 			w=wire
 			pts=[v.Point for v in w.Vertexes]
-			print "pts len ",len(pts)
-			# Draft.makeWire(pts)
-
 		else:
 			pts=wire.discretize(self.obj2.count)
 
@@ -378,7 +375,6 @@ class _Function(Animation._Actor):
 			self.Lock=False
 
 	def onChanged(self,obj,prop):
-		print "prop",prop
 		if prop in ['source','count','a','b']:
 			self.loadtrack()
 		if prop in ['time','count']:
