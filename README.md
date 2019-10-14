@@ -16,7 +16,7 @@ $ git clone https://github.com/microelly2/Animation.git
 
 Once installed, use git to easily update to the latest version:
 
-$ cd ~/.FreeCAD/Mod/FreeCAD_Animation
+$ cd ~/.FreeCAD/Mod/Animation
 
 $ git pull
 
