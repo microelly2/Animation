@@ -25,6 +25,10 @@ __title__="FreeCAD Animation Toolkit"
 __author__ = "Thomas Gundermann"
 __url__ = "http://www.freecadbuch.de"
 
+import matplotlib
+matplotlib.use('Qt4Agg')
+matplotlib.rcParams['backend.qt4']='PySide'
+
 import FreeCAD, Part, PartGui, Draft, Drawing , PySide
 from FreeCAD import Vector,Base
 import math, os, sys
