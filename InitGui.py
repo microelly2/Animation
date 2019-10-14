@@ -40,7 +40,6 @@ __dir__ = os.path.dirname(Animation.__file__)
 
 
 
-
 class _CommandActor():
 
 	def __init__(self,name='Actor',icon='/icons/icon3.svg',command='',modul=''):
@@ -71,7 +70,7 @@ class _CommandActor():
 				else:
 					modul=self.name
 				FreeCADGui.doCommand("import " + modul)
-				FreeCADGui.doCommand("reload(" + modul +")")
+				#FreeCADGui.doCommand("reload(" + modul +")")
 				FreeCADGui.doCommand(self.command)
 			else:
 				FreeCADGui.doCommand("import Animation")
@@ -164,7 +163,7 @@ class _Command():
 			else: modul=self.name
 			FreeCADGui.doCommand("import " + modul)
 			FreeCADGui.doCommand("import "+self.lmod)
-			FreeCADGui.doCommand("reload("+self.lmod+")")
+			#FreeCADGui.doCommand("reload("+self.lmod+")")
 			FreeCADGui.doCommand(self.command)
 		#FreeCAD.ActiveDocument.commitTransaction()
 		if FreeCAD.ActiveDocument != None:
